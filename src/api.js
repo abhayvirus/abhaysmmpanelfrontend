@@ -33,6 +33,7 @@ API.interceptors.response.use(
 );
 
 // Auth
+export const getAuthConfig = () => API.get('/auth/config');
 export const login = (data) => API.post('/auth/login', data);
 export const signup = (data) => API.post('/auth/signup', data);
 /** Google Sign-In: send ID token from @react-oauth/google */

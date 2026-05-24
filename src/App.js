@@ -1,7 +1,6 @@
 import React from 'react';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { GOOGLE_CLIENT_ID, isGoogleConfigured } from './config/google';
+import AuthGoogleProvider from './components/AuthGoogleProvider';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import PremiumFeatures from './components/PremiumFeatures';
@@ -106,14 +105,11 @@ function AppRoutes() {
 }
 
 function App() {
-  if (isGoogleConfigured()) {
-    return (
-      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-        <AppRoutes />
-      </GoogleOAuthProvider>
-    );
-  }
-  return <AppRoutes />;
+  return (
+    <AuthGoogleProvider>
+      <AppRoutes />
+    </AuthGoogleProvider>
+  );
 }
 
 export default App;

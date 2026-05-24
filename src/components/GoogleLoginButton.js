@@ -47,7 +47,14 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
       localStorage.setItem('user', JSON.stringify(data.user));
       navigate(data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Google sign-in failed');
+      const msg = err.response?.data?.message || err.message || 'Google sign-in failed';
+      if (err.response?.data?.code === 'GOOGLE_NOT_CONFIGURED') {
+        setError('Google login is not configured on the server. Contact admin.');
+      } else if (msg.includes('ETIMEDOUT') || err.response?.status === 500) {
+        setError('Server cannot reach database. Check Render env: DB_HOST, DB_PORT.');
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
