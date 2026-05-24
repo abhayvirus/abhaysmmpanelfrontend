@@ -1,0 +1,19 @@
+{
+  "nav.dashboard": "नया ऑर्डर",
+  "nav.services": "सेवाएं",
+  "nav.orders": "ऑर्डर",
+  "nav.funds": "पैसे जोड़ें",
+  "nav.support": "सहायता",
+  "nav.notifications": "सूचनाएं",
+  "nav.referrals": "रेफरल",
+  "nav.download": "ऐप डाउनलोड",
+  "chat.title": "लाइव सपोर्ट",
+  "chat.placeholder": "संदेश लिखें...",
+  "chat.send": "भेजें",
+  "theme.dark": "डार्क",
+  "theme.light": "लाइट",
+  "referral.title": "रेफर करें और कमाएं",
+  "referral.copy": "लिंक कॉपी करें",
+  "coupon.apply": "कूपन लगाएं",
+  "logout.idle": "निष्क्रियता के कारण लॉग आउट"
+}
