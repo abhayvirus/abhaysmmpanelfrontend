@@ -15,7 +15,7 @@ const PublicNav = () => {
 
   return (
     <>
-      <nav className="nav-public">
+      <header className="nav-public">
         <Link to="/" className="nav-public-brand" onClick={close}>
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
         </Link>
@@ -35,23 +35,25 @@ const PublicNav = () => {
             <span /><span /><span />
           </span>
         </button>
-      </nav>
+      </header>
 
       {open && (
-        <button type="button" className="nav-public-backdrop" onClick={close} aria-label="Close menu" />
-      )}
-
-      <div className={`nav-public-drawer${open ? ' open' : ''}`} role="dialog" aria-modal={open}>
-        <div className="nav-drawer-header">
-          <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
-          <button type="button" className="nav-drawer-close" onClick={close} aria-label="Close menu">
-            ✕
-          </button>
+        <div className="nav-mobile-screen" role="dialog" aria-modal="true" aria-label="Menu">
+          <div className="nav-mobile-screen-inner">
+            <div className="nav-mobile-top">
+              <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
+              <button type="button" className="nav-drawer-close" onClick={close} aria-label="Close menu">
+                ✕
+              </button>
+            </div>
+            <nav className="nav-mobile-links">
+              <Link to="/login" className="btn btn-ghost nav-drawer-btn" onClick={close}>Login</Link>
+              <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>Get Started</Link>
+              <Link to="/download-app" className="btn btn-ghost nav-drawer-btn" onClick={close}>📱 Download App</Link>
+            </nav>
+          </div>
         </div>
-        <Link to="/login" className="btn btn-ghost nav-drawer-btn" onClick={close}>Login</Link>
-        <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>Get Started</Link>
-        <Link to="/download-app" className="btn btn-ghost nav-drawer-btn" onClick={close}>📱 Download App</Link>
-      </div>
+      )}
     </>
   );
 };

@@ -354,52 +354,43 @@ body.mobile-menu-open {
   align-items: center;
   justify-content: center;
 }
-.nav-public-backdrop {
+/* Full-screen mobile menu — solid bg, no duplicate header ghost */
+.nav-mobile-screen {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-  z-index: 155;
-  border: none;
-  cursor: pointer;
+  z-index: 500;
+  background: var(--bg);
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+  animation: fadeIn 0.22s ease;
 }
-body.public-nav-open {
-  overflow: hidden;
-}
-.nav-public-drawer {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  width: 100%;
-  max-height: min(420px, 85vh);
-  background: var(--bg-card);
-  border-bottom: 1px solid var(--border);
-  padding: 1rem 1rem 1.25rem;
-  z-index: 160;
+.nav-mobile-screen-inner {
+  display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  transform: translateY(-110%);
-  transition: transform 0.28s ease;
-  border-radius: 0 0 20px 20px;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+  min-height: 100%;
+  max-height: 100dvh;
+  padding: 1rem 1rem 1.5rem;
 }
-.nav-public-drawer.open {
-  transform: translateY(0);
-}
-.nav-drawer-header {
+.nav-mobile-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding-bottom: 0.5rem;
-  margin-bottom: 0.25rem;
+  padding-bottom: 1rem;
+  margin-bottom: 0.5rem;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nav-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  padding-top: 0.5rem;
 }
 .nav-drawer-close {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 10px;
   border: 1px solid var(--border);
   background: var(--bg-hover);
@@ -411,7 +402,7 @@ body.public-nav-open {
 .nav-drawer-btn {
   width: 100%;
   justify-content: center;
-  min-height: 3rem;
+  min-height: 3.25rem;
   font-size: 1rem;
 }
 
@@ -571,16 +562,12 @@ body.public-nav-open {
   .nav-public-actions-desktop {
     display: none;
   }
-  .nav-public-backdrop {
-    display: block;
-  }
-  .nav-public-drawer {
+  .nav-mobile-screen {
     display: flex;
+    flex-direction: column;
   }
-  .nav-public-drawer {
-    top: 3.25rem;
-    max-height: calc(100vh - 3.25rem);
-    border-radius: 0 0 16px 16px;
+  .nav-public {
+    z-index: 400;
   }
 
   .user-sidebar,
