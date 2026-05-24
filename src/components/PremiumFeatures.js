@@ -2,6 +2,7 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useIdleLogout } from '../hooks/useIdleLogout';
 import WhatsAppFloat from './WhatsAppFloat';
+import TelegramFloat from './TelegramFloat';
 import LiveChatWidget from './LiveChatWidget';
 import NotificationToasts from './NotificationToasts';
 
@@ -15,7 +16,12 @@ const PremiumFeatures = () => {
   useIdleLogout(show);
 
   if (!show && !isPublicAuth) {
-    return <WhatsAppFloat />;
+    return (
+      <>
+        <WhatsAppFloat />
+        <TelegramFloat />
+      </>
+    );
   }
 
   return (
@@ -23,11 +29,17 @@ const PremiumFeatures = () => {
       {show && (
         <>
           <WhatsAppFloat />
+          <TelegramFloat />
           <LiveChatWidget />
           <NotificationToasts />
         </>
       )}
-      {!show && <WhatsAppFloat />}
+      {!show && (
+        <>
+          <WhatsAppFloat />
+          <TelegramFloat />
+        </>
+      )}
     </>
   );
 };

@@ -1,5 +1,6 @@
 /** Register service worker when PWA is enabled in admin settings */
 export function registerServiceWorker(enabled) {
+  if (process.env.NODE_ENV !== 'production') return;
   if (!enabled || !('serviceWorker' in navigator)) return;
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -7,7 +8,7 @@ export function registerServiceWorker(enabled) {
 }
 
 export function updateManifestMeta(settings) {
-  const name = settings.site_name || 'SMM Panel';
+  const name = settings.site_name || 'ABHAYSMM PANEL';
   document.title = name;
   let themeMeta = document.querySelector('meta[name="theme-color"]');
   if (!themeMeta) {

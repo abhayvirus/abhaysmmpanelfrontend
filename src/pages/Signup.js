@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { signup } from '../api';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import PasswordInput from '../components/PasswordInput';
+import { isGoogleConfigured } from '../config/google';
+import AuthBrandHeader from '../components/AuthBrandHeader';
+import { BRAND } from '../config/brand';
 
 const Signup = () => {
   const [name, setName] = useState('');
@@ -41,10 +45,10 @@ const Signup = () => {
 
   return (
     <div style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.logo}>🚀</div>
-        <h2 style={styles.title}>Account Banao</h2>
-        <p style={styles.subtitle}>SMM Panel join karo</p>
+      <div className="card auth-card" style={styles.card}>
+        <AuthBrandHeader />
+        <h2 className="auth-heading">Create Account</h2>
+        <p className="auth-subheading">Join {BRAND.name}</p>
 
         {error && <div style={styles.error}>{error}</div>}
         {success && <div style={styles.success}>{success}</div>}
@@ -72,15 +76,22 @@ const Signup = () => {
 
         <div style={styles.inputGroup}>
           <label style={styles.label}>Password</label>
-          <input
-            type="password"
+          <PasswordInput
             placeholder="Min 6 characters"
             value={password}
-            onChange={e => setPassword(e.target.value)}
-            style={styles.input}
-            onKeyDown={e => e.key === 'Enter' && handleSignup()}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSignup()}
+            inputStyle={styles.input}
+            autoComplete="new-password"
           />
         </div>
+
+        {isGoogleConfigured() && (
+          <>
+            <GoogleLoginButton style={{ marginBottom: 16 }} />
+            <div style={{ textAlign: 'center', margin: '8px 0 16px', color: '#8ca0b8' }}>OR</div>
+          </>
+        )}
 
         <button
           onClick={handleSignup}
@@ -89,8 +100,6 @@ const Signup = () => {
         >
           {loading ? 'Creating...' : 'Create Account'}
         </button>
-        <div style={{ textAlign: 'center', margin: '16px 0', color: '#8ca0b8' }}>OR</div>
-        <GoogleLoginButton />
 
         <p style={styles.bottomText}>
           Pehle se account hai?{' '}

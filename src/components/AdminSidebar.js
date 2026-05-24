@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ mobileOpen = false, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -22,26 +22,65 @@ const AdminSidebar = () => {
     { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
   ];
 
+  const pathRef = React.useRef(location.pathname);
+  React.useEffect(() => {
+    if (pathRef.current !== location.pathname) {
+      pathRef.current = location.pathname;
+      onClose?.();
+    }
+  }, [location.pathname, onClose]);
+
+  const logout = async () => {
+    try {
+      const { isFirebaseConfigured, getFirebaseAuth } = await import('../firebase');
+      if (isFirebaseConfigured()) {
+        const { signOut } = await import('firebase/auth');
+        const auth = getFirebaseAuth();
+        if (auth) await signOut(auth);
+      }
+    } catch (_) { /* optional */ }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login', { replace: true });
+  };
+
   return (
-    <aside style={{ width: 'var(--sidebar-w)', minHeight: '100vh', background: 'var(--bg-card)', borderRight: '1px solid var(--border)', position: 'fixed', left: 0, top: 0, zIndex: 100, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border)' }}>
-        <span style={{ fontSize: 18, fontWeight: 800 }}>👑 Admin Panel</span>
-      </div>
-      <nav style={{ flex: 1, padding: 12 }}>
-        {links.map((l) => (
-          <Link key={l.to} to={l.to} style={{
-            display: 'flex', gap: 10, padding: '11px 14px', borderRadius: 10, marginBottom: 4,
-            textDecoration: 'none', fontSize: 14, fontWeight: 500,
-            color: location.pathname === l.to ? '#fff' : 'var(--text-muted)',
-            background: location.pathname === l.to ? 'var(--bg-hover)' : 'transparent',
-          }}>
-            {l.icon} {l.label}
+    <>
+      <button
+        type="button"
+        className={`sidebar-overlay${mobileOpen ? ' visible' : ''}`}
+        onClick={onClose}
+        aria-label="Close menu"
+      />
+      <aside className={`admin-sidebar${mobileOpen ? ' open' : ''}`}>
+        <div className="admin-sidebar-brand">
+          <span style={{ fontSize: 18, fontWeight: 800 }}>👑 ABHAYSMM Admin</span>
+          <button type="button" className="sidebar-close-mobile" onClick={onClose} aria-label="Close">✕</button>
+        </div>
+
+        <nav className="admin-sidebar-nav">
+          {links.map((l) => (
+            <Link
+              key={l.to}
+              to={l.to}
+              className={`admin-sidebar-link${location.pathname === l.to ? ' active' : ''}`}
+            >
+              <span aria-hidden="true">{l.icon}</span>
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
+        <div className="admin-sidebar-footer">
+          <Link to="/dashboard" className="admin-sidebar-user-link" onClick={onClose}>
+            ← User Panel
           </Link>
-        ))}
-      </nav>
-      <Link to="/dashboard" style={{ margin: 12, fontSize: 13, color: 'var(--primary)' }}>← User Panel</Link>
-      <button className="btn btn-danger btn-sm" style={{ margin: 12 }} onClick={() => { localStorage.clear(); navigate('/login'); }}>Logout</button>
-    </aside>
+          <button type="button" className="btn btn-danger btn-sm admin-sidebar-logout" onClick={logout}>
+            Logout
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 

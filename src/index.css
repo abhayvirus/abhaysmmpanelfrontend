@@ -1,18 +1,17 @@
 :root {
-  --bg: #070b12;
-  --bg-card: #0f1623;
-  --bg-hover: #151f30;
-  --border: #1e2d42;
-  --text: #e8edf5;
-  --text-muted: #8b9cb3;
-  --primary: #6366f1;
-  --primary-glow: rgba(99, 102, 241, 0.35);
-  --accent: #a855f7;
-  --bg-hover: #151f30;
+  --bg: #050a14;
+  --bg-card: #0c1526;
+  --bg-hover: #12203a;
+  --border: #1e3a5f;
+  --text: #e8f0fe;
+  --text-muted: #7b9cc8;
+  --primary: #2563eb;
+  --primary-glow: rgba(37, 99, 235, 0.4);
+  --accent: #0ea5e9;
   --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+  --gradient: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #0ea5e9 100%);
   --sidebar-w: 260px;
   --radius: 12px;
   --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
@@ -119,6 +118,12 @@ tr:hover td { background: rgba(99,102,241,0.05); }
 .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 16px; }
 .hero h1 span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .hero p { color: var(--text-muted); font-size: 18px; max-width: 560px; margin-bottom: 32px; }
+.hero-badge {
+  display: inline-block; padding: 8px 16px; border-radius: 24px; font-size: 13px; font-weight: 600;
+  background: rgba(37, 99, 235, 0.15); color: var(--accent); margin-bottom: 16px;
+}
+.card-hover { transition: transform 0.2s, border-color 0.2s; }
+.card-hover:hover { transform: translateY(-4px); border-color: var(--primary); }
 
 @media (max-width: 900px) {
   .settings-admin-grid { grid-template-columns: 1fr !important; }
@@ -205,8 +210,281 @@ tr:hover td { background: rgba(99,102,241,0.05); }
 .toast-item { padding: 12px 16px; cursor: pointer; animation: fadeIn 0.3s ease; }
 .lang-select { max-width: 72px; padding: 6px 8px; font-size: 12px; }
 .admin-main { margin-left: var(--sidebar-w); min-height: 100vh; padding: 32px 40px; width: calc(100% - var(--sidebar-w)); }
+
+/* Admin sidebar — scrollable nav + fixed logout footer */
+.admin-sidebar {
+  width: var(--sidebar-w);
+  height: 100vh;
+  background: var(--bg-card);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+}
+.admin-sidebar-brand {
+  flex-shrink: 0;
+  padding: 24px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.admin-sidebar-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px;
+}
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: background 0.15s, color 0.15s;
+}
+.admin-sidebar-link:hover {
+  color: var(--text);
+  background: var(--bg-hover);
+}
+.admin-sidebar-link.active {
+  color: #fff;
+  background: var(--bg-hover);
+}
+.admin-sidebar-footer {
+  flex-shrink: 0;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.admin-sidebar-user-link {
+  font-size: 13px;
+  color: var(--primary);
+  text-decoration: none;
+  padding: 0 4px;
+}
+.admin-sidebar-user-link:hover { text-decoration: underline; }
+.admin-sidebar-logout {
+  width: 100%;
+  margin: 0 !important;
+}
 .mini-chart { display: flex; align-items: flex-end; gap: 6px; height: 120px; margin-top: 16px; }
 .mini-chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
 .mini-chart-bar { width: 100%; min-height: 4px; border-radius: 4px 4px 0 0; margin-top: auto; }
 .mini-chart-label { font-size: 9px; color: var(--text-muted); margin-top: 4px; }
 .auth-page { min-height: 100vh; background: var(--bg); }
+
+/* ABHAYSMM loader */
+.app-loader {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+}
+.app-loader-inner { text-align: center; }
+.loader-ring {
+  width: 56px; height: 56px; margin: 0 auto 24px;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Password show/hide */
+.password-field { position: relative; width: 100%; }
+.password-field .input,
+.password-field input { width: 100%; padding-right: 44px; }
+.password-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.password-toggle:hover { color: var(--text); }
+
+/* Auth pages */
+.auth-card {
+  padding: 2rem 2rem 2.25rem !important;
+}
+.auth-brand-header {
+  text-align: center;
+  margin-bottom: 1.25rem;
+}
+.auth-brand-header .auth-brand-logo {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-bottom: 0.75rem;
+}
+.auth-brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.auth-brand-tagline {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin: 0;
+  letter-spacing: 0.06em;
+}
+.auth-heading {
+  text-align: center;
+  font-size: 1.375rem;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+}
+.auth-subheading {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0 0 1.5rem;
+}
+
+/* Google Sign-In — custom premium button */
+.google-signin-root {
+  width: 100%;
+}
+.google-signin-custom {
+  position: relative;
+  width: 100%;
+  min-height: 3rem;
+}
+.btn-google {
+  width: 100%;
+  min-height: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border);
+  background: var(--bg-hover);
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: none;
+}
+.btn-google-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+}
+.google-signin-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  opacity: 0.011;
+  overflow: hidden;
+  border-radius: 0.625rem;
+  cursor: pointer;
+}
+.google-signin-overlay > div {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 3rem !important;
+}
+.google-signin-overlay iframe {
+  width: 100% !important;
+  min-height: 3rem !important;
+  margin: 0 !important;
+}
+
+/* Circular brand logo */
+.brand-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.brand-logo-circle {
+  border-radius: 50%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  object-position: center center;
+  flex-shrink: 0;
+  border: 2px solid rgba(201, 168, 124, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 8px 24px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(37, 99, 235, 0.15);
+  background: #141820;
+}
+.auth-brand-header .brand-logo-circle {
+  width: 5.5rem !important;
+  height: 5.5rem !important;
+  object-position: center 42%;
+}
+.brand-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  min-width: 0;
+}
+.brand-logo-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: var(--gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.brand-logo-sub {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+.hero-logo-wrap {
+  margin-bottom: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+.hero-logo-wrap .brand-logo-circle {
+  width: 8.75rem !important;
+  height: 8.75rem !important;
+  border-width: 3px;
+}
+.brand-logo-wrap--icon-only {
+  gap: 0;
+}
+.nav-brand-logo .brand-logo-circle {
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  object-position: center 40%;
+}
+.nav-brand-logo .brand-logo-title {
+  font-size: 1rem;
+}
+.home-stats .stat-value {
+  font-variant-numeric: tabular-nums;
+}
+
+.telegram-float {
+  position: fixed; bottom: 24px; right: 88px; z-index: 999;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #229ed9; color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 24px; box-shadow: 0 8px 24px rgba(34, 158, 217, 0.45); text-decoration: none;
+}

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api',
+  timeout: 12000,
 });
 
 API.interceptors.request.use((config) => {
@@ -14,7 +15,7 @@ API.interceptors.response.use(
   (res) => res,
   (err) => {
     const authUrl = err.config?.url || '';
-    if (err.response?.status === 401 && !authUrl.includes('/auth/login') && !authUrl.includes('/auth/firebase')) {
+    if (err.response?.status === 401 && !authUrl.includes('/auth/login') && !authUrl.includes('/auth/firebase') && !authUrl.includes('/auth/google')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (!window.location.pathname.includes('/login')) {
@@ -25,14 +26,18 @@ API.interceptors.response.use(
   }
 );
 
-export const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5000';
+export const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 // Auth
 export const login = (data) => API.post('/auth/login', data);
 export const signup = (data) => API.post('/auth/signup', data);
-/** Firebase Google: send ID token from signInWithPopup */
+/** Google Sign-In: send ID token from @react-oauth/google */
+export const googleLogin = (idToken) => API.post('/auth/google', { idToken });
+/** Legacy Firebase route */
 export const firebaseLogin = (idToken) => API.post('/auth/firebase', { idToken });
 export const getMe = () => API.get('/auth/me');
+export const updateProfile = (data) => API.put('/auth/profile', data);
+export const changePassword = (data) => API.put('/auth/change-password', data);
 export const forgotPassword = (email) => API.post('/auth/forgot-password', { email });
 export const resetPassword = (data) => API.post('/auth/reset-password', data);
 export const verifyEmail = (token) => API.get('/auth/verify-email', { params: { token } });
@@ -129,7 +134,7 @@ export const adminGetAllOrders = () => API.get('/orders/admin/all');
 export const adminUpdateOrderStatus = (id, status) => API.put(`/admin/orders/${id}/status`, { status });
 export const adminGetServices = () => API.get('/services/admin/all');
 export const adminSyncServices = (provider_id) => API.post('/services/admin/sync', { provider_id });
-export const adminProviderStatus = (provider_id) => API.get('/services/admin/provider-status', { params: { provider_id } } });
+export const adminProviderStatus = (provider_id) => API.get('/services/admin/provider-status', { params: { provider_id } });
 export const adminUpdateService = (id, data) => API.put(`/services/admin/${id}`, data);
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);

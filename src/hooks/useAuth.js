@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithPopup, signOut } from 'firebase/auth';
-import { auth, googleProvider } from '../firebase';
+import { isFirebaseConfigured, getFirebaseAuth, getGoogleProvider } from '../firebase';
 import { firebaseLogin } from '../api';
 
 /**
@@ -23,6 +23,19 @@ export function useAuth() {
   );
 
   const loginWithGoogle = useCallback(async () => {
+    if (!isFirebaseConfigured()) {
+      const message = 'Google sign-in is not configured. Use email and password, or add Firebase keys to Frontend/.env';
+      setError(message);
+      throw new Error(message);
+    }
+    const auth = getFirebaseAuth();
+    const googleProvider = getGoogleProvider();
+    if (!auth || !googleProvider) {
+      const message = 'Google sign-in is unavailable';
+      setError(message);
+      throw new Error(message);
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -46,10 +59,13 @@ export function useAuth() {
   }, [persistSession]);
 
   const logout = useCallback(async () => {
-    try {
-      await signOut(auth);
-    } catch (_) {
-      /* ignore */
+    if (isFirebaseConfigured()) {
+      try {
+        const auth = getFirebaseAuth();
+        if (auth) await signOut(auth);
+      } catch (_) {
+        /* ignore */
+      }
     }
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -66,6 +82,7 @@ export function useAuth() {
     setError,
     isAuthenticated,
     persistSession,
+    googleEnabled: isFirebaseConfigured(),
   };
 }
 

@@ -1,18 +1,19 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getPublicSettings } from '../api';
 import { registerServiceWorker, updateManifestMeta } from '../utils/pwa';
+import { BRAND } from '../config/brand';
 
 const SettingsContext = createContext(null);
 
 const DEFAULTS = {
-  site_name: 'SMM Panel',
-  site_tagline: '',
+  site_name: BRAND.name,
+  site_tagline: BRAND.tagline,
   site_logo: '',
   currency_symbol: '₹',
   currency_code: 'INR',
-  theme_primary: '#6366f1',
-  theme_accent: '#a855f7',
-  theme_mode: 'dark',
+  theme_primary: BRAND.theme.primary,
+  theme_accent: BRAND.theme.accent,
+  theme_mode: BRAND.theme.mode,
   maintenance_mode: false,
   settings_version: '0',
 };
@@ -41,7 +42,6 @@ export function applyThemeToDocument(settings) {
 
 export function SettingsProvider({ children }) {
   const [settings, setSettings] = useState(DEFAULTS);
-  const [loading, setLoading] = useState(true);
   const [lastVersion, setLastVersion] = useState('0');
 
   const refresh = useCallback(async () => {
@@ -59,12 +59,11 @@ export function SettingsProvider({ children }) {
       registerServiceWorker(data.pwa_enabled !== false);
     } catch (_) {
       applyThemeToDocument(DEFAULTS);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    applyThemeToDocument(DEFAULTS);
     refresh();
     const interval = setInterval(refresh, 20000);
     const onFocus = () => refresh();
@@ -76,7 +75,7 @@ export function SettingsProvider({ children }) {
   }, [refresh]);
 
   return (
-    <SettingsContext.Provider value={{ settings, loading, refresh, lastVersion }}>
+    <SettingsContext.Provider value={{ settings, loading: false, refresh, lastVersion }}>
       {children}
     </SettingsContext.Provider>
   );

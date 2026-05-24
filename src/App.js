@@ -1,5 +1,7 @@
 import React from 'react';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { GOOGLE_CLIENT_ID, isGoogleConfigured } from './config/google';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import PremiumFeatures from './components/PremiumFeatures';
@@ -21,6 +23,7 @@ import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Referrals from './pages/Referrals';
+import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminServices from './pages/AdminServices';
@@ -50,7 +53,7 @@ const AdminRoute = ({ children }) => {
   return children;
 };
 
-function App() {
+function AppRoutes() {
   return (
     <SettingsProvider>
       <LanguageProvider>
@@ -76,6 +79,7 @@ function App() {
             <Route path="/child-panel" element={<ProtectedRoute><ChildPanel /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
@@ -99,6 +103,17 @@ function App() {
       </LanguageProvider>
     </SettingsProvider>
   );
+}
+
+function App() {
+  if (isGoogleConfigured()) {
+    return (
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+        <AppRoutes />
+      </GoogleOAuthProvider>
+    );
+  }
+  return <AppRoutes />;
 }
 
 export default App;

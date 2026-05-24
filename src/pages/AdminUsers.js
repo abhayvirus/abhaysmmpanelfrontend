@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import AdminSidebar from '../components/AdminSidebar';
+import AdminLayout from '../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminDeleteUser } from '../api';
 
 const AdminUsers = () => {
@@ -7,80 +7,109 @@ const AdminUsers = () => {
   const [editing, setEditing] = useState(null);
   const [editData, setEditData] = useState({});
 
-  useEffect(() => { adminGetUsers().then(r => setUsers(r.data)).catch(console.error); }, []);
+  const load = () => adminGetUsers().then((r) => setUsers(r.data)).catch(console.error);
+  useEffect(() => { load(); }, []);
 
-  const startEdit = (user) => { setEditing(user.id); setEditData({ balance: user.balance, status: user.status, role: user.role }); };
+  const startEdit = (user) => {
+    setEditing(user.id);
+    setEditData({ balance: user.balance, status: user.status || 'ACTIVE', role: user.role || 'user' });
+  };
+
   const saveEdit = async (id) => {
     try {
       await adminUpdateUser(id, editData);
-      setUsers(prev => prev.map(u => u.id === id ? { ...u, ...editData } : u));
       setEditing(null);
-    } catch (err) { alert('Failed'); }
+      load();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Update failed');
+    }
   };
 
   return (
-    <div style={{ display: 'flex' }}>
-      <AdminSidebar />
-      <div style={{ marginLeft: 220, minHeight: '100vh', background: '#0d1520', color: '#fff', padding: '32px 40px', width: '100%' }}>
-        <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 28 }}>Users</h1>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #1e2a3a' }}>
-                {['ID', 'Name', 'Email', 'Balance', 'Status', 'Role', 'Joined', 'Action'].map(h => (
-                  <th key={h} style={{ textAlign: 'left', padding: '10px 14px', color: '#8ca0b8', fontSize: 13 }}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <tr key={user.id} style={{ borderBottom: '1px solid #1e2a3a' }}>
-                  <td style={td}>{user.id}</td>
-                  <td style={td}>{user.name}</td>
-                  <td style={td}>{user.email}</td>
-                  <td style={td}>
-                    {editing === user.id
-                      ? <input type="number" value={editData.balance} onChange={e => setEditData(p => ({ ...p, balance: e.target.value }))} style={{ width: 80, padding: '4px 8px', borderRadius: 6, background: '#0d1520', border: '1px solid #6c63ff', color: '#fff', outline: 'none' }} />
-                      : <span style={{ color: '#6c63ff', fontWeight: 700 }}>₹{parseFloat(user.balance).toFixed(2)}</span>}
-                  </td>
-                  <td style={td}>
-                    {editing === user.id
-                      ? <select value={editData.status} onChange={e => setEditData(p => ({ ...p, status: e.target.value }))} style={{ padding: '4px 8px', borderRadius: 6, background: '#0d1520', border: '1px solid #2d3a50', color: '#fff', outline: 'none' }}>
-                          <option>ACTIVE</option><option>BANNED</option>
-                        </select>
-                      : <span style={{ color: user.status === 'ACTIVE' ? '#2ecc71' : '#e74c3c', fontWeight: 600 }}>{user.status}</span>}
-                  </td>
-                  <td style={td}>
-                    {editing === user.id
-                      ? <select value={editData.role} onChange={e => setEditData(p => ({ ...p, role: e.target.value }))} style={{ padding: '4px 8px', borderRadius: 6, background: '#0d1520', border: '1px solid #2d3a50', color: '#fff', outline: 'none' }}>
-                          <option>user</option><option>admin</option>
-                        </select>
-                      : <span style={{ color: user.role === 'admin' ? '#f39c12' : '#8ca0b8' }}>{user.role}</span>}
-                  </td>
-                  <td style={{ ...td, fontSize: 12, color: '#8ca0b8' }}>{new Date(user.created_at).toLocaleDateString('en-IN')}</td>
-                  <td style={td}>
-                    {editing === user.id
-                      ? <div style={{ display: 'flex', gap: 6 }}>
-                          <button onClick={() => saveEdit(user.id)} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: '#2ecc71', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Save</button>
-                          <button onClick={() => setEditing(null)} style={{ padding: '5px 12px', borderRadius: 6, border: 'none', background: '#e74c3c', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Cancel</button>
-                        </div>
-                      : <div style={{ display: 'flex', gap: 6 }}>
-                          <button onClick={() => startEdit(user)} style={{ padding: '5px 14px', borderRadius: 6, border: 'none', background: '#1e2a3a', color: '#fff', cursor: 'pointer', fontSize: 12 }}>Edit</button>
-                          {user.role !== 'admin' && (
-                            <button onClick={() => window.confirm('Delete user?') && adminDeleteUser(user.id).then(() => adminGetUsers().then(r => setUsers(r.data)))} style={{ padding: '5px 10px', borderRadius: 6, border: 'none', background: '#3a1a1a', color: '#f87171', cursor: 'pointer', fontSize: 12 }}>Delete</button>
-                          )}
-                        </div>}
-                  </td>
-                </tr>
+    <AdminLayout>
+      <h1 style={{ marginBottom: 24 }}>User Management</h1>
+      <div className="table-wrap card">
+        <table className="table">
+          <thead>
+            <tr>
+              {['ID', 'Name', 'Email', 'Balance', 'Status', 'Role', 'Joined', 'Actions'].map((h) => (
+                <th key={h}>{h}</th>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          </thead>
+          <tbody>
+            {users.map((user) => (
+              <tr key={user.id}>
+                <td>{user.id}</td>
+                <td>{user.name}</td>
+                <td>{user.email}</td>
+                <td>
+                  {editing === user.id ? (
+                    <input
+                      type="number"
+                      className="input"
+                      style={{ width: 90 }}
+                      value={editData.balance}
+                      onChange={(e) => setEditData((p) => ({ ...p, balance: e.target.value }))}
+                    />
+                  ) : (
+                    <strong style={{ color: 'var(--primary)' }}>₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
+                  )}
+                </td>
+                <td>
+                  {editing === user.id ? (
+                    <select className="select" value={editData.status} onChange={(e) => setEditData((p) => ({ ...p, status: e.target.value }))}>
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="BANNED">BANNED</option>
+                    </select>
+                  ) : (
+                    <span className={`badge ${user.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>{user.status}</span>
+                  )}
+                </td>
+                <td>
+                  {editing === user.id ? (
+                    <select className="select" value={editData.role} onChange={(e) => setEditData((p) => ({ ...p, role: e.target.value }))}>
+                      <option value="user">user</option>
+                      <option value="admin">admin</option>
+                    </select>
+                  ) : (
+                    user.role
+                  )}
+                </td>
+                <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
+                </td>
+                <td>
+                  {editing === user.id ? (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button type="button" className="btn btn-primary btn-sm" onClick={() => saveEdit(user.id)}>Save</button>
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEditing(null)}>Cancel</button>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => startEdit(user)}>Edit</button>
+                      {user.role !== 'admin' && (
+                        <button
+                          type="button"
+                          className="btn btn-danger btn-sm"
+                          onClick={() => window.confirm('Delete user?') && adminDeleteUser(user.id).then(load)}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+            {!users.length && (
+              <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No users</td></tr>
+            )}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
-
-const td = { padding: '13px 14px', fontSize: 13, color: '#d0d8e8' };
 
 export default AdminUsers;

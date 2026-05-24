@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 120 120" role="img" aria-label="ABHAYSMM PANEL">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8c9a0"/>
+      <stop offset="50%" stop-color="#b8860b"/>
+      <stop offset="100%" stop-color="#8b6914"/>
+    </linearGradient>
+    <clipPath id="clip">
+      <circle cx="60" cy="60" r="52"/>
+    </clipPath>
+  </defs>
+  <circle cx="60" cy="60" r="58" fill="#141820" stroke="url(#gold)" stroke-width="3"/>
+  <image xlink:href="/logo.png" x="8" y="8" width="104" height="104" clip-path="url(#clip)" preserveAspectRatio="xMidYMid slice"/>
+</svg>

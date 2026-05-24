@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../api';
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import PasswordInput from '../components/PasswordInput';
+import { isGoogleConfigured } from '../config/google';
+import AuthBrandHeader from '../components/AuthBrandHeader';
+import { BRAND } from '../config/brand';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -41,18 +45,31 @@ const Login = () => {
 
   return (
     <div style={styles.page}>
-      <div className="card fade-in" style={styles.card}>
-        <div style={{ textAlign: 'center', fontSize: 40, marginBottom: 8 }}>⚡</div>
-        <h2 style={{ textAlign: 'center', marginBottom: 8 }}>Welcome Back</h2>
-        <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: 28 }}>Sign in to your SMM panel</p>
+      <div className="card fade-in auth-card" style={styles.card}>
+        <AuthBrandHeader />
+        <h2 className="auth-heading">Welcome Back</h2>
+        <p className="auth-subheading">Sign in to {BRAND.name}</p>
         {error && <div className="alert alert-error">{error}</div>}
+
+        {isGoogleConfigured() && (
+          <>
+            <GoogleLoginButton />
+            <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>OR</div>
+          </>
+        )}
+
         <div className="form-group">
           <label className="label">Email</label>
           <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
         </div>
         <div className="form-group">
           <label className="label">Password</label>
-          <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+          <PasswordInput
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+            placeholder="Your password"
+          />
         </div>
         {otpRequired && (
           <div className="form-group">
@@ -64,8 +81,6 @@ const Login = () => {
         <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading} onClick={handleLogin}>
           {loading ? 'Signing in...' : 'Sign In'}
         </button>
-        <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>OR</div>
-        <GoogleLoginButton />
         <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)' }}>
           No account? <Link to="/signup">Create one</Link>
         </p>

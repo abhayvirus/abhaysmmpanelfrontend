@@ -5,8 +5,8 @@ const SuccessModal = ({ open, onClose, title, message, type = 'success' }) => {
   const isPending = type === 'pending';
 
   return (
-    <div style={overlay} onClick={onClose}>
-      <div className="card fade-in" style={{ maxWidth: 400, textAlign: 'center', padding: 32 }} onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div className="card fade-in modal-panel" style={{ textAlign: 'center', padding: 32 }} onClick={(e) => e.stopPropagation()} role="dialog">
         <div style={{ fontSize: 48, marginBottom: 16 }}>{isPending ? '⏳' : '✅'}</div>
         <h2 style={{ marginBottom: 12 }}>{title}</h2>
         <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{message}</p>
@@ -17,11 +17,6 @@ const SuccessModal = ({ open, onClose, title, message, type = 'success' }) => {
       </div>
     </div>
   );
-};
-
-const overlay = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10001,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
 };
 
 export default SuccessModal;

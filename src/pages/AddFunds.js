@@ -153,7 +153,7 @@ const AddFunds = () => {
 
   return (
     <UserLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 28 }}>
+      <div className="page-header">
         <div>
           <h1 style={{ marginBottom: 8 }}>Add Funds</h1>
           <p style={{ color: 'var(--text-muted)' }}>Razorpay instant pay or QR + UTR verification</p>
@@ -211,7 +211,7 @@ const AddFunds = () => {
         <div className="card">
           <h3 className="card-title">📱 QR Payment</h3>
           {qrUrl ? (
-            <img src={qrUrl} alt="QR" style={{ width: '100%', maxWidth: 200, borderRadius: 12, marginBottom: 12 }} />
+            <img src={qrUrl} alt="QR" className="qr-payment-img" loading="lazy" />
           ) : (
             <div style={{ padding: 32, background: 'var(--bg)', borderRadius: 12, textAlign: 'center', marginBottom: 12, color: 'var(--text-muted)' }}>
               QR not configured
