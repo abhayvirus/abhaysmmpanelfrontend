@@ -4,6 +4,10 @@
   "outputDirectory": "build",
   "installCommand": "npm install",
   "framework": "create-react-app",
+  "env": {
+    "REACT_APP_API_URL": "https://api.abhaysmmpanel.in/api",
+    "REACT_APP_GOOGLE_CLIENT_ID": "823492481609-3isf05i8640jdang6inl3v0tmgie663r.apps.googleusercontent.com"
+  },
   "rewrites": [
     { "source": "/((?!static/).*)", "destination": "/index.html" }
   ]
