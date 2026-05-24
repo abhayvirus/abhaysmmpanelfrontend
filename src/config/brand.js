@@ -5,14 +5,15 @@ export const BRAND = {
   domain: 'https://abhaysmmpanel.in',
   tagline: 'India\'s Premium Social Media Marketing Panel — Fast, Secure & Affordable',
   supportEmail: 'support@abhaysmmpanel.in',
+  logo: '/logo.png',
+  appScreenshot: '/appscreenshot.jpeg',
+  whatsappQr: '/whatsapgroupqr.jpeg',
+  whatsappGroupUrl: 'https://chat.whatsapp.com/LqjQV2tmqlt2PUoTxDMho2?s=qt&p=a&mlu=4',
   theme: {
     primary: '#2563eb',
     accent: '#0ea5e9',
     mode: 'dark',
   },
-  logo: '/logo.png',
-  logoSvg: '/logo.svg',
-  /** Landing page minimum display counts (marketing) */
   marketingStats: {
     totalOrders: 10000,
     totalUsers: 10000,

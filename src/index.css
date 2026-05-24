@@ -166,9 +166,99 @@ tr:hover td { background: rgba(99,102,241,0.05); }
 .download-steps { padding-left: 20px; color: var(--text-muted); line-height: 1.8; }
 .download-steps li { margin-bottom: 8px; }
 
+.download-store-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+.download-store-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+}
+.download-store-btn--active {
+  border-color: var(--primary);
+  background: linear-gradient(135deg, rgba(37,99,235,0.2), rgba(14,165,233,0.12));
+}
+.download-store-btn--active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px var(--primary-glow);
+}
+.download-store-btn--soon {
+  opacity: 0.85;
+}
+.download-store-btn--soon:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.download-store-icon { font-size: 1.75rem; flex-shrink: 0; }
+.download-store-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.download-store-text strong { font-size: 0.95rem; }
+.download-store-text small { font-size: 0.75rem; color: var(--text-muted); }
+.download-actions-secondary { display: flex; flex-wrap: wrap; gap: 10px; }
+.download-pwa-btn { width: 100%; }
+.download-toast {
+  position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+  z-index: 200; background: var(--bg-card); border: 1px solid var(--primary);
+  padding: 12px 20px; border-radius: 12px; font-size: 14px; max-width: 90vw;
+  box-shadow: var(--shadow);
+}
+.download-whatsapp-section {
+  max-width: 1000px;
+  margin: 0 auto 24px;
+  padding: 28px 24px;
+}
+.download-whatsapp-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: center;
+}
+.download-whatsapp-qr-wrap { text-align: center; }
+.download-whatsapp-qr {
+  width: 200px;
+  max-width: 100%;
+  border-radius: 16px;
+  border: 4px solid #fff;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35);
+}
+.download-whatsapp-qr-hint {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.download-footer {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+.download-section.card {
+  max-width: 900px;
+  margin: 0 auto 24px;
+  padding: 28px 24px;
+}
+
 @media (max-width: 768px) {
-  .download-hero { grid-template-columns: 1fr; text-align: center; }
-  .download-actions { justify-content: center; }
+  .download-hero { grid-template-columns: 1fr; text-align: center; padding: 32px 16px; }
+  .download-store-grid { grid-template-columns: 1fr; }
+  .download-actions-secondary { justify-content: center; }
+  .download-whatsapp-grid { grid-template-columns: 1fr; text-align: center; }
+  .download-whatsapp-qr { width: min(220px, 80vw); }
+  .download-phone-mock { max-width: min(280px, 85vw); }
 }
 
 /* Premium features */
