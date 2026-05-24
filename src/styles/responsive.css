@@ -6,6 +6,16 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrap table {
+  min-width: 560px;
+}
+
 img, video {
   max-width: 100%;
   height: auto;
@@ -625,6 +635,16 @@ body.mobile-menu-open {
     left: 0.75rem;
     right: 0.75rem;
     max-width: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .card > table,
+  .card table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

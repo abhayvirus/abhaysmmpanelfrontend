@@ -1,9 +1,14 @@
 import axios from 'axios';
+import { API_URL, API_BASE } from './config/env';
+
+export { API_BASE };
 
 const API = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5001/api',
-  timeout: 12000,
+  baseURL: API_URL,
+  timeout: 20000,
 });
+
+const AUTH_PUBLIC = ['/auth/login', '/auth/signup', '/auth/google', '/auth/firebase', '/auth/forgot-password', '/auth/reset-password'];
 
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -15,7 +20,8 @@ API.interceptors.response.use(
   (res) => res,
   (err) => {
     const authUrl = err.config?.url || '';
-    if (err.response?.status === 401 && !authUrl.includes('/auth/login') && !authUrl.includes('/auth/firebase') && !authUrl.includes('/auth/google')) {
+    const isPublicAuth = AUTH_PUBLIC.some((p) => authUrl.includes(p));
+    if (err.response?.status === 401 && !isPublicAuth) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       if (!window.location.pathname.includes('/login')) {
@@ -25,8 +31,6 @@ API.interceptors.response.use(
     return Promise.reject(err);
   }
 );
-
-export const API_BASE = process.env.REACT_APP_API_URL?.replace('/api', '') || 'http://localhost:5001';
 
 // Auth
 export const login = (data) => API.post('/auth/login', data);
@@ -88,7 +92,7 @@ export const cancelOrder = (id) => API.post(`/orders/${id}/cancel`);
 export const submitUtrPayment = (formData) => API.post('/payments/utr', formData, {
   headers: { 'Content-Type': 'multipart/form-data' },
 });
-export const addFundsRequest = submitUtrPayment; // legacy alias
+export const addFundsRequest = submitUtrPayment;
 export const getPaymentInfo = () => API.get('/wallet/payment-info');
 export const getFundRequests = () => API.get('/payments/history');
 export const getTransactions = () => API.get('/wallet/transactions');
