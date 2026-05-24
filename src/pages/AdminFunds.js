@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import {
   adminGetAllPayments,
@@ -14,11 +14,11 @@ const AdminFunds = () => {
   const [viewImage, setViewImage] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
 
-  const load = () => {
+  const load = useCallback(() => {
     adminGetAllPayments(filter === 'all' ? 'all' : filter).then((r) => setPayments(r.data)).catch(() => {});
-  };
+  }, [filter]);
 
-  useEffect(() => { load(); }, [filter]);
+  useEffect(() => { load(); }, [load]);
 
   const approve = async (id) => {
     setActionLoading(id);

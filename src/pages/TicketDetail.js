@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import { getTicket, replyTicket } from '../api';
@@ -8,8 +8,11 @@ const TicketDetail = () => {
   const [data, setData] = useState({ ticket: {}, messages: [] });
   const [reply, setReply] = useState('');
 
-  const load = () => getTicket(id).then((r) => setData(r.data));
-  useEffect(() => { load(); }, [id]);
+  const load = useCallback(() => {
+    getTicket(id).then((r) => setData(r.data));
+  }, [id]);
+
+  useEffect(() => { load(); }, [load]);
 
   const send = async () => {
     await replyTicket(id, reply);

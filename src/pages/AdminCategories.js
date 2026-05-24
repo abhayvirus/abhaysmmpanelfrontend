@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { adminGetCategories, adminCreateCategory, adminUpdateCategory, adminDeleteCategory } from '../api';
+import { adminGetCategories, adminCreateCategory, adminDeleteCategory } from '../api';
 
 const AdminCategories = () => {
   const [cats, setCats] = useState([]);

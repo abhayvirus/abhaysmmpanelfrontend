@@ -27,7 +27,7 @@ const TABS = [
 const AdminSettings = () => {
   const { refresh: refreshGlobalSettings } = useSettings();
   const [tab, setTab] = useState('general');
-  const [settings, setSettings] = useState({});
+  const [, setSettings] = useState({});
   const [draft, setDraft] = useState({});
   const [providers, setProviders] = useState([]);
   const [announcements, setAnnouncements] = useState([]);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getChatMessages, sendChatMessage } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -13,17 +13,17 @@ const LiveChatWidget = () => {
   const bottom = useRef(null);
   const token = localStorage.getItem('token');
 
-  const load = () => {
+  const load = useCallback(() => {
     if (!token) return;
     getChatMessages().then((r) => setMsgs(r.data)).catch(() => {});
-  };
+  }, [token]);
 
   useEffect(() => {
     if (!open || !token) return undefined;
     load();
     const id = setInterval(load, 5000);
     return () => clearInterval(id);
-  }, [open, token]);
+  }, [open, token, load]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: 'smooth' });
