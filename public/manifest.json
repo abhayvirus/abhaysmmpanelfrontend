@@ -4,6 +4,18 @@
   "description": "Premium SMM panel — abhaysmmpanel.in",
   "icons": [
     {
+      "src": "favicon.svg",
+      "type": "image/svg+xml",
+      "sizes": "any",
+      "purpose": "any"
+    },
+    {
+      "src": "logo.svg",
+      "type": "image/svg+xml",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
       "src": "logo.png",
       "type": "image/png",
       "sizes": "512x512",

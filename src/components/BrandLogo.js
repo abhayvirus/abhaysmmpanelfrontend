@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { API_BASE } from '../api';
+import { BRAND } from '../config/brand';
 
-const DEFAULT_LOGO = `${process.env.PUBLIC_URL}/logo.png`;
+const LOGO_PNG = `${process.env.PUBLIC_URL}${BRAND.logo}`;
+const LOGO_SVG = `${process.env.PUBLIC_URL}${BRAND.logoSvg}`;
 
 const SIZES = {
   xs: 32,
@@ -13,7 +15,7 @@ const SIZES = {
 };
 
 /**
- * Circular brand logo — uses /logo.png or admin-uploaded site_logo
+ * Circular brand logo — logo.png (photo) + logo.svg (vector icon fallback)
  */
 const BrandLogo = ({
   size = 'md',
@@ -22,23 +24,48 @@ const BrandLogo = ({
   siteLogo = '',
   className = '',
   alt = 'ABHAYSMM PANEL',
+  preferSvg = false,
 }) => {
   const px = typeof size === 'number' ? size : (SIZES[size] || SIZES.md);
-  const src = siteLogo ? `${API_BASE}${siteLogo}` : DEFAULT_LOGO;
+  const [imgSrc, setImgSrc] = useState(() => {
+    if (siteLogo) return `${API_BASE}${siteLogo}`;
+    return preferSvg ? LOGO_SVG : LOGO_PNG;
+  });
+
+  const handleError = (e) => {
+    const target = e.currentTarget;
+    if (siteLogo) {
+      if (target.src.includes(LOGO_PNG) || target.src.includes(siteLogo)) {
+        setImgSrc(LOGO_SVG);
+      } else if (!target.src.endsWith(LOGO_PNG)) {
+        setImgSrc(LOGO_PNG);
+      }
+      return;
+    }
+    if (!target.src.endsWith(LOGO_SVG)) {
+      setImgSrc(LOGO_SVG);
+    } else if (!target.src.endsWith(LOGO_PNG)) {
+      setImgSrc(LOGO_PNG);
+    }
+  };
 
   return (
     <span className={`brand-logo-wrap${showText ? '' : ' brand-logo-wrap--icon-only'} ${className}`}>
-      <img
-        src={src}
-        alt={alt}
-        className="brand-logo-circle"
-        width={px}
-        height={px}
-        loading="lazy"
-        onError={(e) => {
-          if (e.target.src !== DEFAULT_LOGO) e.target.src = DEFAULT_LOGO;
-        }}
-      />
+      <picture>
+        {!siteLogo && (
+          <source srcSet={LOGO_SVG} type="image/svg+xml" />
+        )}
+        <img
+          src={imgSrc}
+          alt={alt}
+          className="brand-logo-circle"
+          width={px}
+          height={px}
+          loading="lazy"
+          decoding="async"
+          onError={handleError}
+        />
+      </picture>
       {showText && (
         <span className="brand-logo-text">
           <span className="brand-logo-title">ABHAYSMM</span>
@@ -50,4 +77,4 @@ const BrandLogo = ({
 };
 
 export default BrandLogo;
-export { DEFAULT_LOGO, SIZES };
+export { LOGO_PNG, LOGO_SVG, SIZES };

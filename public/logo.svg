@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="ABHAYSMM PANEL">
+  <defs>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d4a574"/>
+      <stop offset="50%" stop-color="#c9a87c"/>
+      <stop offset="100%" stop-color="#a67c52"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+    <radialGradient id="bg" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#1a2535"/>
+      <stop offset="100%" stop-color="#070b12"/>
+    </radialGradient>
+  </defs>
+  <circle cx="256" cy="256" r="248" fill="url(#bg)" stroke="url(#gold)" stroke-width="8"/>
+  <circle cx="256" cy="256" r="220" fill="none" stroke="url(#gold)" stroke-width="3" opacity="0.6"/>
+  <text x="248" y="310" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="200" font-weight="800" fill="url(#gold)">A</text>
+  <text x="300" y="325" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="155" font-weight="700" fill="url(#blue)">S</text>
+  <path id="arc" d="M 80 340 A 176 176 0 0 1 432 340" fill="none"/>
+  <text font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="url(#gold)" letter-spacing="4">
+    <textPath href="#arc" startOffset="50%" text-anchor="middle">ABHAYSMM PANEL</textPath>
+  </text>
+</svg>

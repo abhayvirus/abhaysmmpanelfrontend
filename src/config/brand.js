@@ -6,6 +6,8 @@ export const BRAND = {
   tagline: 'India\'s Premium Social Media Marketing Panel — Fast, Secure & Affordable',
   supportEmail: 'support@abhaysmmpanel.in',
   logo: '/logo.png',
+  logoSvg: '/logo.svg',
+  favicon: '/favicon.svg',
   appScreenshot: '/appscreenshot.jpeg',
   whatsappQr: '/whatsapgroupqr.jpeg',
   whatsappGroupUrl: 'https://chat.whatsapp.com/LqjQV2tmqlt2PUoTxDMho2?s=qt&p=a&mlu=4',
