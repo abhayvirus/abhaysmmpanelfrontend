@@ -1,14 +1,14 @@
 import axios from 'axios';
 import { API_URL, API_BASE } from './config/env';
+import { isAuthPublicRequest } from './utils/apiError';
 
-export { API_BASE };
+export { API_BASE, API_URL };
 
 const API = axios.create({
   baseURL: API_URL,
-  timeout: 20000,
+  timeout: 25000,
+  headers: { 'Content-Type': 'application/json' },
 });
-
-const AUTH_PUBLIC = ['/auth/login', '/auth/signup', '/auth/google', '/auth/firebase', '/auth/forgot-password', '/auth/reset-password'];
 
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
@@ -19,13 +19,17 @@ API.interceptors.request.use((config) => {
 API.interceptors.response.use(
   (res) => res,
   (err) => {
-    const authUrl = err.config?.url || '';
-    const isPublicAuth = AUTH_PUBLIC.some((p) => authUrl.includes(p));
-    if (err.response?.status === 401 && !isPublicAuth) {
+    // Network/CORS errors have no response — never redirect away from signup/login
+    if (!err.response) {
+      return Promise.reject(err);
+    }
+
+    if (err.response.status === 401 && !isAuthPublicRequest(err.config)) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (!window.location.pathname.includes('/login')) {
-        window.location.href = '/login';
+      const path = window.location.pathname;
+      if (!path.includes('/login') && !path.includes('/signup')) {
+        window.location.replace('/login');
       }
     }
     return Promise.reject(err);

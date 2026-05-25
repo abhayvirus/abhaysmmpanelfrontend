@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { signup } from '../api';
+import { getApiErrorMessage } from '../utils/apiError';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { isGoogleConfigured } from '../config/google';
@@ -32,13 +33,22 @@ const Signup = () => {
       const res = await signup({ name, email, password, referral_code: refCode || undefined });
       if (res.data?.verify_email) {
         setSuccess('Account created! Check your email to verify before login.');
-        setTimeout(() => navigate('/login'), 3000);
+        setTimeout(() => navigate('/login', { replace: true }), 3000);
+        return;
+      }
+      if (res.data?.token && res.data?.user) {
+        localStorage.setItem('token', res.data.token);
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        setSuccess('Welcome! Redirecting to dashboard...');
+        setTimeout(() => {
+          navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+        }, 800);
         return;
       }
       setSuccess('Account created! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 2000);
+      setTimeout(() => navigate('/login', { replace: true }), 2000);
     } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed');
+      setError(getApiErrorMessage(err, 'Signup failed'));
     }
     setLoading(false);
   };

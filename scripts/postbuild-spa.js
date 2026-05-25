@@ -15,3 +15,10 @@ if (!fs.existsSync(index)) {
 
 fs.copyFileSync(index, notFound);
 console.log('[postbuild-spa] Created build/404.html for SPA routing');
+
+const htaccess = path.join(__dirname, '..', 'public', '.htaccess');
+const htaccessBuild = path.join(buildDir, '.htaccess');
+if (fs.existsSync(htaccess)) {
+  fs.copyFileSync(htaccess, htaccessBuild);
+  console.log('[postbuild-spa] Copied .htaccess for Hostinger');
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../api';
+import { getApiErrorMessage } from '../utils/apiError';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { isGoogleConfigured } from '../config/google';
@@ -36,9 +37,9 @@ const Login = () => {
       }
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard');
+      navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(getApiErrorMessage(err, 'Login failed'));
     }
     setLoading(false);
   };
