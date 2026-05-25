@@ -497,6 +497,91 @@ tr:hover td { background: rgba(99,102,241,0.05); }
   margin: 0 0 1.5rem;
 }
 
+/* Auth loading spinner (forgot / reset password) */
+.auth-loading-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.auth-spinner {
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: auth-spin 0.7s linear infinite;
+}
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Add Funds — Razorpay */
+.add-funds-balance-card {
+  min-width: 180px;
+}
+.add-funds-balance-value {
+  font-size: 1.5rem;
+}
+.add-funds-pay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.add-funds-quick-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.add-funds-quick-btn {
+  min-width: 4.5rem;
+  padding: 0.5rem 0.75rem;
+}
+.add-funds-quick-btn--active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(37, 99, 235, 0.12);
+}
+.add-funds-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--bg);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+.add-funds-summary strong {
+  font-size: 1.25rem;
+  color: var(--success);
+}
+.add-funds-pay-btn {
+  width: 100%;
+  min-height: 3rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.add-funds-methods {
+  text-align: center;
+  margin: 14px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+@media (max-width: 640px) {
+  .add-funds-pay-card {
+    padding: 16px !important;
+  }
+  .add-funds-balance-card {
+    width: 100%;
+    margin-top: 12px;
+  }
+}
+
 /* Google Sign-In — custom premium button */
 .google-signin-root {
   width: 100%;

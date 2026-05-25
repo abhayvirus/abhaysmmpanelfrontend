@@ -93,16 +93,15 @@ export const refreshOrderStatus = (id) => API.get(`/orders/status/${id}`);
 export const refillOrder = (id) => API.post(`/orders/${id}/refill`);
 export const cancelOrder = (id) => API.post(`/orders/${id}/cancel`);
 
-// Wallet & payments
-export const submitUtrPayment = (formData) => API.post('/payments/utr', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' },
-});
-export const addFundsRequest = submitUtrPayment;
-export const getPaymentInfo = () => API.get('/wallet/payment-info');
+// Wallet & payments (Razorpay)
+export const getPaymentConfig = () => API.get('/payments/config');
+export const getWalletBalance = () => API.get('/wallet/balance');
+export const createRazorpayOrder = (amount, coupon_code) =>
+  API.post('/payments/create-order', { amount, coupon_code });
+export const verifyRazorpayPayment = (data) => API.post('/payments/verify', data);
+export const verifyRazorpay = verifyRazorpayPayment;
 export const getFundRequests = () => API.get('/payments/history');
 export const getTransactions = () => API.get('/wallet/transactions');
-export const createRazorpayOrder = (amount) => API.post('/payments/razorpay/create-order', { amount });
-export const verifyRazorpay = (data) => API.post('/payments/razorpay/verify', data);
 export const getPaymentHistory = () => API.get('/payments/history');
 export const adminGetAllPayments = (status) => API.get('/payments/admin/all', { params: { status } });
 export const adminGetPendingPayments = () => API.get('/payments/admin/pending');

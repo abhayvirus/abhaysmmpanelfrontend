@@ -59,7 +59,7 @@ const Home = () => {
 
       <section className="home-section">
         <div className="responsive-grid-auto">
-          {['⚡ Instant delivery', '💳 Razorpay & UPI', '🔌 Reseller API', '🎫 24/7 Support'].map((t) => (
+          {['⚡ Instant delivery', '💳 Razorpay Instant Pay', '🔌 Reseller API', '🎫 24/7 Support'].map((t) => (
             <div key={t} className="card" style={{ padding: 20, textAlign: 'center', fontWeight: 600 }}>{t}</div>
           ))}
         </div>
