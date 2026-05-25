@@ -4,7 +4,7 @@ import { login } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
-import { isGoogleConfigured } from '../config/google';
+import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
 import { BRAND } from '../config/brand';
 
@@ -16,6 +16,12 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { enabled: googleEnabled } = useGoogleAuth();
+
+  useEffect(() => {
+    const googleError = new URLSearchParams(window.location.search).get('google_error');
+    if (googleError) setError(googleError);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -52,7 +58,7 @@ const Login = () => {
         <p className="auth-subheading">Sign in to {BRAND.name}</p>
         {error && <div className="alert alert-error">{error}</div>}
 
-        {isGoogleConfigured() && (
+        {googleEnabled && (
           <>
             <GoogleLoginButton />
             <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>OR</div>

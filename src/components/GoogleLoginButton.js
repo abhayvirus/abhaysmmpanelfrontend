@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { googleLogin } from '../api';
+import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -12,11 +13,18 @@ const GoogleIcon = () => (
   </svg>
 );
 
+function finishSession(navigate, data) {
+  localStorage.setItem('token', data.token);
+  localStorage.setItem('user', JSON.stringify(data.user));
+  navigate(data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+}
+
 /**
- * Premium Google sign-in — custom button + hidden official Google layer for clicks
+ * Google sign-in: popup (ID token) + server redirect fallback.
  */
 const GoogleLoginButton = ({ className = '', style = {} }) => {
   const navigate = useNavigate();
+  const { enabled, clientId, oauthStartUrl, loading: configLoading } = useGoogleAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const wrapRef = useRef(null);
@@ -33,6 +41,13 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
     return () => ro.disconnect();
   }, []);
 
+  if (configLoading || !enabled) return null;
+
+  const handleRedirectLogin = () => {
+    setError('');
+    window.location.href = oauthStartUrl;
+  };
+
   const handleSuccess = async (credentialResponse) => {
     const idToken = credentialResponse?.credential;
     if (!idToken) {
@@ -43,15 +58,14 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
     setError('');
     try {
       const { data } = await googleLogin(idToken);
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      navigate(data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+      finishSession(navigate, data);
     } catch (err) {
+      const code = err.response?.data?.code;
       const msg = err.response?.data?.message || err.message || 'Google sign-in failed';
-      if (err.response?.data?.code === 'GOOGLE_NOT_CONFIGURED') {
-        setError('Google login is not configured on the server. Contact admin.');
-      } else if (msg.includes('ETIMEDOUT') || err.response?.status === 500) {
-        setError('Server cannot reach database. Check Render env: DB_HOST, DB_PORT.');
+      if (code === 'GOOGLE_NOT_CONFIGURED') {
+        setError('Google login is not configured on the server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET on Render.');
+      } else if (code === 'DB_UNAVAILABLE' || err.response?.status === 503) {
+        setError('Server or database unavailable. Try again or use redirect sign-in below.');
       } else {
         setError(msg);
       }
@@ -60,17 +74,26 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
     }
   };
 
+  const usePopup = Boolean(clientId);
+
   return (
     <div ref={wrapRef} className={`google-signin-root ${className}`} style={style}>
       {error && <div className="alert alert-error" style={{ marginBottom: 12 }}>{error}</div>}
 
       <div className="google-signin-custom">
-        <button type="button" className="btn-google" disabled={loading} tabIndex={-1} aria-hidden="true">
+        <button
+          type="button"
+          className="btn-google"
+          disabled={loading}
+          onClick={usePopup ? undefined : handleRedirectLogin}
+          tabIndex={usePopup ? -1 : 0}
+          aria-hidden={usePopup ? 'true' : undefined}
+        >
           <span className="btn-google-icon"><GoogleIcon /></span>
           <span>{loading ? 'Signing in with Google...' : 'Continue with Google'}</span>
         </button>
 
-        {!loading && (
+        {usePopup && !loading && (
           <div className="google-signin-overlay" aria-label="Continue with Google">
             <GoogleLogin
               onSuccess={handleSuccess}
@@ -84,6 +107,16 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
           </div>
         )}
       </div>
+
+      <button
+        type="button"
+        className="btn btn-ghost"
+        style={{ width: '100%', marginTop: 8, fontSize: 13 }}
+        onClick={handleRedirectLogin}
+        disabled={loading}
+      >
+        Sign in with Google (redirect)
+      </button>
     </div>
   );
 };

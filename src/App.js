@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import AuthGoogleProvider from './components/AuthGoogleProvider';
+import { GoogleAuthProvider } from './contexts/GoogleAuthContext';
+import GoogleOAuthCallback from './pages/GoogleOAuthCallback';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import PremiumFeatures from './components/PremiumFeatures';
@@ -67,6 +68,7 @@ function AppRoutes() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route path="/auth/google/callback" element={<GoogleOAuthCallback />} />
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
@@ -106,9 +108,9 @@ function AppRoutes() {
 
 function App() {
   return (
-    <AuthGoogleProvider>
+    <GoogleAuthProvider>
       <AppRoutes />
-    </AuthGoogleProvider>
+    </GoogleAuthProvider>
   );
 }
 

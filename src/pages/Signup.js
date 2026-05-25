@@ -4,7 +4,7 @@ import { signup } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
-import { isGoogleConfigured } from '../config/google';
+import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
 import { BRAND } from '../config/brand';
 
@@ -18,6 +18,7 @@ const Signup = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref') || '';
+  const { enabled: googleEnabled } = useGoogleAuth();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -96,7 +97,7 @@ const Signup = () => {
           />
         </div>
 
-        {isGoogleConfigured() && (
+        {googleEnabled && (
           <>
             <GoogleLoginButton style={{ marginBottom: 16 }} />
             <div style={{ textAlign: 'center', margin: '8px 0 16px', color: '#8ca0b8' }}>OR</div>
