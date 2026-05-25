@@ -27,6 +27,7 @@
   "scripts": {
     "postinstall": "node scripts/postinstall.js",
     "start": "GENERATE_SOURCEMAP=false DISABLE_ESLINT_PLUGIN=true react-scripts start",
+    "icons": "bash scripts/generate-pwa-icons.sh",
     "build": "GENERATE_SOURCEMAP=false DISABLE_ESLINT_PLUGIN=true react-scripts build && node scripts/postbuild-spa.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
