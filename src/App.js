@@ -56,7 +56,7 @@ function AppRoutes() {
   return (
     <SettingsProvider>
       <LanguageProvider>
-      <Router>
+      <Router basename={process.env.PUBLIC_URL || '/'}>
         <MaintenanceGate>
           <PremiumFeatures />
           <Routes>
