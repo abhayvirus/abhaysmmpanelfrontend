@@ -12,10 +12,11 @@ const GoogleOAuthCallback = () => {
   const [message, setMessage] = useState('Completing Google sign-in...');
 
   useEffect(() => {
-    const error = searchParams.get('error');
-    const code = searchParams.get('code');
-    const token = searchParams.get('token');
-    const userB64 = searchParams.get('user');
+    const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const error = searchParams.get('error') || hashParams.get('error');
+    const code = searchParams.get('code') || hashParams.get('code');
+    const token = searchParams.get('token') || hashParams.get('token');
+    const userB64 = searchParams.get('user') || hashParams.get('user');
 
     if (error) {
       setMessage(error);
@@ -39,6 +40,7 @@ const GoogleOAuthCallback = () => {
       }
       localStorage.setItem('token', token);
       if (user) localStorage.setItem('user', JSON.stringify(user));
+      window.history.replaceState(null, '', window.location.pathname);
       navigate(user?.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
     } catch {
       localStorage.setItem('token', token);
