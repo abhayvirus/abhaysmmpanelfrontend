@@ -81,6 +81,7 @@ export const adminDeleteCoupon = (id) => API.delete(`/coupons/admin/${id}`);
 
 // Public
 export const getPublicStats = () => API.get('/public/stats');
+export const getPublicRazorpayConfig = () => API.get('/public/razorpay-config');
 export const getPublicSettings = () => API.get('/settings/public');
 export const getAppSettings = () => API.get('/settings/app');
 export const getServicesPreview = () => API.get('/public/services-preview');
@@ -102,6 +103,7 @@ export const createRazorpayOrder = (amount, coupon_code) =>
   API.post('/payments/create-order', { amount, coupon_code });
 export const verifyRazorpayPayment = (data) => API.post('/payments/verify', data);
 export const verifyRazorpay = verifyRazorpayPayment;
+export const submitUpiUtr = (data) => API.post('/payments/utr', data);
 export const getFundRequests = () => API.get('/payments/history');
 export const getTransactions = () => API.get('/wallet/transactions');
 export const getPaymentHistory = () => API.get('/payments/history');
