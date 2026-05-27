@@ -76,6 +76,8 @@ const AdminFunds = () => {
                 <div style={{ marginTop: 12, display: 'grid', gap: 6, fontSize: 14 }}>
                   <div><strong>Gateway:</strong> {p.gateway}</div>
                   <div><strong>Method:</strong> {p.payment_method || '—'}</div>
+                  <div><strong>User Wallet:</strong> ₹{parseFloat(p.user_wallet_balance || 0).toFixed(2)}</div>
+                  <div><strong>Total Deposits:</strong> ₹{parseFloat(p.user_total_deposits || 0).toFixed(2)}</div>
                   <div>
                     <strong>UTR:</strong>{' '}
                     <code style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 4 }}>

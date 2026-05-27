@@ -88,8 +88,9 @@ const Orders = () => {
           No orders yet. Browse Services to place your first order.
         </div>
       ) : (
-        <div className="table-wrap">
-          <table>
+        <>
+        <div className="table-wrap orders-table-wrap">
+          <table className="orders-table">
             <thead>
               <tr>
                 <th>ID</th><th>Service</th><th>Link</th><th>Qty</th><th>Price</th>
@@ -132,6 +133,37 @@ const Orders = () => {
             </tbody>
           </table>
         </div>
+        <div className="orders-mobile-list">
+          {orders.map((o) => (
+            <div className="card orders-mobile-card" key={`mobile-${o.id}`}>
+              <div className="orders-mobile-top">
+                <strong>#{o.id}</strong>
+                <span className={`badge ${statusClass[o.status] || 'badge-info'}`}>{o.status}</span>
+              </div>
+              <div className="orders-mobile-row"><span>Service</span><span>{o.service_name}</span></div>
+              <div className="orders-mobile-row">
+                <span>Link</span>
+                <a href={o.link} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>
+                  Open
+                </a>
+              </div>
+              <div className="orders-mobile-row"><span>Qty</span><span>{o.quantity?.toLocaleString()}</span></div>
+              <div className="orders-mobile-row"><span>Price</span><span>{sym}{parseFloat(o.price).toFixed(2)}</span></div>
+              <div className="orders-mobile-row"><span>Remains</span><span>{o.remains ?? '—'}</span></div>
+              <div className="orders-mobile-row"><span>Date</span><span>{new Date(o.created_at).toLocaleDateString()}</span></div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 }}>
+                <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id} onClick={() => refresh(o.id)}>↻</button>
+                {canRefill(o) && (
+                  <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id} onClick={() => refill(o.id)}>Refill</button>
+                )}
+                {canCancel(o) && (
+                  <button type="button" className="btn btn-danger btn-sm" disabled={actionId === o.id} onClick={() => cancel(o.id)}>Cancel</button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        </>
       )}
     </UserLayout>
   );

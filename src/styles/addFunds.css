@@ -101,11 +101,13 @@
 }
 
 .add-funds-method-chip {
+  appearance: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
+  width: 100%;
   padding: 10px 6px;
   border-radius: 10px;
   background: var(--bg);
@@ -114,12 +116,20 @@
   font-weight: 600;
   color: var(--text-muted);
   text-align: center;
+  cursor: pointer;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .add-funds-method-chip:hover {
   border-color: rgba(37, 99, 235, 0.4);
   box-shadow: 0 0 12px rgba(37, 99, 235, 0.1);
+}
+
+.add-funds-method-chip--active {
+  color: #dbeafe;
+  border-color: rgba(37, 99, 235, 0.65);
+  background: rgba(37, 99, 235, 0.14);
+  box-shadow: 0 0 14px rgba(37, 99, 235, 0.2);
 }
 
 .add-funds-method-chip span:first-child {

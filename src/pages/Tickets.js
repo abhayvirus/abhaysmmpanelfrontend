@@ -26,8 +26,8 @@ const Tickets = () => {
 
   return (
     <UserLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1>Support Tickets</h1>
+      <div className="page-header">
+        <h1 style={{ marginBottom: 8 }}>Support Tickets</h1>
         <button className="btn btn-primary" onClick={() => setShowForm(!showForm)}>+ New Ticket</button>
       </div>
       {msg && <div className="alert alert-success">{msg}</div>}

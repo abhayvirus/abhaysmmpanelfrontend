@@ -32,7 +32,7 @@ const AdminUsers = () => {
         <table className="table">
           <thead>
             <tr>
-              {['ID', 'Name', 'Email', 'Balance', 'Status', 'Role', 'Joined', 'Actions'].map((h) => (
+              {['ID', 'Name', 'Email', 'Balance', 'Deposits', 'Spent', 'Status', 'Role', 'Joined', 'Actions'].map((h) => (
                 <th key={h}>{h}</th>
               ))}
             </tr>
@@ -56,6 +56,8 @@ const AdminUsers = () => {
                     <strong style={{ color: 'var(--primary)' }}>₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
                   )}
                 </td>
+                <td><strong style={{ color: 'var(--success)' }}>₹{parseFloat(user.total_deposits || 0).toFixed(2)}</strong></td>
+                <td>₹{parseFloat(user.total_spent || 0).toFixed(2)}</td>
                 <td>
                   {editing === user.id ? (
                     <select className="select" value={editData.status} onChange={(e) => setEditData((p) => ({ ...p, status: e.target.value }))}>
@@ -103,7 +105,7 @@ const AdminUsers = () => {
               </tr>
             ))}
             {!users.length && (
-              <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No users</td></tr>
+              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No users</td></tr>
             )}
           </tbody>
         </table>

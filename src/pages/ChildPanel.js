@@ -23,7 +23,7 @@ const ChildPanel = () => {
 
   return (
     <UserLayout>
-      <h1>Child Panel (Reseller)</h1>
+      <h1 style={{ marginBottom: 8 }}>Child Panel (Reseller)</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Get your own branded SMM panel on your domain.</p>
       {msg && <div className="alert alert-success">{msg}</div>}
       <div className="card" style={{ maxWidth: 480, marginBottom: 24 }}>

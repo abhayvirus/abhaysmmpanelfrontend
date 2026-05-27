@@ -49,7 +49,7 @@ const Services = () => {
 
   return (
     <UserLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+      <div className="page-header">
         <div>
           <h1 style={{ marginBottom: 8 }}>Services</h1>
           <p style={{ color: 'var(--text-muted)' }}>{services.length} services · orders sent to provider automatically</p>
@@ -102,22 +102,18 @@ const Services = () => {
             }}>{cat}</h3>
             <div style={{ display: 'grid', gap: 10 }}>
               {svcs.map((svc) => (
-                <div key={svc.id} className="card" style={{
-                  padding: 16, display: 'grid',
-                  gridTemplateColumns: '1fr auto auto',
-                  gap: 16, alignItems: 'center',
-                }}>
-                  <div>
+                <div key={svc.id} className="card services-row-card">
+                  <div className="services-row-main">
                     <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>{svc.name}</div>
                     <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                       {svc.platform} · Min {svc.min_quantity} · Max {svc.max_quantity?.toLocaleString()}
                     </div>
                   </div>
-                  <div style={{ textAlign: 'right' }}>
+                  <div className="services-row-price">
                     <div style={{ color: 'var(--primary)', fontWeight: 800, fontSize: 16 }}>{sym}{svc.price}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>per 1000</div>
                   </div>
-                  <button type="button" className="btn btn-primary btn-sm" onClick={() => setOrderService(svc)}>
+                  <button type="button" className="btn btn-primary btn-sm services-row-order-btn" onClick={() => setOrderService(svc)}>
                     Order
                   </button>
                 </div>

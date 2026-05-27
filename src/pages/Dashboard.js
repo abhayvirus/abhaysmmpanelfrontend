@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import UserLayout from '../components/UserLayout';
 import { getServices, getPlatforms, placeOrder, getMe } from '../api';
 
@@ -13,7 +13,8 @@ const Dashboard = () => {
   const [services, setServices] = useState([]);
   const [platforms, setPlatforms] = useState(['All']);
   const [selectedPlatform, setSelectedPlatform] = useState('All');
-  const [selectedService, setSelectedService] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedServiceId, setSelectedServiceId] = useState('');
   const [link, setLink] = useState('');
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
@@ -31,9 +32,29 @@ const Dashboard = () => {
     const params = selectedPlatform !== 'All' ? { platform: selectedPlatform } : {};
     getServices(params).then((res) => {
       setServices(res.data);
-      setSelectedService(null);
+      setSelectedCategory('All');
+      setSelectedServiceId('');
     }).catch(() => {});
   }, [selectedPlatform]);
+
+  const categories = useMemo(() => {
+    const set = new Set();
+    services.forEach((s) => {
+      const c = String(s.category || '').trim();
+      if (c) set.add(c);
+    });
+    return ['All', ...Array.from(set)];
+  }, [services]);
+
+  const visibleServices = useMemo(() => {
+    if (selectedCategory === 'All') return services;
+    return services.filter((s) => String(s.category || '').trim() === selectedCategory);
+  }, [services, selectedCategory]);
+
+  const selectedService = useMemo(
+    () => visibleServices.find((s) => String(s.id) === String(selectedServiceId)) || null,
+    [visibleServices, selectedServiceId]
+  );
 
   const totalCost = () => {
     if (!selectedService || !quantity || Number.isNaN(Number(quantity))) return null;
@@ -41,9 +62,9 @@ const Dashboard = () => {
   };
 
   const handleOrder = async () => {
-    if (!selectedService) return setMessage({ type: 'error', text: 'Pehle service select karo' });
-    if (!link) return setMessage({ type: 'error', text: 'Link daalo' });
-    if (!quantity) return setMessage({ type: 'error', text: 'Quantity daalo' });
+    if (!selectedService) return setMessage({ type: 'error', text: 'Please select a service first' });
+    if (!link) return setMessage({ type: 'error', text: 'Please enter a valid link' });
+    if (!quantity) return setMessage({ type: 'error', text: 'Please enter quantity' });
 
     setLoading(true);
     setMessage(null);
@@ -56,13 +77,13 @@ const Dashboard = () => {
       setMessage({ type: 'success', text: `✅ ${res.data.message}` });
       setLink('');
       setQuantity('');
-      setSelectedService(null);
+      setSelectedServiceId('');
       getMe().then((r) => {
         setUser(r.data);
         localStorage.setItem('user', JSON.stringify(r.data));
       });
     } catch (err) {
-      setMessage({ type: 'error', text: `❌ ${err.response?.data?.message || 'Order fail hua'}` });
+      setMessage({ type: 'error', text: `❌ ${err.response?.data?.message || 'Order failed'}` });
     }
     setLoading(false);
   };
@@ -70,7 +91,9 @@ const Dashboard = () => {
   return (
     <UserLayout title="Dashboard">
       <div className="dashboard-page fade-in">
-        <h1 className="page-title">Dashboard</h1>
+        <div className="page-header">
+          <h1 className="page-title" style={{ marginBottom: 0 }}>Dashboard</h1>
+        </div>
 
         <div className="dashboard-stats">
           <div className="stat-card">
@@ -107,23 +130,64 @@ const Dashboard = () => {
         <div className="dashboard-services">
           {services.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
-              <p>📭 Koi service nahi mili</p>
-              <p style={{ fontSize: 13, marginTop: 8 }}>Admin panel mein jaake Sync karo</p>
+              <p>📭 No services found</p>
+              <p style={{ fontSize: 13, marginTop: 8 }}>Ask admin to sync services from provider.</p>
             </div>
           ) : (
-            services.map((svc) => (
-              <div
-                key={svc.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => setSelectedService(svc)}
-                onKeyDown={(e) => e.key === 'Enter' && setSelectedService(svc)}
-                className={`dashboard-service-item${selectedService?.id === svc.id ? ' selected' : ''}`}
-              >
-                <span style={{ fontSize: 14, flex: 1, minWidth: 0 }}>{svc.name}</span>
-                <span style={{ color: 'var(--primary)', fontWeight: 700 }}>₹{svc.price}/1000</span>
+            <div className="dashboard-order-form" style={{ marginTop: '1.5rem' }}>
+              <h3 style={{ marginBottom: 16, fontSize: 18 }}>📝 New Order</h3>
+
+              {message && (
+                <div className={`alert alert-${message.type === 'success' ? 'success' : 'error'}`}>{message.text}</div>
+              )}
+
+              <div className="dashboard-order-grid">
+                <div className="form-group">
+                  <label className="label">Platform</label>
+                  <select
+                    className="select"
+                    value={selectedPlatform}
+                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                  >
+                    {platforms.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="label">Category</label>
+                  <select
+                    className="select"
+                    value={selectedCategory}
+                    onChange={(e) => {
+                      setSelectedCategory(e.target.value);
+                      setSelectedServiceId('');
+                    }}
+                  >
+                    {categories.map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label className="label">Service</label>
+                  <select
+                    className="select"
+                    value={selectedServiceId}
+                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                  >
+                    <option value="">Select service</option>
+                    {visibleServices.map((svc) => (
+                      <option key={svc.id} value={svc.id}>
+                        {svc.name} (₹{svc.price}/1000)
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
-            ))
+            </div>
           )}
         </div>
 

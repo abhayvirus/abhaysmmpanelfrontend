@@ -10,8 +10,8 @@ const Notifications = () => {
 
   return (
     <UserLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1>Notifications</h1>
+      <div className="page-header">
+        <h1 style={{ marginBottom: 8 }}>Notifications</h1>
         <button className="btn btn-ghost" onClick={() => markAllRead().then(load)}>Mark all read</button>
       </div>
       {list.map((n) => (

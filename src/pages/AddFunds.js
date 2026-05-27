@@ -7,7 +7,6 @@ import {
   getWalletBalance,
   createRazorpayOrder,
   verifyRazorpayPayment,
-  submitUpiUtr,
   getPaymentConfig,
   getPublicRazorpayConfig,
   validateCoupon,
@@ -19,20 +18,19 @@ import {
   buildRazorpayCheckoutOptions,
   openRazorpayModal,
 } from '../utils/razorpayCheckout';
-import QRCode from 'qrcode';
 
 const QUICK_AMOUNTS = [100, 250, 500, 1000, 2000];
 
 const PAYMENT_METHODS = [
-  { icon: '⚡', label: 'UPI' },
-  { icon: 'G', label: 'Google Pay' },
-  { icon: 'Pe', label: 'PhonePe' },
-  { icon: 'Pt', label: 'Paytm' },
-  { icon: 'B', label: 'BHIM' },
-  { icon: '▣', label: 'Scan QR' },
-  { icon: '💳', label: 'Cards' },
-  { icon: '🏦', label: 'Netbanking' },
-  { icon: '👛', label: 'Wallets' },
+  { id: 'upi', icon: '⚡', label: 'UPI', gateway: 'upi' },
+  { id: 'gpay', icon: 'G', label: 'Google Pay', gateway: 'upi' },
+  { id: 'phonepe', icon: 'Pe', label: 'PhonePe', gateway: 'upi' },
+  { id: 'paytm', icon: 'Pt', label: 'Paytm', gateway: 'upi' },
+  { id: 'bhim', icon: 'B', label: 'BHIM', gateway: 'upi' },
+  { id: 'scanqr', icon: '▣', label: 'Scan QR', gateway: 'upi' },
+  { id: 'card', icon: '💳', label: 'Cards', gateway: 'card' },
+  { id: 'netbanking', icon: '🏦', label: 'Netbanking', gateway: 'netbanking' },
+  { id: 'wallet', icon: '👛', label: 'Wallets', gateway: 'wallet' },
 ];
 
 const CARD_BRANDS = [
@@ -60,10 +58,9 @@ const AddFunds = () => {
   const [history, setHistory] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [amount, setAmount] = useState('100');
-  const [utr, setUtr] = useState('');
-  const [qrDataUrl, setQrDataUrl] = useState('');
   const [couponCode, setCouponCode] = useState('');
   const [couponInfo, setCouponInfo] = useState(null);
+  const [selectedMethod, setSelectedMethod] = useState('upi');
   const [razorpayConfig, setRazorpayConfig] = useState({
     razorpayConfigured: false,
     razorpayEnabled: false,
@@ -73,7 +70,6 @@ const AddFunds = () => {
   const [loading, setLoading] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payPhase, setPayPhase] = useState('idle'); // idle | creating | verifying
-  const [submittingUtr, setSubmittingUtr] = useState(false);
   const [toast, setToast] = useState(null);
   const [successModal, setSuccessModal] = useState({
     open: false,
@@ -142,33 +138,6 @@ const AddFunds = () => {
     ? parseFloat(couponInfo.final_amount)
     : parseFloat(amount) || 0;
 
-  const upiId = (settings.upi_id || '').trim();
-  const upiPayAmount = parseFloat(amount) || 0;
-  const upiUri = useCallback(() => {
-    if (!upiId || !upiPayAmount) return '';
-    const params = new URLSearchParams({
-      pa: upiId,
-      pn: settings.site_name || 'ABHAYSMM PANEL',
-      am: String(upiPayAmount.toFixed(2)),
-      cu: settings.currency_code || 'INR',
-      tn: `Wallet recharge ${upiPayAmount.toFixed(2)}`,
-    });
-    return `upi://pay?${params.toString()}`;
-  }, [upiId, upiPayAmount, settings.site_name, settings.currency_code]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const uri = upiUri();
-    if (!uri) {
-      setQrDataUrl('');
-      return () => {};
-    }
-    QRCode.toDataURL(uri, { margin: 1, width: 240, errorCorrectionLevel: 'M' })
-      .then((url) => { if (!cancelled) setQrDataUrl(url); })
-      .catch(() => { if (!cancelled) setQrDataUrl(''); });
-    return () => { cancelled = true; };
-  }, [upiUri]);
-
   useEffect(() => {
     if (!toast) return undefined;
     const t = setTimeout(() => setToast(null), 5500);
@@ -182,6 +151,8 @@ const AddFunds = () => {
     if (payPhase === 'verifying') return 'Verifying payment...';
     return `Pay ${sym}${payableAmount.toFixed(2)} with Razorpay`;
   };
+
+  const selectedMethodMeta = PAYMENT_METHODS.find((m) => m.id === selectedMethod) || PAYMENT_METHODS[0];
 
   const applyCoupon = async () => {
     const amt = parseFloat(amount) || 0;
@@ -295,6 +266,15 @@ const AddFunds = () => {
           }
         },
       });
+      // Open checkout with only the user-selected gateway enabled.
+      options.method = {
+        upi: selectedMethodMeta.gateway === 'upi',
+        card: selectedMethodMeta.gateway === 'card',
+        netbanking: selectedMethodMeta.gateway === 'netbanking',
+        wallet: selectedMethodMeta.gateway === 'wallet',
+        emi: selectedMethodMeta.gateway === 'card',
+      };
+      options.description = `Wallet recharge via ${selectedMethodMeta.label}`;
 
       setPayPhase('idle');
       openRazorpayModal(options, {
@@ -327,43 +307,6 @@ const AddFunds = () => {
           : msg,
       });
     }
-  };
-
-  const submitUtr = async () => {
-    const amt = parseFloat(amount) || 0;
-    if (!upiId) {
-      setSuccessModal({ open: true, type: 'failed', title: 'UPI not configured', message: 'Admin must set UPI ID in Settings.' });
-      return;
-    }
-    if (!amt || amt < 1) {
-      setSuccessModal({ open: true, type: 'failed', title: 'Invalid amount', message: 'Minimum amount ₹1' });
-      return;
-    }
-    const code = utr.trim();
-    if (code.length < 6) {
-      setSuccessModal({ open: true, type: 'failed', title: 'UTR required', message: 'Enter your UTR / Transaction ID' });
-      return;
-    }
-    setSubmittingUtr(true);
-    try {
-      await submitUpiUtr({ amount: amt, utr_number: code });
-      setUtr('');
-      setSuccessModal({
-        open: true,
-        type: 'pending',
-        title: 'Submitted',
-        message: 'Payment submitted. Admin will verify and credit your wallet.',
-      });
-      load();
-    } catch (e) {
-      setSuccessModal({
-        open: true,
-        type: 'failed',
-        title: 'Submission failed',
-        message: e.response?.data?.message || 'Could not submit UTR',
-      });
-    }
-    setSubmittingUtr(false);
   };
 
   return (
@@ -406,6 +349,9 @@ const AddFunds = () => {
             <p className="add-funds-secure-sub">UPI • Cards • Netbanking • Wallets</p>
           </div>
         </div>
+        <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--text-muted)' }}>
+          Selected method: <strong style={{ color: 'var(--text)' }}>{selectedMethodMeta.label}</strong>
+        </p>
 
         {!razorpayReady && (
           <div className="alert alert-error" style={{ marginBottom: 16 }}>
@@ -421,10 +367,16 @@ const AddFunds = () => {
 
         <div className="add-funds-methods-grid" aria-label="Accepted payment methods">
           {PAYMENT_METHODS.map((m) => (
-            <div key={m.label} className="add-funds-method-chip">
+            <button
+              type="button"
+              key={m.label}
+              className={`add-funds-method-chip${selectedMethod === m.id ? ' add-funds-method-chip--active' : ''}`}
+              onClick={() => setSelectedMethod(m.id)}
+              disabled={paying}
+            >
               <span>{m.icon}</span>
               <span>{m.label}</span>
-            </div>
+            </button>
           ))}
         </div>
 
@@ -509,83 +461,6 @@ const AddFunds = () => {
         <p className="add-funds-footer-secure">
           <strong>100% Secure Payments</strong> powered by Razorpay
         </p>
-      </div>
-
-      {/* UPI QR (manual verification) */}
-      <div className="card add-funds-manual-card" style={{ padding: 24 }}>
-        <div className="add-funds-pay-header">
-          <h3 className="card-title" style={{ margin: 0 }}>Pay with UPI QR</h3>
-          <span className="badge badge-warning">Manual verification</span>
-        </div>
-        <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: '12px 0 16px' }}>
-          Scan the QR to pay using any UPI app, then enter the UTR/Transaction ID below.
-        </p>
-
-        {!upiId ? (
-          <div className="alert alert-error">UPI ID is not configured. Admin → Settings → Payments → set UPI ID.</div>
-        ) : (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, alignItems: 'start' }}>
-              <div style={{ textAlign: 'center', padding: 12, background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 12 }}>
-                {qrDataUrl ? (
-                  <img src={qrDataUrl} alt="UPI QR" style={{ width: 240, maxWidth: '100%' }} />
-                ) : (
-                  <div style={{ color: 'var(--text-muted)', padding: 24 }}>Generating QR…</div>
-                )}
-                <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
-                  Amount: <strong style={{ color: 'var(--text)' }}>{sym}{(parseFloat(amount) || 0).toFixed(2)}</strong>
-                </div>
-              </div>
-              <div>
-                <div className="form-group">
-                  <label className="label">UPI ID</label>
-                  <input className="input" value={upiId} readOnly />
-                </div>
-                <div className="form-group">
-                  <label className="label">Amount</label>
-                  <input
-                    className="input"
-                    type="number"
-                    min="1"
-                    value={amount}
-                    onChange={(e) => { setAmount(e.target.value); setCouponInfo(null); }}
-                    placeholder="100"
-                    disabled={submittingUtr || paying}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 12 }}>
-                  <a className="btn btn-ghost" href={upiUri()} style={{ flex: 1, minWidth: 180, textAlign: 'center' }}>
-                    Open UPI app
-                  </a>
-                  <button
-                    type="button"
-                    className="btn btn-ghost"
-                    style={{ flex: 1, minWidth: 180 }}
-                    onClick={() => navigator.clipboard?.writeText(upiUri()).catch(() => {})}
-                  >
-                    Copy UPI link
-                  </button>
-                </div>
-                <div className="form-group">
-                  <label className="label">UTR / Transaction ID</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. 324512345678"
-                    value={utr}
-                    onChange={(e) => setUtr(e.target.value)}
-                    disabled={submittingUtr}
-                  />
-                </div>
-                <button type="button" className="btn btn-primary" style={{ width: '100%' }} onClick={submitUtr} disabled={submittingUtr}>
-                  {submittingUtr ? 'Submitting…' : 'Submit UTR'}
-                </button>
-                <p style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
-                  After admin approval, your wallet balance will update automatically.
-                </p>
-              </div>
-            </div>
-          </>
-        )}
       </div>
 
       <h2 style={{ marginBottom: 16 }}>Payment history</h2>

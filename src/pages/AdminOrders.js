@@ -31,7 +31,7 @@ const AdminOrders = () => {
         <table className="table">
           <thead>
             <tr>
-              {['ID', 'User', 'Service', 'Link', 'Qty', 'Price', 'Status', 'API ID', 'Date'].map((h) => (
+              {['ID', 'User', 'Wallet', 'Service', 'Link', 'Qty', 'Price', 'Status', 'API ID', 'Date'].map((h) => (
                 <th key={h}>{h}</th>
               ))}
             </tr>
@@ -41,8 +41,13 @@ const AdminOrders = () => {
               <tr key={o.id}>
                 <td>#{o.id}</td>
                 <td>{o.user_name}</td>
+                <td style={{ whiteSpace: 'nowrap' }}>₹{parseFloat(o.user_wallet_balance || 0).toFixed(2)}</td>
                 <td style={{ maxWidth: 140 }}>{o.service_name}</td>
-                <td style={{ maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis' }}>{o.link}</td>
+                <td style={{ maxWidth: 260, whiteSpace: 'normal', wordBreak: 'break-all' }}>
+                  <a href={o.link} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>
+                    {o.link}
+                  </a>
+                </td>
                 <td>{o.quantity}</td>
                 <td>₹{parseFloat(o.price || 0).toFixed(2)}</td>
                 <td><span className="badge badge-info">{o.status}</span></td>
@@ -51,7 +56,7 @@ const AdminOrders = () => {
               </tr>
             ))}
             {!filtered.length && (
-              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No orders</td></tr>
+              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No orders</td></tr>
             )}
           </tbody>
         </table>
