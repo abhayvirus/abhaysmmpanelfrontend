@@ -5,6 +5,7 @@ import BrandLogo from './BrandLogo';
 
 const PublicNav = () => {
   const [open, setOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem('token')));
   const { settings } = useSettings();
   const close = () => setOpen(false);
 
@@ -13,6 +14,19 @@ const PublicNav = () => {
     return () => document.body.classList.remove('public-nav-open');
   }, [open]);
 
+  useEffect(() => {
+    const syncAuth = () => setIsLoggedIn(Boolean(localStorage.getItem('token')));
+    syncAuth();
+    window.addEventListener('storage', syncAuth);
+    window.addEventListener('focus', syncAuth);
+    window.addEventListener('pageshow', syncAuth);
+    return () => {
+      window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('focus', syncAuth);
+      window.removeEventListener('pageshow', syncAuth);
+    };
+  }, []);
+
   return (
     <>
       <header className="nav-public">
@@ -20,8 +34,14 @@ const PublicNav = () => {
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
         </Link>
         <div className="nav-public-actions-desktop">
-          <Link to="/login" className="btn btn-ghost">Login</Link>
-          <Link to="/signup" className="btn btn-primary">Get Started</Link>
+          {isLoggedIn ? (
+            <Link to="/dashboard" className="btn btn-primary">Dashboard</Link>
+          ) : (
+            <>
+              <Link to="/login" className="btn btn-ghost">Login</Link>
+              <Link to="/signup" className="btn btn-primary">Get Started</Link>
+            </>
+          )}
           <Link to="/download-app" className="btn btn-ghost">📱 Download App</Link>
         </div>
         <button
@@ -47,8 +67,14 @@ const PublicNav = () => {
               </button>
             </div>
             <nav className="nav-mobile-links">
-              <Link to="/login" className="btn btn-ghost nav-drawer-btn" onClick={close}>Login</Link>
-              <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>Get Started</Link>
+              {isLoggedIn ? (
+                <Link to="/dashboard" className="btn btn-primary nav-drawer-btn" onClick={close}>Dashboard</Link>
+              ) : (
+                <>
+                  <Link to="/login" className="btn btn-ghost nav-drawer-btn" onClick={close}>Login</Link>
+                  <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>Get Started</Link>
+                </>
+              )}
               <Link to="/download-app" className="btn btn-ghost nav-drawer-btn" onClick={close}>📱 Download App</Link>
             </nav>
           </div>
