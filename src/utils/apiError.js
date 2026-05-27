@@ -23,6 +23,8 @@ export function isAuthPublicRequest(config) {
   const paths = [
     '/auth/login',
     '/auth/signup',
+    '/auth/signup/send-otp',
+    '/auth/signup/verify-otp',
     '/auth/google',
     '/auth/firebase',
     '/auth/forgot-password',

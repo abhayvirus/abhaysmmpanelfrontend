@@ -40,6 +40,8 @@ API.interceptors.response.use(
 export const getAuthConfig = () => API.get('/auth/config');
 export const login = (data) => API.post('/auth/login', data);
 export const signup = (data) => API.post('/auth/signup', data);
+export const sendSignupOtp = (data) => API.post('/auth/signup/send-otp', data);
+export const verifySignupOtp = (data) => API.post('/auth/signup/verify-otp', data);
 /** Google Sign-In: send ID token from @react-oauth/google */
 export const googleLogin = (idToken) => API.post('/auth/google', { idToken });
 /** Legacy Firebase route */
