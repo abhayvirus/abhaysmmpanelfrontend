@@ -43,11 +43,6 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
 
   if (configLoading || !enabled) return null;
 
-  const handleRedirectLogin = () => {
-    setError('');
-    window.location.href = oauthStartUrl;
-  };
-
   const handleSuccess = async (credentialResponse) => {
     const idToken = credentialResponse?.credential;
     if (!idToken) {
@@ -74,8 +69,6 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
     }
   };
 
-  const usePopup = Boolean(clientId);
-
   return (
     <div ref={wrapRef} className={`google-signin-root ${className}`} style={style}>
       {error && <div className="alert alert-error" style={{ marginBottom: 12 }}>{error}</div>}
@@ -85,15 +78,14 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
           type="button"
           className="btn-google"
           disabled={loading}
-          onClick={usePopup ? undefined : handleRedirectLogin}
-          tabIndex={usePopup ? -1 : 0}
-          aria-hidden={usePopup ? 'true' : undefined}
+          tabIndex={-1}
+          aria-hidden="true"
         >
           <span className="btn-google-icon"><GoogleIcon /></span>
           <span>{loading ? 'Signing in with Google...' : 'Continue with Google'}</span>
         </button>
 
-        {usePopup && !loading && (
+        {!loading && (
           <div className="google-signin-overlay" aria-label="Continue with Google">
             <GoogleLogin
               onSuccess={handleSuccess}
@@ -107,16 +99,6 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
           </div>
         )}
       </div>
-
-      <button
-        type="button"
-        className="btn btn-ghost"
-        style={{ width: '100%', marginTop: 8, fontSize: 13 }}
-        onClick={handleRedirectLogin}
-        disabled={loading}
-      >
-        Sign in with Google (redirect)
-      </button>
     </div>
   );
 };
