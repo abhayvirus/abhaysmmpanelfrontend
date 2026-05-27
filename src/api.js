@@ -145,6 +145,7 @@ export const adminUpdateOrderStatus = (id, status) => API.put(`/admin/orders/${i
 export const adminGetServices = () => API.get('/services/admin/all');
 export const adminSyncServices = (provider_id) => API.post('/services/admin/sync', { provider_id });
 export const adminProviderStatus = (provider_id) => API.get('/services/admin/provider-status', { params: { provider_id } });
+export const adminCreateService = (data) => API.post('/services/admin', data);
 export const adminUpdateService = (id, data) => API.put(`/services/admin/${id}`, data);
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);

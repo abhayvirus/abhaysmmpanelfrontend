@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
-import { adminGetServices, adminSyncServices, adminUpdateService, adminProviderStatus } from '../api';
+import { adminGetServices, adminSyncServices, adminUpdateService, adminProviderStatus, adminCreateService } from '../api';
 
 const AdminServices = () => {
   const [services, setServices] = useState([]);
@@ -10,6 +10,16 @@ const AdminServices = () => {
   const [editPrices, setEditPrices] = useState({});
   const [search, setSearch] = useState('');
   const [platform, setPlatform] = useState('All');
+  const [adding, setAdding] = useState(false);
+  const [addForm, setAddForm] = useState({
+    name: '',
+    platform: '',
+    category: '',
+    custom_price: '',
+    min_quantity: 10,
+    max_quantity: 10000,
+    is_active: true,
+  });
 
   useEffect(() => {
     loadServices();
@@ -58,6 +68,29 @@ const AdminServices = () => {
     s.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  const createManualService = async () => {
+    if (!addForm.name.trim() || !addForm.platform.trim() || !addForm.custom_price) {
+      alert('Name, Platform, Price required');
+      return;
+    }
+    setAdding(true);
+    try {
+      await adminCreateService({
+        ...addForm,
+        custom_price: parseFloat(addForm.custom_price),
+        original_price: parseFloat(addForm.custom_price),
+        min_quantity: parseInt(addForm.min_quantity, 10),
+        max_quantity: parseInt(addForm.max_quantity, 10),
+      });
+      setSyncMsg({ type: 'success', text: 'Service added successfully' });
+      setAddForm({ name: '', platform: '', category: '', custom_price: '', min_quantity: 10, max_quantity: 10000, is_active: true });
+      await loadServices();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to add service');
+    }
+    setAdding(false);
+  };
+
   return (
     <AdminLayout>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
@@ -74,6 +107,37 @@ const AdminServices = () => {
           <button type="button" className="btn btn-primary" onClick={handleSync} disabled={syncing}>
             {syncing ? 'Syncing from provider...' : '🔄 Sync all services'}
           </button>
+        </div>
+
+        <div className="card" style={{ marginBottom: 20 }}>
+          <h3 className="card-title" style={{ marginBottom: 12 }}>➕ Add service manually</h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 12 }}>
+            <input className="input" placeholder="Service name"
+              value={addForm.name} onChange={(e) => setAddForm((p) => ({ ...p, name: e.target.value }))} />
+            <input className="input" placeholder="Platform (e.g. Instagram)"
+              value={addForm.platform} onChange={(e) => setAddForm((p) => ({ ...p, platform: e.target.value }))} />
+            <input className="input" placeholder="Category (optional)"
+              value={addForm.category} onChange={(e) => setAddForm((p) => ({ ...p, category: e.target.value }))} />
+            <input className="input" type="number" step="0.01" placeholder="Your price / 1000 (₹)"
+              value={addForm.custom_price} onChange={(e) => setAddForm((p) => ({ ...p, custom_price: e.target.value }))} />
+            <input className="input" type="number" placeholder="Min qty"
+              value={addForm.min_quantity} onChange={(e) => setAddForm((p) => ({ ...p, min_quantity: e.target.value }))} />
+            <input className="input" type="number" placeholder="Max qty"
+              value={addForm.max_quantity} onChange={(e) => setAddForm((p) => ({ ...p, max_quantity: e.target.value }))} />
+          </div>
+          <div style={{ display: 'flex', gap: 12, alignItems: 'center', marginTop: 12, flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#8ca0b8', fontSize: 13 }}>
+              <input type="checkbox" checked={!!addForm.is_active}
+                onChange={(e) => setAddForm((p) => ({ ...p, is_active: e.target.checked }))} />
+              Active
+            </label>
+            <button type="button" className="btn btn-primary" onClick={createManualService} disabled={adding}>
+              {adding ? 'Adding...' : 'Add Service'}
+            </button>
+          </div>
+          <p style={{ color: '#8ca0b8', fontSize: 12, marginTop: 10 }}>
+            Note: Manual services are created as non-provider services (for custom listing). Orders for these will require provider wiring later.
+          </p>
         </div>
 
         {syncMsg && (

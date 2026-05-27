@@ -1,6 +1,7 @@
 /** Production API — always used on live domain (even if Vercel env has localhost) */
 export const PRODUCTION_API = 'https://api.abhaysmmpanel.in/api';
-const LOCAL_API = 'http://localhost:5001/api';
+// For this project, localhost frontend should still hit production API unless explicitly overridden.
+const LOCAL_API = PRODUCTION_API;
 
 const PRODUCTION_HOSTS = new Set([
   'abhaysmmpanel.in',
