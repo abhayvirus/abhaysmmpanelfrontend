@@ -29,6 +29,11 @@ const Signup = () => {
   }, [navigate]);
 
   useEffect(() => {
+    // Ensure auth pages never inherit fixed body from a previously opened mobile menu
+    document.body.classList.remove('mobile-menu-open');
+  }, []);
+
+  useEffect(() => {
     if (resendSec <= 0) return undefined;
     const t = setInterval(() => setResendSec((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
@@ -233,14 +238,14 @@ const Signup = () => {
 
 const styles = {
   page: {
-    minHeight: '100dvh',
+    minHeight: '100svh',
     background: 'linear-gradient(135deg, #0d1520 0%, #1a2535 100%)',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
     padding: 'clamp(12px, 4vw, 20px)',
-    paddingTop: 'clamp(16px, 6vh, 56px)',
-    paddingBottom: 'clamp(16px, 6vh, 56px)',
+    paddingTop: 'calc(clamp(16px, 6vh, 56px) + env(safe-area-inset-top, 0px))',
+    paddingBottom: 'calc(clamp(20px, 8vh, 72px) + env(safe-area-inset-bottom, 0px))',
     overflowY: 'auto',
     boxSizing: 'border-box',
   },

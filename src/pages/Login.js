@@ -24,6 +24,11 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
+    // Ensure auth pages never inherit fixed body from a previously opened mobile menu
+    document.body.classList.remove('mobile-menu-open');
+  }, []);
+
+  useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     if (token) navigate(user.role === 'admin' ? '/admin' : '/dashboard');
@@ -114,13 +119,13 @@ const Login = () => {
 
 const styles = {
   page: {
-    minHeight: '100dvh',
+    minHeight: '100svh',
     display: 'flex',
     alignItems: 'flex-start',
     justifyContent: 'center',
     padding: 'clamp(12px, 4vw, 20px)',
-    paddingTop: 'clamp(16px, 6vh, 56px)',
-    paddingBottom: 'clamp(16px, 6vh, 56px)',
+    paddingTop: 'calc(clamp(16px, 6vh, 56px) + env(safe-area-inset-top, 0px))',
+    paddingBottom: 'calc(clamp(20px, 8vh, 72px) + env(safe-area-inset-bottom, 0px))',
     background: 'var(--bg)',
     overflowY: 'auto',
     boxSizing: 'border-box',
