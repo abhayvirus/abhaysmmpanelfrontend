@@ -32,6 +32,7 @@ body {
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
   min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 #root {
@@ -66,7 +67,7 @@ a:hover { text-decoration: underline; }
 .layout { display: flex; min-height: 100vh; }
 .main { flex: 1; margin-left: var(--sidebar-w); padding: 24px; min-height: 100vh; }
 @media (max-width: 768px) {
-  .main { margin-left: 0; padding: 16px; padding-top: 72px; }
+  .main { margin-left: 0; padding: 16px; padding-top: calc(72px + env(safe-area-inset-top, 0px)); padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
 }

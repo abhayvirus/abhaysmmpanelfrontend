@@ -6,6 +6,12 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Safe-area support (iOS notch/home indicator) */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 .table-wrap {
   width: 100%;
   overflow-x: auto;
@@ -14,6 +20,10 @@ html {
 
 .table-wrap table {
   min-width: 560px;
+}
+
+@media (max-width: 480px) {
+  .table-wrap table { min-width: 520px; }
 }
 
 img, video {
@@ -187,7 +197,7 @@ body.mobile-menu-open {
   background: rgba(12, 21, 38, 0.95);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
-  padding: 0 0.75rem;
+  padding: calc(0.25rem + var(--safe-top)) 0.75rem 0;
   align-items: center;
   gap: 0.75rem;
 }
