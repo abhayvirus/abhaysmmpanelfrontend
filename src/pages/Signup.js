@@ -35,8 +35,8 @@ const Signup = () => {
   }, [resendSec]);
 
   const handleSendOtp = async () => {
-    if (!name || !email || !password) return setError('Sab fields bharo');
-    if (password.length < 6) return setError('Password kam se kam 6 characters ka hona chahiye');
+    if (!name || !email || !password) return setError('Please fill all fields');
+    if (password.length < 6) return setError('Password must be at least 6 characters');
     setLoading(true);
     setError('');
     setSuccess('');
@@ -49,10 +49,10 @@ const Signup = () => {
       });
       setStep('otp');
       setOtp('');
-      setSuccess('Email par 6-digit OTP bhej diya gaya hai. Code daal kar account banayein.');
+      setSuccess('We sent a 6-digit OTP to your email. Enter it below to create your account.');
       setResendSec(60);
     } catch (err) {
-      setError(getApiErrorMessage(err, 'OTP bhejne mein problem aayi'));
+      setError(getApiErrorMessage(err, 'Could not send OTP'));
     }
     setLoading(false);
   };
@@ -68,40 +68,40 @@ const Signup = () => {
         password,
         referral_code: refCode || undefined,
       });
-      setSuccess('Naya OTP email par bhej diya gaya hai.');
+      setSuccess('A new OTP has been sent to your email.');
       setResendSec(60);
     } catch (err) {
-      setError(getApiErrorMessage(err, 'OTP dubara nahi bhej paaye'));
+      setError(getApiErrorMessage(err, 'Could not resend OTP'));
     }
     setLoading(false);
   };
 
   const handleVerifyOtp = async () => {
     const code = otp.replace(/\D/g, '').slice(0, 6);
-    if (code.length !== 6) return setError('6-digit OTP daaliye');
+    if (code.length !== 6) return setError('Enter the 6-digit OTP');
     setLoading(true);
     setError('');
     setSuccess('');
     try {
       const res = await verifySignupOtp({ email: email.trim().toLowerCase(), otp: code });
       if (res.data?.verify_email) {
-        setSuccess('Account ban gaya! Login se pehle email verify karein.');
+        setSuccess('Account created! Please verify your email before logging in.');
         setTimeout(() => navigate('/login', { replace: true }), 3000);
         return;
       }
       if (res.data?.token && res.data?.user) {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('user', JSON.stringify(res.data.user));
-        setSuccess('Welcome! Aapke Gmail par welcome message bhi bheja gaya hai.');
+        setSuccess('Welcome! A welcome email has been sent to your Gmail.');
         setTimeout(() => {
           navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
         }, 1200);
         return;
       }
-      setSuccess('Account ban gaya! Login par jaayein.');
+      setSuccess('Account created! Redirecting to login...');
       setTimeout(() => navigate('/login', { replace: true }), 2000);
     } catch (err) {
-      setError(getApiErrorMessage(err, 'OTP galat hai ya expire ho gaya'));
+      setError(getApiErrorMessage(err, 'OTP is invalid or expired'));
     }
     setLoading(false);
   };
@@ -119,9 +119,9 @@ const Signup = () => {
         {step === 'form' && (
           <>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Full Name</label>
+              <label style={styles.label}>Full name</label>
               <input
-                placeholder="Apna naam daalo"
+                placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 style={styles.input}
@@ -130,7 +130,7 @@ const Signup = () => {
             </div>
 
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Email Address</label>
+              <label style={styles.label}>Email</label>
               <input
                 type="email"
                 placeholder="email@example.com"
@@ -144,7 +144,7 @@ const Signup = () => {
             <div style={styles.inputGroup}>
               <label style={styles.label}>Password</label>
               <PasswordInput
-                placeholder="Min 6 characters"
+                placeholder="At least 6 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSendOtp()}
@@ -174,7 +174,7 @@ const Signup = () => {
         {step === 'otp' && (
           <>
             <p style={{ ...styles.subtitle, marginBottom: 16 }}>
-              <strong>{email}</strong> par bheja gaya 6-digit code yahan daaliye
+              Enter the 6-digit code sent to <strong>{email}</strong>
             </p>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Email OTP</label>
@@ -223,7 +223,7 @@ const Signup = () => {
         )}
 
         <p style={styles.bottomText}>
-          Pehle se account hai?{' '}
+          Already have an account?{' '}
           <Link to="/login" style={styles.link}>Sign In</Link>
         </p>
       </div>
@@ -274,11 +274,11 @@ const styles = {
   },
   inputGroup: { marginBottom: 18 },
   label: { display: 'block', color: '#8ca0b8', fontSize: 13, fontWeight: 600, marginBottom: 8 },
-  input: { width: '100%', padding: '14px 16px', borderRadius: 10, background: '#0d1520', border: '1px solid #2d3a50', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' },
+  input: { width: '100%', padding: '12px 14px', borderRadius: 10, background: '#0d1520', border: '1px solid #2d3a50', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' },
   btn: {
     width: '100%',
-    minHeight: 48,
-    padding: '14px 15px',
+    minHeight: 44,
+    padding: '12px 14px',
     borderRadius: 10,
     border: 'none',
     background: 'linear-gradient(135deg, #6c63ff, #9b59b6)',

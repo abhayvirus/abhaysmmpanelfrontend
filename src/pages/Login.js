@@ -67,7 +67,15 @@ const Login = () => {
 
         <div className="form-group">
           <label className="label">Email</label>
-          <input className="input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleLogin()} />
+          <input
+            className="input"
+            type="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+            autoComplete="email"
+          />
         </div>
         <div className="form-group">
           <label className="label">Password</label>
@@ -80,8 +88,15 @@ const Login = () => {
         </div>
         {otpRequired && (
           <div className="form-group">
-            <label className="label">OTP (sent to email)</label>
-            <input className="input" value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="6-digit code" />
+            <label className="label">Email OTP</label>
+            <input
+              className="input"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="6-digit code"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+            />
           </div>
         )}
         <Link to="/forgot-password" style={{ fontSize: 13, display: 'block', marginBottom: 16 }}>Forgot password?</Link>
@@ -98,8 +113,8 @@ const Login = () => {
 };
 
 const styles = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20, background: 'var(--bg)' },
-  card: { width: '100%', maxWidth: 440, padding: 40 },
+  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(12px, 4vw, 20px)', background: 'var(--bg)' },
+  card: { width: '100%', maxWidth: 440, padding: 'clamp(18px, 4vw, 36px)' },
 };
 
 export default Login;
