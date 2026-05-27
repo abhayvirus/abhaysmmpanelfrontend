@@ -113,7 +113,18 @@ const Login = () => {
 };
 
 const styles = {
-  page: { minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'clamp(12px, 4vw, 20px)', background: 'var(--bg)' },
+  page: {
+    minHeight: '100dvh',
+    display: 'flex',
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    padding: 'clamp(12px, 4vw, 20px)',
+    paddingTop: 'clamp(16px, 6vh, 56px)',
+    paddingBottom: 'clamp(16px, 6vh, 56px)',
+    background: 'var(--bg)',
+    overflowY: 'auto',
+    boxSizing: 'border-box',
+  },
   card: { width: '100%', maxWidth: 440, padding: 'clamp(18px, 4vw, 36px)' },
 };
 

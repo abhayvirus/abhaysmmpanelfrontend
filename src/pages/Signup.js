@@ -233,12 +233,16 @@ const Signup = () => {
 
 const styles = {
   page: {
-    minHeight: '100vh',
+    minHeight: '100dvh',
     background: 'linear-gradient(135deg, #0d1520 0%, #1a2535 100%)',
     display: 'flex',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'center',
     padding: 'clamp(12px, 4vw, 20px)',
+    paddingTop: 'clamp(16px, 6vh, 56px)',
+    paddingBottom: 'clamp(16px, 6vh, 56px)',
+    overflowY: 'auto',
+    boxSizing: 'border-box',
   },
   card: {
     background: '#1a2535',
