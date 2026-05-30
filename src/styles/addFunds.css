@@ -10,11 +10,8 @@
   margin-bottom: 1.5rem;
   padding: clamp(1.25rem, 4vw, 1.75rem);
   border: 1px solid rgba(37, 99, 235, 0.35);
-  background: linear-gradient(145deg, rgba(15, 22, 35, 0.98) 0%, rgba(10, 18, 32, 0.95) 50%, rgba(20, 30, 50, 0.9) 100%);
-  box-shadow:
-    0 0 0 1px rgba(37, 99, 235, 0.12),
-    0 20px 50px rgba(0, 0, 0, 0.35),
-    0 0 40px rgba(37, 99, 235, 0.08);
+  background: var(--add-funds-hero-bg);
+  box-shadow: var(--add-funds-hero-shadow);
   animation: add-funds-fade-in 0.45s ease-out;
 }
 
@@ -100,16 +97,23 @@
   margin-bottom: 1.25rem;
 }
 
+.payment-method-logo {
+  display: block;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
 .add-funds-method-chip {
   appearance: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
+  min-height: 4.5rem;
   padding: 10px 6px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--bg);
   border: 1px solid var(--border);
   font-size: 10px;
@@ -117,24 +121,88 @@
   color: var(--text-muted);
   text-align: center;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.25s, transform 0.2s, background 0.2s;
 }
 
-.add-funds-method-chip:hover {
-  border-color: rgba(37, 99, 235, 0.4);
-  box-shadow: 0 0 12px rgba(37, 99, 235, 0.1);
+.add-funds-method-chip-logo {
+  width: 2rem;
+  height: 2rem;
+}
+
+.add-funds-method-chip:hover:not(:disabled) {
+  border-color: rgba(37, 99, 235, 0.45);
+  box-shadow: 0 0 16px rgba(37, 99, 235, 0.15);
+  transform: translateY(-1px);
 }
 
 .add-funds-method-chip--active {
-  color: #dbeafe;
-  border-color: rgba(37, 99, 235, 0.65);
-  background: rgba(37, 99, 235, 0.14);
-  box-shadow: 0 0 14px rgba(37, 99, 235, 0.2);
+  color: var(--add-funds-chip-active-text);
+  border-color: rgba(59, 130, 246, 0.9);
+  background: linear-gradient(160deg, rgba(37, 99, 235, 0.22) 0%, rgba(14, 165, 233, 0.12) 100%);
+  box-shadow:
+    0 0 0 2px rgba(37, 99, 235, 0.35),
+    0 0 24px rgba(37, 99, 235, 0.45),
+    0 8px 20px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
 }
 
-.add-funds-method-chip span:first-child {
-  font-size: 1.35rem;
-  line-height: 1;
+.add-funds-method-chip:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.add-funds-payment-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.06);
+  border: 1px solid rgba(37, 99, 235, 0.22);
+}
+
+.add-funds-payment-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.add-funds-payment-summary-label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.add-funds-payment-summary-value {
+  color: var(--text);
+  font-weight: 700;
+  text-align: right;
+}
+
+.add-funds-payment-summary-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-funds-payment-summary-gateway {
+  color: var(--add-funds-gateway-text);
+  font-size: 0.8125rem;
+  letter-spacing: 0.02em;
+}
+
+.add-funds-pay-btn-inner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  width: 100%;
+}
+
+.add-funds-pay-btn-logo {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
 }
 
 .add-funds-card-brands {
@@ -149,20 +217,20 @@
 }
 
 .add-funds-card-brand {
-  padding: 4px 10px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text-muted);
+  background: var(--add-funds-card-brand-bg);
 }
 
-.add-funds-card-brand--visa { color: #1a1f71; border-color: rgba(26, 31, 113, 0.4); }
-.add-funds-card-brand--mc { color: #eb001b; border-color: rgba(235, 0, 27, 0.35); }
-.add-funds-card-brand--rupay { color: #097969; border-color: rgba(9, 121, 105, 0.35); }
-.add-funds-card-brand--amex { color: #006fcf; border-color: rgba(0, 111, 207, 0.35); }
+.add-funds-card-brand-logo {
+  width: auto;
+  height: 1.5rem;
+  max-width: 3.5rem;
+}
 
 .add-funds-pay-btn-glow {
   position: relative;
@@ -216,14 +284,14 @@
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: rgba(7, 11, 18, 0.88);
+  background: var(--overlay-bg);
   border-radius: inherit;
   backdrop-filter: blur(4px);
 }
 
 .add-funds-toast {
   position: fixed;
-  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  bottom: var(--user-mobile-content-pad-bottom, calc(100px + env(safe-area-inset-bottom, 0px)));
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -262,6 +330,154 @@
 .add-funds-manual-card {
   margin-bottom: 1.5rem;
   opacity: 0.95;
+}
+
+/* Payment history — desktop table + mobile cards */
+.add-funds-history-section {
+  margin-top: 1.5rem;
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.add-funds-wallet-section {
+  margin-top: 2rem;
+}
+
+.add-funds-history-title {
+  margin: 0 0 1rem;
+  font-size: clamp(1.125rem, 3.5vw, 1.375rem);
+  font-weight: 700;
+}
+
+.add-funds-history-empty {
+  text-align: center;
+  padding: 2rem 1.25rem;
+  color: var(--text-muted);
+}
+
+.add-funds-history-empty p {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.add-funds-history-empty span {
+  font-size: 0.8125rem;
+}
+
+.add-funds-history-mobile-list {
+  display: none;
+}
+
+.add-funds-history-card {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.add-funds-history-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.add-funds-history-card-top strong {
+  font-size: 0.9375rem;
+}
+
+.add-funds-history-card-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.add-funds-history-card-row span:first-child {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 5.5rem;
+}
+
+.add-funds-history-card-row span:last-child {
+  text-align: right;
+  word-break: break-word;
+}
+
+.add-funds-history-card-row--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.add-funds-history-card-row--stack span:last-child {
+  text-align: left;
+}
+
+.add-funds-history-card-amount {
+  font-weight: 700;
+  color: var(--primary);
+  font-size: 0.9375rem;
+}
+
+.add-funds-history-payment-id {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.add-funds-payment-id-cell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.6875rem;
+  max-width: 12rem;
+  word-break: break-all;
+}
+
+.add-funds-history-table .badge-success {
+  color: var(--badge-success-text);
+  background: rgba(34, 197, 94, 0.18);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.add-funds-history-table .badge-warning {
+  color: var(--badge-warning-text);
+  background: rgba(245, 158, 11, 0.18);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+
+.add-funds-history-table .badge-danger {
+  color: var(--badge-danger-text);
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+@media (max-width: 767px) {
+  .add-funds-history-section {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .add-funds-history-table-wrap {
+    display: none;
+  }
+
+  .add-funds-history-mobile-list {
+    display: block;
+  }
+
+  .add-funds-history-card {
+    margin-bottom: 0.875rem;
+  }
 }
 
 @media (max-width: 640px) {

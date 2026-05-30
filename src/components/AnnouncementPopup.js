@@ -16,8 +16,8 @@ const AnnouncementPopup = () => {
   if (!ann) return null;
 
   return (
-    <div style={overlay}>
-      <div className="card" style={{ maxWidth: 480, margin: 'auto' }}>
+    <div className="modal-overlay" role="presentation">
+      <div className="card modal-panel fade-in" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
         <h3 style={{ marginBottom: 12 }}>{ann.title}</h3>
         <p style={{ color: 'var(--text-muted)', marginBottom: 20, whiteSpace: 'pre-wrap' }}>{ann.content}</p>
         <button className="btn btn-primary" onClick={() => {
@@ -27,11 +27,6 @@ const AnnouncementPopup = () => {
       </div>
     </div>
   );
-};
-
-const overlay = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 9999,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
 };
 
 export default AnnouncementPopup;

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Wallet">
+  <rect width="48" height="48" rx="10" fill="#7c3aed"/>
+  <path fill="#ede9fe" d="M12 18h24c2.2 0 4 1.8 4 4v10c0 2.2-1.8 4-4 4H12c-2.2 0-4-1.8-4-4V22c0-2.2 1.8-4 4-4z"/>
+  <circle cx="34" cy="27" r="2.5" fill="#a78bfa"/>
+  <path fill="#c4b5fd" d="M12 18v-2c0-2.2 1.8-4 4-4h16v6H16c-1.1 0-2 .9-2 2v2z"/>
+</svg>

@@ -44,35 +44,41 @@ const Profile = () => {
   };
 
   return (
-    <UserLayout>
-      <h1 style={{ marginBottom: 8 }}>Profile Settings</h1>
-      <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{BRAND.domain}</p>
-      {msg && <div className={`alert alert-${msg.type === 'error' ? 'error' : 'success'}`}>{msg.text}</div>}
+    <UserLayout title="Profile">
+      <div className="profile-page">
+        <h1 style={{ marginBottom: 8 }}>Profile Settings</h1>
+        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{BRAND.domain}</p>
+        {msg && <div className={`alert alert-${msg.type === 'error' ? 'error' : 'success'}`}>{msg.text}</div>}
 
-      <div className="card" style={{ padding: 24, marginBottom: 20, maxWidth: 520 }}>
-        <h3 style={{ marginBottom: 16 }}>Account</h3>
-        <div className="form-group">
-          <label className="label">Name</label>
-          <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+        <div className="card profile-card" style={{ padding: 24 }}>
+          <h3 style={{ marginBottom: 16 }}>Account</h3>
+          <div className="form-group">
+            <label className="label">Name</label>
+            <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="label">Email</label>
+            <input className="input" value={user.email || ''} disabled />
+          </div>
+          <div className="form-group">
+            <label className="label">Referral code</label>
+            <input className="input" value={user.referral_code || '—'} disabled />
+          </div>
+          <button type="button" className="btn btn-primary" onClick={saveProfile}>Save profile</button>
         </div>
-        <div className="form-group">
-          <label className="label">Email</label>
-          <input className="input" value={user.email || ''} disabled />
-        </div>
-        <div className="form-group">
-          <label className="label">Referral code</label>
-          <input className="input" value={user.referral_code || '—'} disabled />
-        </div>
-        <button type="button" className="btn btn-primary" onClick={saveProfile}>Save profile</button>
-      </div>
 
-      <div className="card" style={{ padding: 24, maxWidth: 520 }}>
-        <h3 style={{ marginBottom: 16 }}>Change password</h3>
-        <input className="input" type="password" placeholder="Current password" value={pw.current}
-          onChange={(e) => setPw({ ...pw, current: e.target.value })} style={{ marginBottom: 10 }} />
-        <input className="input" type="password" placeholder="New password" value={pw.next}
-          onChange={(e) => setPw({ ...pw, next: e.target.value })} style={{ marginBottom: 12 }} />
-        <button type="button" className="btn btn-ghost" onClick={savePassword}>Update password</button>
+        <div className="card profile-card" style={{ padding: 24 }}>
+          <h3 style={{ marginBottom: 16 }}>Change password</h3>
+          <div className="form-group">
+            <input className="input" type="password" placeholder="Current password" value={pw.current}
+              onChange={(e) => setPw({ ...pw, current: e.target.value })} />
+          </div>
+          <div className="form-group">
+            <input className="input" type="password" placeholder="New password" value={pw.next}
+              onChange={(e) => setPw({ ...pw, next: e.target.value })} />
+          </div>
+          <button type="button" className="btn btn-ghost" onClick={savePassword}>Update password</button>
+        </div>
       </div>
     </UserLayout>
   );

@@ -23,12 +23,16 @@ const AdminLayout = ({ children }) => {
           >
             <span className="hamburger"><span /><span /><span /></span>
           </button>
-          <span className="mobile-header-title">👑 Admin</span>
-          <span className="mobile-header-balance" style={{ fontSize: 12 }}>ABHAYSMM</span>
+          <div className="admin-mobile-header-brand">
+            <span className="admin-mobile-header-eyebrow">ABHAYSMM</span>
+            <span className="admin-mobile-header-title">👑 Admin Panel</span>
+          </div>
         </header>
       )}
       <AdminSidebar mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className={`main admin-main fade-in${isMobile ? ' has-mobile-chrome' : ''}`}>{children}</div>
+      <div className={`main admin-main fade-in${isMobile ? ' has-mobile-chrome' : ''}`}>
+        <div className="admin-panel-scroll">{children}</div>
+      </div>
     </div>
   );
 };

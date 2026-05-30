@@ -67,8 +67,9 @@ const Orders = () => {
   const canCancel = (o) => ['pending', 'processing', 'active'].includes(o.status);
 
   return (
-    <UserLayout>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12, marginBottom: 24 }}>
+    <UserLayout title="Orders">
+      <div className="orders-page">
+      <div className="page-header orders-page-header">
         <div>
           <h1 style={{ marginBottom: 8 }}>My Orders</h1>
           <p style={{ color: 'var(--text-muted)', margin: 0 }}>Status syncs automatically every 2 minutes</p>
@@ -165,6 +166,7 @@ const Orders = () => {
         </div>
         </>
       )}
+      </div>
     </UserLayout>
   );
 };

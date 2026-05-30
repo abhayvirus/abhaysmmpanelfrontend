@@ -1,0 +1,173 @@
+/**
+ * Light / dark theme tokens — applied via data-theme on <html>.
+ * Primary/accent may be overridden inline from admin settings.
+ */
+
+[data-theme="dark"] {
+  --bg: #070b12;
+  --bg-card: #0f1623;
+  --bg-hover: #1a2535;
+  --text: #e8edf5;
+  --text-secondary: #a8b8cc;
+  --text-muted: #8b9cb3;
+  --border: #1e2d42;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --chrome-bg: rgba(12, 21, 38, 0.96);
+  --overlay-bg: rgba(7, 11, 18, 0.88);
+  --modal-overlay: rgba(0, 0, 0, 0.75);
+  --table-row-hover: rgba(99, 102, 241, 0.08);
+  --alert-error-text: #fca5a5;
+  --alert-success-text: #86efac;
+  --primary-glow: rgba(37, 99, 235, 0.35);
+  --sidebar-active-text: #ffffff;
+  --badge-success-text: #86efac;
+  --badge-warning-text: #fcd34d;
+  --badge-danger-text: #fca5a5;
+  --add-funds-chip-active-text: #dbeafe;
+  --add-funds-gateway-text: #86efac;
+  --add-funds-hero-bg: linear-gradient(
+    145deg,
+    rgba(15, 22, 35, 0.98) 0%,
+    rgba(10, 18, 32, 0.95) 50%,
+    rgba(20, 30, 50, 0.9) 100%
+  );
+  --add-funds-hero-shadow: 0 20px 50px rgba(0, 0, 0, 0.35), 0 0 40px rgba(37, 99, 235, 0.08);
+  --add-funds-card-brand-bg: rgba(255, 255, 255, 0.04);
+  --logo-ring: rgba(201, 168, 124, 0.55);
+  --logo-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme="light"] {
+  --bg: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f5f9;
+  --text: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --shadow: 0 4px 24px rgba(15, 23, 42, 0.08);
+  --chrome-bg: rgba(255, 255, 255, 0.96);
+  --overlay-bg: rgba(248, 250, 252, 0.92);
+  --modal-overlay: rgba(15, 23, 42, 0.45);
+  --table-row-hover: rgba(37, 99, 235, 0.06);
+  --alert-error-text: #b91c1c;
+  --alert-success-text: #15803d;
+  --primary-glow: rgba(37, 99, 235, 0.18);
+  --sidebar-active-text: #ffffff;
+  --badge-success-text: #15803d;
+  --badge-warning-text: #b45309;
+  --badge-danger-text: #b91c1c;
+  --add-funds-chip-active-text: #1d4ed8;
+  --add-funds-gateway-text: #15803d;
+  --add-funds-hero-bg: linear-gradient(145deg, #ffffff 0%, #f8fafc 45%, #f1f5f9 100%);
+  --add-funds-hero-shadow: 0 4px 24px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(37, 99, 235, 0.12);
+  --add-funds-card-brand-bg: #f8fafc;
+  --logo-ring: rgba(37, 99, 235, 0.35);
+  --logo-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+}
+
+/* Fallback before JS sets data-theme */
+:root:not([data-theme]) {
+  --bg: #070b12;
+  --bg-card: #0f1623;
+  --bg-hover: #1a2535;
+  --text: #e8edf5;
+  --text-secondary: #a8b8cc;
+  --text-muted: #8b9cb3;
+  --border: #1e2d42;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --chrome-bg: rgba(12, 21, 38, 0.96);
+  --overlay-bg: rgba(7, 11, 18, 0.88);
+  --modal-overlay: rgba(0, 0, 0, 0.75);
+  --table-row-hover: rgba(99, 102, 241, 0.08);
+  --alert-error-text: #fca5a5;
+  --alert-success-text: #86efac;
+  --primary-glow: rgba(37, 99, 235, 0.35);
+  --sidebar-active-text: #ffffff;
+  --badge-success-text: #86efac;
+  --badge-warning-text: #fcd34d;
+  --badge-danger-text: #fca5a5;
+  --add-funds-chip-active-text: #dbeafe;
+  --add-funds-gateway-text: #86efac;
+  --add-funds-hero-bg: linear-gradient(
+    145deg,
+    rgba(15, 22, 35, 0.98) 0%,
+    rgba(10, 18, 32, 0.95) 50%,
+    rgba(20, 30, 50, 0.9) 100%
+  );
+  --add-funds-hero-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  --add-funds-card-brand-bg: rgba(255, 255, 255, 0.04);
+  --logo-ring: rgba(201, 168, 124, 0.55);
+  --logo-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+/* ——— Add Funds light polish ——— */
+[data-theme="light"] .add-funds-hero-card::before {
+  background: radial-gradient(ellipse, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
+}
+
+[data-theme="light"] .add-funds-method-chip--active {
+  box-shadow:
+    0 0 0 2px rgba(37, 99, 235, 0.25),
+    0 4px 16px rgba(37, 99, 235, 0.15);
+}
+
+[data-theme="light"] .add-funds-live-badge {
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+[data-theme="light"] .add-funds-payment-summary {
+  background: rgba(37, 99, 235, 0.05);
+  border-color: rgba(37, 99, 235, 0.18);
+}
+
+[data-theme="light"] .add-funds-history-table .badge-success,
+[data-theme="light"] .add-funds-history-card .badge-success {
+  color: var(--badge-success-text);
+  background: rgba(34, 197, 94, 0.12);
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+[data-theme="light"] .add-funds-history-table .badge-warning,
+[data-theme="light"] .add-funds-history-card .badge-warning {
+  color: var(--badge-warning-text);
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="light"] .add-funds-history-table .badge-danger,
+[data-theme="light"] .add-funds-history-card .badge-danger {
+  color: var(--badge-danger-text);
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.28);
+}
+
+/* ——— Sidebar tools ——— */
+.sidebar-tools .theme-toggle,
+.sidebar-tools .lang-select {
+  color: var(--text);
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+
+.sidebar-tools .lang-select option {
+  color: var(--text);
+  background: var(--bg-card);
+}
+
+[data-theme="light"] .sidebar-tools .theme-toggle:hover,
+[data-theme="light"] .sidebar-tools .lang-select:hover {
+  border-color: var(--primary);
+}
+
+/* ——— Brand logo ——— */
+[data-theme="light"] .brand-logo-circle {
+  border-color: var(--logo-ring);
+  box-shadow: var(--logo-shadow), 0 0 12px var(--primary-glow);
+}
+
+[data-theme="light"] .hero-logo-wrap {
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2), 0 8px 24px rgba(15, 23, 42, 0.1);
+}

@@ -37,7 +37,9 @@ const UserLayout = ({ children, title }) => {
         />
       )}
       <Sidebar user={user} mobileOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-      <main className={`main page-main${isMobile ? ' has-mobile-chrome' : ''}`}>{children}</main>
+      <main className={`main page-main${isMobile ? ' has-mobile-chrome' : ''}`}>
+        <div className="user-panel-scroll">{children}</div>
+      </main>
       {isMobile && <MobileBottomNav onMoreClick={() => setMenuOpen(true)} />}
       <AnnouncementPopup />
     </div>

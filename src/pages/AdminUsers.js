@@ -27,8 +27,8 @@ const AdminUsers = () => {
 
   return (
     <AdminLayout>
-      <h1 style={{ marginBottom: 24 }}>User Management</h1>
-      <div className="table-wrap card">
+      <h1 className="admin-page-title">User Management</h1>
+      <div className="admin-table-wrap table-wrap card">
         <table className="table">
           <thead>
             <tr>
@@ -109,6 +109,74 @@ const AdminUsers = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="admin-mobile-list">
+        {users.map((user) => (
+          <div key={user.id} className="card admin-mobile-card">
+            <div className="admin-mobile-card-top">
+              <strong>{user.name}</strong>
+              <span className={`badge ${user.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>{user.status}</span>
+            </div>
+            <div className="admin-mobile-row"><span>Email</span><span>{user.email}</span></div>
+            <div className="admin-mobile-row">
+              <span>Balance</span>
+              <span>
+                {editing === user.id ? (
+                  <input
+                    type="number"
+                    className="input"
+                    style={{ width: '100%', maxWidth: 120 }}
+                    value={editData.balance}
+                    onChange={(e) => setEditData((p) => ({ ...p, balance: e.target.value }))}
+                  />
+                ) : (
+                  <strong style={{ color: 'var(--primary)' }}>₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
+                )}
+              </span>
+            </div>
+            <div className="admin-mobile-row"><span>Deposits</span><span>₹{parseFloat(user.total_deposits || 0).toFixed(2)}</span></div>
+            <div className="admin-mobile-row"><span>Spent</span><span>₹{parseFloat(user.total_spent || 0).toFixed(2)}</span></div>
+            <div className="admin-mobile-row">
+              <span>Role</span>
+              <span>
+                {editing === user.id ? (
+                  <select className="select" value={editData.role} onChange={(e) => setEditData((p) => ({ ...p, role: e.target.value }))}>
+                    <option value="user">user</option>
+                    <option value="admin">admin</option>
+                  </select>
+                ) : (
+                  user.role
+                )}
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
+              {editing === user.id ? (
+                <>
+                  <button type="button" className="btn btn-primary btn-sm" style={{ flex: 1 }} onClick={() => saveEdit(user.id)}>Save</button>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => setEditing(null)}>Cancel</button>
+                </>
+              ) : (
+                <>
+                  <button type="button" className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => startEdit(user)}>Edit</button>
+                  {user.role !== 'admin' && (
+                    <button
+                      type="button"
+                      className="btn btn-danger btn-sm"
+                      style={{ flex: 1 }}
+                      onClick={() => window.confirm('Delete user?') && adminDeleteUser(user.id).then(load)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        ))}
+        {!users.length && (
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 24 }}>No users</p>
+        )}
       </div>
     </AdminLayout>
   );

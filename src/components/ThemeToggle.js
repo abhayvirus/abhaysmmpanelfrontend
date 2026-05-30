@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { applyThemeToDocument } from '../contexts/SettingsContext';
+import { applyThemeToDocument, getResolvedThemeMode } from '../contexts/SettingsContext';
 import { useSettings } from '../contexts/SettingsContext';
 import { updatePreferences } from '../api';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -7,11 +7,18 @@ import { useLanguage } from '../contexts/LanguageContext';
 const ThemeToggle = () => {
   const { settings, refresh } = useSettings();
   const { t } = useLanguage();
-  const [mode, setMode] = useState(() => localStorage.getItem('user_theme') || settings.theme_mode || 'dark');
+  const [mode, setMode] = useState(() => getResolvedThemeMode(settings));
 
   useEffect(() => {
     applyThemeToDocument({ ...settings, theme_mode: mode });
   }, [mode, settings]);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('user_theme');
+    if (!stored && settings.theme_mode && settings.theme_mode !== mode) {
+      setMode(settings.theme_mode);
+    }
+  }, [settings.theme_mode, mode]);
 
   const toggle = async () => {
     const next = mode === 'dark' ? 'light' : 'dark';

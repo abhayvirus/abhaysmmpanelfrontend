@@ -25,12 +25,12 @@ class ErrorBoundary extends React.Component {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 24,
-        background: '#070b12',
-        color: '#e8edf5',
+        background: 'var(--bg)',
+        color: 'var(--text)',
       }}>
         <div className="card" style={{ maxWidth: 480 }}>
           <h1 style={{ marginBottom: 12 }}>Something went wrong</h1>
-          <p style={{ color: '#8b9cb3', marginBottom: 16, fontSize: 14 }}>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 16, fontSize: 14 }}>
             {error.message || 'The page failed to load.'}
           </p>
           <button

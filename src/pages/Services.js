@@ -48,7 +48,8 @@ const Services = () => {
   };
 
   return (
-    <UserLayout>
+    <UserLayout title="Services">
+      <div className="services-page">
       <div className="page-header">
         <div>
           <h1 style={{ marginBottom: 8 }}>Services</h1>
@@ -59,7 +60,7 @@ const Services = () => {
       {toast && <div className="alert alert-success">{toast}</div>}
 
       {/* Filters */}
-      <div className="card" style={{ marginBottom: 24 }}>
+      <div className="card services-filter-card" style={{ marginBottom: 24 }}>
         <input
           className="input"
           placeholder="🔍 Search by name, category, platform..."
@@ -129,6 +130,7 @@ const Services = () => {
         onClose={() => setOrderService(null)}
         onSuccess={(data) => showToast(`Order #${data.order_id} placed! Charged ${sym}${data.amount_charged}`)}
       />
+      </div>
     </UserLayout>
   );
 };

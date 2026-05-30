@@ -1,0 +1,386 @@
+/**
+ * Admin panel — mobile / tablet responsiveness
+ * Breakpoints: 320–767px (phones), 768px+ desktop layout
+ */
+
+:root {
+  --admin-mobile-header-h: 3.5rem;
+}
+
+.admin-layout {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.admin-panel-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
+.admin-panel-scroll > h1,
+.admin-panel-scroll .admin-page-title {
+  font-size: clamp(1.125rem, 4.5vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 0.25rem;
+  word-break: break-word;
+}
+
+.admin-panel-scroll > p.admin-page-sub,
+.admin-panel-scroll .admin-page-sub {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 1.25rem;
+  word-break: break-word;
+}
+
+.admin-panel-scroll .input,
+.admin-panel-scroll .select,
+.admin-panel-scroll .textarea,
+.admin-panel-scroll button.btn {
+  max-width: 100%;
+}
+
+.admin-panel-scroll img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ——— Mobile admin header ——— */
+.admin-mobile-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 160;
+  min-height: var(--admin-mobile-header-h);
+  padding-top: env(safe-area-inset-top, 0px);
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.admin-mobile-header-brand {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.15;
+  overflow: hidden;
+}
+
+.admin-mobile-header-eyebrow {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.admin-mobile-header-title {
+  font-size: clamp(0.875rem, 3.5vw, 1rem);
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ——— Dashboard stats (compact on mobile) ——— */
+.admin-dashboard-page .admin-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-dashboard-page .admin-stat-card {
+  padding: 1rem;
+  min-height: auto;
+}
+
+.admin-dashboard-page .admin-stat-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.admin-dashboard-page .admin-stat-card .stat-value {
+  font-size: 1.5rem !important;
+  -webkit-text-fill-color: unset;
+  background: none;
+  color: var(--primary);
+}
+
+.admin-dashboard-page .admin-stat-card .stat-label {
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* ——— Quick actions ——— */
+.admin-quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-quick-actions .btn {
+  width: 100%;
+  min-height: 2.75rem;
+  justify-content: space-between;
+  margin-bottom: 0 !important;
+}
+
+/* ——— Table ↔ mobile cards ——— */
+.admin-mobile-list {
+  display: none;
+}
+
+.admin-mobile-card {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+}
+
+.admin-mobile-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+
+.admin-mobile-card-top strong {
+  font-size: 0.9375rem;
+  word-break: break-word;
+}
+
+.admin-mobile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0;
+  line-height: 1.45;
+}
+
+.admin-mobile-row span:first-child {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 4.5rem;
+}
+
+.admin-mobile-row span:last-child {
+  text-align: right;
+  word-break: break-word;
+}
+
+.admin-mobile-row a {
+  color: var(--primary);
+}
+
+/* ——— Admin services table → stacked rows ——— */
+.admin-services-table-wrap {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-services-filters .input {
+  width: 100%;
+  max-width: 100%;
+}
+
+.admin-services-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+/* ——— Settings preview hide on small screens ——— */
+@media (max-width: 767px) {
+  .admin-main.has-mobile-chrome {
+    padding-top: calc(
+      var(--admin-mobile-header-h) + env(safe-area-inset-top, 0px) + 0.75rem
+    ) !important;
+    padding-right: 1rem !important;
+    padding-bottom: 1.25rem !important;
+    padding-left: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box;
+  }
+
+  .admin-panel-scroll {
+    padding-bottom: 0.5rem;
+  }
+
+  .admin-panel-scroll .stats-grid,
+  .admin-dashboard-page .admin-stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem;
+  }
+
+  .admin-panel-scroll .stat-card {
+    padding: 1rem;
+  }
+
+  .admin-panel-scroll .stat-card > div:first-child {
+    font-size: 2rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  .admin-panel-scroll .stat-value {
+    font-size: 1.5rem !important;
+  }
+
+  .admin-panel-scroll .stat-label {
+    font-size: 0.875rem;
+  }
+
+  .admin-panel-scroll .responsive-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .admin-panel-scroll .page-header,
+  .admin-panel-scroll > div[style*='justifyContent'] {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .admin-panel-scroll .page-header .btn,
+  .admin-panel-scroll > div[style*='justifyContent'] > .btn {
+    width: 100%;
+  }
+
+  .admin-table-wrap {
+    display: none !important;
+  }
+
+  .admin-mobile-list {
+    display: block;
+  }
+
+  /* Prevent forced horizontal scroll on card tables */
+  .admin-panel-scroll .card > table,
+  .admin-panel-scroll .table-wrap table {
+    display: table;
+    width: 100%;
+    overflow-x: visible;
+  }
+
+  .admin-panel-scroll .table-wrap:not(.admin-table-wrap) {
+    overflow-x: visible;
+    border: none;
+    margin: 0;
+  }
+
+  .settings-admin-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .admin-services-table-wrap {
+    overflow-x: visible;
+  }
+
+  .admin-services-table-wrap table thead {
+    display: none;
+  }
+
+  .admin-services-table-wrap table,
+  .admin-services-table-wrap tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-services-table-wrap tr {
+    display: block;
+    margin-bottom: 0.875rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-card);
+  }
+
+  .admin-services-table-wrap td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.4rem 0 !important;
+    border: none !important;
+    font-size: 0.8125rem !important;
+    color: var(--text) !important;
+    max-width: none !important;
+    white-space: normal !important;
+  }
+
+  .admin-services-table-wrap td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    min-width: 5.5rem;
+  }
+
+  .admin-services-table-wrap td:last-child {
+    justify-content: flex-end;
+    padding-top: 0.5rem !important;
+  }
+
+  .admin-services-table-wrap td:last-child::before {
+    display: none;
+  }
+
+  .admin-panel-scroll .btn-sm {
+    min-height: 2.5rem;
+  }
+
+  .admin-funds-card-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .admin-funds-card-actions .btn {
+    width: 100%;
+  }
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .admin-main.has-mobile-chrome {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+
+  .admin-mobile-card {
+    padding: 0.875rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .admin-mobile-list {
+    display: none !important;
+  }
+
+  .admin-table-wrap {
+    display: block !important;
+  }
+
+  .admin-dashboard-page .admin-stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  }
+}

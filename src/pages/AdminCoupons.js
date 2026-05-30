@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import AdminLayout from '../components/AdminLayout';
+import AdminResponsiveTable from '../components/AdminResponsiveTable';
 import { adminGetCoupons, adminCreateCoupon, adminDeleteCoupon } from '../api';
 
 const AdminCoupons = () => {
@@ -17,9 +18,29 @@ const AdminCoupons = () => {
     load();
   };
 
+  const columns = [
+    { key: 'code', label: 'Code', render: (c) => <strong>{c.code}</strong> },
+    { key: 'discount_type', label: 'Type' },
+    { key: 'discount_value', label: 'Value' },
+    {
+      key: 'used_count',
+      label: 'Used',
+      render: (c) => `${c.used_count}${c.max_uses ? ` / ${c.max_uses}` : ''}`,
+    },
+    {
+      key: 'actions',
+      label: '',
+      render: (c) => (
+        <button type="button" className="btn btn-danger btn-sm" onClick={() => adminDeleteCoupon(c.id).then(load)}>
+          Delete
+        </button>
+      ),
+    },
+  ];
+
   return (
     <AdminLayout>
-      <h1 style={{ marginBottom: 24 }}>Coupons</h1>
+      <h1 className="admin-page-title">Coupons</h1>
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
         <h3 style={{ marginBottom: 12 }}>Create coupon</h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
@@ -32,23 +53,12 @@ const AdminCoupons = () => {
           <input className="input" type="number" placeholder="Min amount" value={form.min_amount} onChange={(e) => setForm({ ...form, min_amount: e.target.value })} />
           <input className="input" type="number" placeholder="Max uses" value={form.max_uses} onChange={(e) => setForm({ ...form, max_uses: e.target.value })} />
         </div>
-        <button type="button" className="btn btn-primary" style={{ marginTop: 12 }} onClick={create}>Create</button>
+        <button type="button" className="btn btn-primary" style={{ marginTop: 12, width: '100%', maxWidth: 280 }} onClick={create}>
+          Create
+        </button>
       </div>
-      <div className="table-wrap card">
-        <table className="table">
-          <thead><tr><th>Code</th><th>Type</th><th>Value</th><th>Used</th><th></th></tr></thead>
-          <tbody>
-            {list.map((c) => (
-              <tr key={c.id}>
-                <td><strong>{c.code}</strong></td>
-                <td>{c.discount_type}</td>
-                <td>{c.discount_value}</td>
-                <td>{c.used_count}{c.max_uses ? ` / ${c.max_uses}` : ''}</td>
-                <td><button type="button" className="btn btn-danger btn-sm" onClick={() => adminDeleteCoupon(c.id).then(load)}>Delete</button></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="card" style={{ padding: 0 }}>
+        <AdminResponsiveTable columns={columns} rows={list} emptyMessage="No coupons" />
       </div>
     </AdminLayout>
   );

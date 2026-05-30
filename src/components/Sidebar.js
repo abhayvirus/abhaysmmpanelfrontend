@@ -48,10 +48,9 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     { to: '/add-funds', label: t('nav.funds'), icon: '💳' },
     { to: '/tickets', label: t('nav.support'), icon: '🎫' },
     { to: '/notifications', label: t('nav.notifications'), icon: '🔔', badge: unread },
-    { to: '/referrals', label: t('nav.referrals'), icon: '🎁' },
+    ...(settings.feature_referrals !== false ? [{ to: '/referrals', label: t('nav.referrals'), icon: '🎁' }] : []),
     { to: '/api-docs', label: 'API Docs', icon: '🔌' },
-    { to: '/child-panel', label: 'Child Panel', icon: '🌐' },
-    { to: '/download-app', label: t('nav.download'), icon: '📱' },
+    ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: 'Child Panel', icon: '🌐' }] : []),
     { to: '/profile', label: 'Profile', icon: '⚙️' },
   ];
 

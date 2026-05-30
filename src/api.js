@@ -58,8 +58,12 @@ export const resendVerification = (email) => API.post('/auth/resend-verification
 export const getChatMessages = () => API.get('/chat/my');
 export const sendChatMessage = (message) => API.post('/chat', { message });
 export const adminGetChatConversations = () => API.get('/chat/admin/conversations');
-export const adminGetChatMessages = (userId) => API.get(`/chat/admin/user/${userId}`);
+export const adminGetChatThread = (userId) => API.get(`/chat/admin/user/${userId}`);
+/** @deprecated use adminGetChatThread */
+export const adminGetChatMessages = adminGetChatThread;
 export const adminReplyChat = (userId, message) => API.post(`/chat/admin/user/${userId}`, { message });
+export const adminDeleteChatMessage = (messageId) => API.delete(`/chat/admin/messages/${messageId}`);
+export const adminResolveChat = (userId) => API.post(`/chat/admin/user/${userId}/resolve`);
 
 // Referrals & coupons
 export const getReferrals = () => API.get('/referrals/my');
@@ -144,15 +148,19 @@ export const adminGetFundRequests = () => API.get('/admin/fund-requests');
 export const adminUpdateFundRequest = (id, data) => API.put(`/admin/fund-requests/${id}`, data);
 export const adminGetAllOrders = () => API.get('/orders/admin/all');
 export const adminUpdateOrderStatus = (id, status) => API.put(`/admin/orders/${id}/status`, { status });
+export const adminDeleteOrder = (id) => API.delete(`/admin/orders/${id}`);
 export const adminGetServices = () => API.get('/services/admin/all');
 export const adminSyncServices = (provider_id) => API.post('/services/admin/sync', { provider_id });
 export const adminProviderStatus = (provider_id) => API.get('/services/admin/provider-status', { params: { provider_id } });
+export const adminTestConnection = (provider_id) => API.post('/services/admin/test-connection', { provider_id });
 export const adminCreateService = (data) => API.post('/services/admin', data);
 export const adminUpdateService = (id, data) => API.put(`/services/admin/${id}`, data);
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);
 export const adminUploadQR = (formData) => API.post('/settings/admin/qr', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminUploadLogo = (formData) => API.post('/settings/admin/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const adminDeleteQR = () => API.delete('/settings/admin/qr');
+export const adminDeleteLogo = () => API.delete('/settings/admin/logo');
 export const adminUploadApk = (formData) => API.post('/settings/admin/apk', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminUploadAppScreenshot = (formData) => API.post('/settings/admin/screenshot', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminDeleteAppScreenshot = (index) => API.delete(`/settings/admin/screenshots/${index}`);

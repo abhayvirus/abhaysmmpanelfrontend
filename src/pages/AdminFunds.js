@@ -47,7 +47,7 @@ const AdminFunds = () => {
 
   return (
     <AdminLayout>
-      <h1 style={{ marginBottom: 8 }}>Payment Approvals</h1>
+      <h1 className="admin-page-title">Payment Approvals</h1>
       <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>
         Approve UTR/QR payments — wallet updates automatically on approval.
       </p>

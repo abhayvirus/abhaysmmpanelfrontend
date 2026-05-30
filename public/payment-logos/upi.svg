@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="UPI">
+  <rect width="48" height="48" rx="10" fill="#1a1f36"/>
+  <path fill="#6dbe45" d="M10 28h28v4H10z"/>
+  <path fill="#f99d1c" d="M14 16h6v12h-6z"/>
+  <path fill="#5f259f" d="M22 16h6v12h-6z"/>
+  <path fill="#00baf2" d="M30 16h4v12h-4z"/>
+</svg>

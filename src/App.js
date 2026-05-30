@@ -7,7 +7,6 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import PremiumFeatures from './components/PremiumFeatures';
 import MaintenanceGate from './components/MaintenanceGate';
 import Home from './pages/Home';
-import DownloadApp from './pages/DownloadApp';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -62,7 +61,6 @@ function AppRoutes() {
           <PremiumFeatures />
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/download-app" element={<DownloadApp />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

@@ -1,29 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
+import AdminResponsiveTable from '../components/AdminResponsiveTable';
 import { adminGetTickets } from '../api';
 
 const AdminTickets = () => {
   const [tickets, setTickets] = useState([]);
   useEffect(() => { adminGetTickets().then((r) => setTickets(r.data)); }, []);
 
+  const columns = [
+    { key: 'id', label: 'ID', render: (t) => `#${t.id}` },
+    { key: 'user_name', label: 'User' },
+    { key: 'subject', label: 'Subject' },
+    {
+      key: 'status',
+      label: 'Status',
+      highlight: true,
+      render: (t) => <span className="badge badge-info">{t.status}</span>,
+    },
+    {
+      key: 'view',
+      label: '',
+      render: (t) => <Link to={`/tickets/${t.id}`}>View</Link>,
+    },
+  ];
+
   return (
     <AdminLayout>
-      <h1 style={{ marginBottom: 24 }}>Support Tickets</h1>
-      <div className="table-wrap">
-        <table>
-          <thead><tr><th>ID</th><th>User</th><th>Subject</th><th>Status</th><th></th></tr></thead>
-          <tbody>
-            {tickets.map((t) => (
-              <tr key={t.id}>
-                <td>#{t.id}</td><td>{t.user_name}</td><td>{t.subject}</td>
-                <td><span className="badge badge-info">{t.status}</span></td>
-                <td><Link to={`/tickets/${t.id}`}>View</Link></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <h1 className="admin-page-title">Support Tickets</h1>
+      <AdminResponsiveTable columns={columns} rows={tickets} emptyMessage="No tickets" />
     </AdminLayout>
   );
 };

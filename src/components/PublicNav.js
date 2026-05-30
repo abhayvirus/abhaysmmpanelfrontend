@@ -42,7 +42,6 @@ const PublicNav = () => {
               <Link to="/signup" className="btn btn-primary">Get Started</Link>
             </>
           )}
-          <Link to="/download-app" className="btn btn-ghost">📱 Download App</Link>
         </div>
         <button
           type="button"
@@ -75,7 +74,6 @@ const PublicNav = () => {
                   <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>Get Started</Link>
                 </>
               )}
-              <Link to="/download-app" className="btn btn-ghost nav-drawer-btn" onClick={close}>📱 Download App</Link>
             </nav>
           </div>
         </div>

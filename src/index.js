@@ -1,7 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import './styles/themes.css';
 import './index.css';
 import './styles/responsive.css';
+import './styles/floatingWidgets.css';
+import './styles/userPanelMobile.css';
+import './styles/adminMobile.css';
+import './styles/adminOrders.css';
+import './styles/adminChat.css';
+import './styles/adminSettings.css';
 import './styles/addFunds.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';

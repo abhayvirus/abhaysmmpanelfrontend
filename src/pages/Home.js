@@ -33,7 +33,6 @@ const Home = () => {
         <p>{settings.site_tagline || BRAND.tagline}</p>
         <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
           <Link to="/signup" className="btn btn-primary btn-lg">Create Free Account</Link>
-          <Link to="/download-app" className="btn btn-ghost btn-lg">📱 Download App</Link>
         </div>
         <div className="stats-grid home-stats" style={{ marginTop: 48, maxWidth: 900, width: '100%' }}>
           <div className="stat-card">

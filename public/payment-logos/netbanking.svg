@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-label="Netbanking">
+  <rect width="48" height="48" rx="10" fill="#0f766e"/>
+  <path fill="#fff" d="M10 34V18h6l8 10V18h6v16h-6l-8-10v10H10z"/>
+  <rect x="32" y="18" width="6" height="16" rx="1" fill="#99f6e4"/>
+</svg>

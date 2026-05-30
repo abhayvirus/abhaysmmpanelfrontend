@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import UserLayout from '../components/UserLayout';
 import SuccessModal from '../components/SuccessModal';
 import {
@@ -18,27 +18,18 @@ import {
   buildRazorpayCheckoutOptions,
   openRazorpayModal,
 } from '../utils/razorpayCheckout';
+import PaymentMethodLogo from '../components/PaymentMethodLogo';
+import { PAYMENT_METHODS, CARD_BRANDS, getPaymentMethod } from '../config/paymentMethods';
+
+const ALL_PAYMENT_IDS = PAYMENT_METHODS.map((m) => m.id);
+
+function getEnabledPaymentMethods(settings) {
+  const enabled = settings?.payment_methods_enabled;
+  const ids = Array.isArray(enabled) && enabled.length ? enabled : ALL_PAYMENT_IDS;
+  return PAYMENT_METHODS.filter((m) => ids.includes(m.id));
+}
 
 const QUICK_AMOUNTS = [100, 250, 500, 1000, 2000];
-
-const PAYMENT_METHODS = [
-  { id: 'upi', icon: '⚡', label: 'UPI', gateway: 'upi' },
-  { id: 'gpay', icon: 'G', label: 'Google Pay', gateway: 'upi' },
-  { id: 'phonepe', icon: 'Pe', label: 'PhonePe', gateway: 'upi' },
-  { id: 'paytm', icon: 'Pt', label: 'Paytm', gateway: 'upi' },
-  { id: 'bhim', icon: 'B', label: 'BHIM', gateway: 'upi' },
-  { id: 'scanqr', icon: '▣', label: 'Scan QR', gateway: 'upi' },
-  { id: 'card', icon: '💳', label: 'Cards', gateway: 'card' },
-  { id: 'netbanking', icon: '🏦', label: 'Netbanking', gateway: 'netbanking' },
-  { id: 'wallet', icon: '👛', label: 'Wallets', gateway: 'wallet' },
-];
-
-const CARD_BRANDS = [
-  { id: 'visa', label: 'VISA' },
-  { id: 'mc', label: 'Mastercard' },
-  { id: 'rupay', label: 'RuPay' },
-  { id: 'amex', label: 'Amex' },
-];
 
 const statusBadge = (status) => {
   const map = {
@@ -51,8 +42,37 @@ const statusBadge = (status) => {
   return map[status] || 'badge-info';
 };
 
+const statusLabel = (status) => {
+  const map = {
+    pending: 'Pending',
+    completed: 'Success',
+    rejected: 'Failed',
+    failed: 'Failed',
+    refunded: 'Refunded',
+  };
+  return map[status] || status;
+};
+
+const formatPaymentDate = (iso) => {
+  try {
+    return new Date(iso).toLocaleString('en-IN', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  } catch {
+    return iso;
+  }
+};
+
+const sortPaymentsNewestFirst = (list) =>
+  [...list].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
 const AddFunds = () => {
   const { settings } = useSettings();
+  const paymentMethods = useMemo(() => getEnabledPaymentMethods(settings), [settings]);
   const sym = settings.currency_symbol || '₹';
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
@@ -61,6 +81,12 @@ const AddFunds = () => {
   const [couponCode, setCouponCode] = useState('');
   const [couponInfo, setCouponInfo] = useState(null);
   const [selectedMethod, setSelectedMethod] = useState('upi');
+
+  useEffect(() => {
+    if (!paymentMethods.find((m) => m.id === selectedMethod)) {
+      setSelectedMethod(paymentMethods[0]?.id || 'upi');
+    }
+  }, [paymentMethods, selectedMethod]);
   const [razorpayConfig, setRazorpayConfig] = useState({
     razorpayConfigured: false,
     razorpayEnabled: false,
@@ -92,8 +118,16 @@ const AddFunds = () => {
   }, []);
 
   const load = useCallback(() => {
-    getPaymentHistory().then((r) => setHistory(r.data)).catch(() => {});
-    getTransactions().then((r) => setTransactions(r.data)).catch(() => {});
+    getPaymentHistory()
+      .then((r) => setHistory(sortPaymentsNewestFirst(r.data || [])))
+      .catch(() => setHistory([]));
+    getTransactions()
+      .then((r) => {
+        const rows = r.data || [];
+        rows.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        setTransactions(rows);
+      })
+      .catch(() => setTransactions([]));
     refreshWallet();
   }, [refreshWallet]);
 
@@ -146,13 +180,13 @@ const AddFunds = () => {
 
   const showToast = (type, message) => setToast({ type, message });
 
+  const selectedMethodMeta = getPaymentMethod(selectedMethod);
+
   const payButtonLabel = () => {
     if (payPhase === 'creating') return 'Creating secure payment...';
     if (payPhase === 'verifying') return 'Verifying payment...';
-    return `Pay ${sym}${payableAmount.toFixed(2)} with Razorpay`;
+    return `Pay ${sym}${payableAmount.toFixed(2)} with ${selectedMethodMeta.payLabel}`;
   };
-
-  const selectedMethodMeta = PAYMENT_METHODS.find((m) => m.id === selectedMethod) || PAYMENT_METHODS[0];
 
   const applyCoupon = async () => {
     const amt = parseFloat(amount) || 0;
@@ -232,6 +266,7 @@ const AddFunds = () => {
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
+              payment_method: selectedMethodMeta.payLabel,
             });
             const newBal = parseFloat(v.data.balance);
             const added = parseFloat(v.data.balance_added);
@@ -349,10 +384,6 @@ const AddFunds = () => {
             <p className="add-funds-secure-sub">UPI • Cards • Netbanking • Wallets</p>
           </div>
         </div>
-        <p style={{ margin: '0 0 10px', fontSize: 12, color: 'var(--text-muted)' }}>
-          Selected method: <strong style={{ color: 'var(--text)' }}>{selectedMethodMeta.label}</strong>
-        </p>
-
         {!razorpayReady && (
           <div className="alert alert-error" style={{ marginBottom: 16 }}>
             Razorpay is not configured on the server. Add valid{' '}
@@ -366,15 +397,16 @@ const AddFunds = () => {
         )}
 
         <div className="add-funds-methods-grid" aria-label="Accepted payment methods">
-          {PAYMENT_METHODS.map((m) => (
+          {paymentMethods.map((m) => (
             <button
               type="button"
-              key={m.label}
+              key={m.id}
               className={`add-funds-method-chip${selectedMethod === m.id ? ' add-funds-method-chip--active' : ''}`}
               onClick={() => setSelectedMethod(m.id)}
               disabled={paying}
+              aria-pressed={selectedMethod === m.id}
             >
-              <span>{m.icon}</span>
+              <PaymentMethodLogo id={m.logo} size={32} className="add-funds-method-chip-logo" alt={m.label} />
               <span>{m.label}</span>
             </button>
           ))}
@@ -429,31 +461,47 @@ const AddFunds = () => {
           )}
         </div>
 
-        <div className="add-funds-summary">
-          <span>Total to pay</span>
-          <strong>{sym}{payableAmount.toFixed(2)}</strong>
+        <div className="add-funds-payment-summary" aria-live="polite">
+          <div className="add-funds-payment-summary-row">
+            <span className="add-funds-payment-summary-label">Selected Method</span>
+            <strong className="add-funds-payment-summary-value add-funds-payment-summary-method">
+              <PaymentMethodLogo id={selectedMethodMeta.logo} size={22} alt="" />
+              {selectedMethodMeta.payLabel}
+            </strong>
+          </div>
+          <div className="add-funds-payment-summary-row">
+            <span className="add-funds-payment-summary-label">Amount</span>
+            <strong className="add-funds-payment-summary-value">{sym}{payableAmount.toFixed(2)}</strong>
+          </div>
+          <div className="add-funds-payment-summary-row">
+            <span className="add-funds-payment-summary-label">Gateway</span>
+            <strong className="add-funds-payment-summary-value add-funds-payment-summary-gateway">Razorpay Live</strong>
+          </div>
         </div>
 
         <button
           type="button"
-          className="add-funds-pay-btn-glow"
+          className="add-funds-pay-btn-glow add-funds-pay-btn"
           disabled={paying || !razorpayReady}
           onClick={openRazorpayCheckout}
         >
           {paying ? (
-            <span className="auth-loading-row" style={{ justifyContent: 'center' }}>
+            <span className="auth-loading-row add-funds-pay-btn-inner">
               <span className="auth-spinner" aria-hidden="true" />
               {payButtonLabel()}
             </span>
           ) : (
-            payButtonLabel()
+            <span className="add-funds-pay-btn-inner">
+              <PaymentMethodLogo id={selectedMethodMeta.logo} size={26} className="add-funds-pay-btn-logo" alt="" />
+              {payButtonLabel()}
+            </span>
           )}
         </button>
 
         <div className="add-funds-card-brands" aria-label="Accepted cards">
           {CARD_BRANDS.map((b) => (
-            <span key={b.id} className={`add-funds-card-brand add-funds-card-brand--${b.id}`}>
-              {b.label}
+            <span key={b.id} className="add-funds-card-brand">
+              <PaymentMethodLogo id={b.logo} size={36} className="add-funds-card-brand-logo" alt={b.label} />
             </span>
           ))}
         </div>
@@ -463,46 +511,98 @@ const AddFunds = () => {
         </p>
       </div>
 
-      <h2 style={{ marginBottom: 16 }}>Payment history</h2>
-      <div className="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Amount</th><th>Gateway</th><th>Payment ID</th><th>Status</th><th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {history.length === 0 ? (
-              <tr>
-                <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>
-                  No payments yet
-                </td>
-              </tr>
-            ) : (
-              history.map((p) => (
-                <tr key={p.id}>
-                  <td>#{p.id}</td>
-                  <td>{sym}{parseFloat(p.amount).toFixed(2)}</td>
-                  <td>{p.gateway}</td>
-                  <td style={{ fontFamily: 'monospace', fontSize: 11 }}>
-                    {p.razorpay_payment_id || '—'}
-                  </td>
-                  <td><span className={`badge ${statusBadge(p.status)}`}>{p.status}</span></td>
-                  <td>{new Date(p.created_at).toLocaleString()}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <section className="add-funds-history-section" aria-labelledby="payment-history-heading">
+        <h2 id="payment-history-heading" className="add-funds-history-title">Payment history</h2>
+
+        {history.length === 0 ? (
+          <div className="add-funds-history-empty card">
+            <p>No payment history found</p>
+            <span>Your Razorpay and manual payments will appear here.</span>
+          </div>
+        ) : (
+          <>
+            <div className="table-wrap add-funds-history-table-wrap">
+              <table className="add-funds-history-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Amount</th>
+                    <th>Gateway</th>
+                    <th>Payment ID</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {history.map((p) => (
+                    <tr key={p.id}>
+                      <td>#{p.id}</td>
+                      <td>{sym}{parseFloat(p.amount).toFixed(2)}</td>
+                      <td>{p.gateway}</td>
+                      <td className="add-funds-payment-id-cell">
+                        {p.razorpay_payment_id || '—'}
+                      </td>
+                      <td>
+                        <span className={`badge ${statusBadge(p.status)}`}>
+                          {statusLabel(p.status)}
+                        </span>
+                      </td>
+                      <td>{formatPaymentDate(p.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="add-funds-history-mobile-list">
+              {history.map((p) => (
+                <article className="card add-funds-history-card" key={`ph-mobile-${p.id}`}>
+                  <div className="add-funds-history-card-top">
+                    <strong>Payment #{p.id}</strong>
+                    <span className={`badge ${statusBadge(p.status)}`}>
+                      {statusLabel(p.status)}
+                    </span>
+                  </div>
+                  <div className="add-funds-history-card-row">
+                    <span>Amount</span>
+                    <span className="add-funds-history-card-amount">
+                      {sym}{parseFloat(p.amount).toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="add-funds-history-card-row">
+                    <span>Gateway</span>
+                    <span>{p.gateway || '—'}</span>
+                  </div>
+                  <div className="add-funds-history-card-row add-funds-history-card-row--stack">
+                    <span>Payment ID</span>
+                    <span className="add-funds-history-payment-id">
+                      {p.razorpay_payment_id || '—'}
+                    </span>
+                  </div>
+                  <div className="add-funds-history-card-row">
+                    <span>Date</span>
+                    <span>{formatPaymentDate(p.created_at)}</span>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </>
+        )}
+      </section>
 
       {transactions.length > 0 && (
-        <>
-          <h2 style={{ margin: '32px 0 16px' }}>Wallet transactions</h2>
-          <div className="table-wrap">
-            <table>
+        <section className="add-funds-history-section add-funds-wallet-section" aria-labelledby="wallet-tx-heading">
+          <h2 id="wallet-tx-heading" className="add-funds-history-title">Wallet transactions</h2>
+
+          <div className="table-wrap add-funds-history-table-wrap">
+            <table className="add-funds-history-table">
               <thead>
-                <tr><th>Type</th><th>Amount</th><th>Description</th><th>Date</th></tr>
+                <tr>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Description</th>
+                  <th>Date</th>
+                </tr>
               </thead>
               <tbody>
                 {transactions.map((t) => (
@@ -512,15 +612,42 @@ const AddFunds = () => {
                         {t.type}
                       </span>
                     </td>
-                    <td>{sym}{t.amount}</td>
+                    <td>{sym}{parseFloat(t.amount).toFixed(2)}</td>
                     <td>{t.description}</td>
-                    <td>{new Date(t.created_at).toLocaleString()}</td>
+                    <td>{formatPaymentDate(t.created_at)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </>
+
+          <div className="add-funds-history-mobile-list">
+            {transactions.map((t) => (
+              <article className="card add-funds-history-card" key={`wt-mobile-${t.id}`}>
+                <div className="add-funds-history-card-top">
+                  <strong>{t.type === 'credit' ? 'Credit' : 'Debit'}</strong>
+                  <span className={`badge ${t.type === 'credit' ? 'badge-success' : 'badge-danger'}`}>
+                    {t.type}
+                  </span>
+                </div>
+                <div className="add-funds-history-card-row">
+                  <span>Amount</span>
+                  <span className="add-funds-history-card-amount">
+                    {sym}{parseFloat(t.amount).toFixed(2)}
+                  </span>
+                </div>
+                <div className="add-funds-history-card-row add-funds-history-card-row--stack">
+                  <span>Description</span>
+                  <span>{t.description || '—'}</span>
+                </div>
+                <div className="add-funds-history-card-row">
+                  <span>Date</span>
+                  <span>{formatPaymentDate(t.created_at)}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
       )}
 
       {toast && (

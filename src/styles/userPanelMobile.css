@@ -1,0 +1,293 @@
+/**
+ * User panel — global mobile/tablet responsiveness
+ * Applies to all pages inside UserLayout (.user-panel-scroll)
+ */
+
+.user-panel-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.user-panel-scroll .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.user-panel-scroll .page-header h1,
+.user-panel-scroll > h1:first-child {
+  font-size: clamp(1.25rem, 4.5vw, 1.75rem);
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.user-panel-scroll .input,
+.user-panel-scroll .select,
+.user-panel-scroll .textarea {
+  width: 100%;
+  max-width: 100%;
+}
+
+.user-panel-scroll pre,
+.user-panel-scroll code {
+  max-width: 100%;
+  overflow-x: auto;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.user-panel-scroll img {
+  max-width: 100%;
+  height: auto;
+}
+
+.user-panel-scroll .table-wrap {
+  max-width: 100%;
+}
+
+/* Shared mobile card layout (tables → cards on small screens) */
+.user-panel-mobile-list,
+.orders-mobile-list {
+  display: none;
+}
+
+.user-panel-mobile-card,
+.orders-mobile-card {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+.user-panel-mobile-top,
+.orders-mobile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.625rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.user-panel-mobile-row,
+.orders-mobile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.8125rem;
+  padding: 0.35rem 0;
+  line-height: 1.45;
+}
+
+.user-panel-mobile-row > span:first-child,
+.orders-mobile-row > span:first-child {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 4.5rem;
+}
+
+.user-panel-mobile-row > span:last-child,
+.user-panel-mobile-row > a:last-child,
+.orders-mobile-row > span:last-child,
+.orders-mobile-row > a:last-child {
+  text-align: right;
+  word-break: break-word;
+}
+
+.user-panel-mobile-row--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.user-panel-mobile-row--stack > span:last-child {
+  text-align: left;
+}
+
+.user-panel-mobile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.625rem;
+}
+
+.user-panel-mobile-actions .btn {
+  flex: 1 1 auto;
+  min-width: 2.75rem;
+}
+
+.user-panel-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-muted);
+}
+
+.user-panel-empty-title {
+  margin: 0 0 0.35rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Ticket detail */
+.ticket-detail-page .ticket-msg-user {
+  margin-left: 0;
+}
+
+@media (min-width: 768px) {
+  .ticket-detail-page .ticket-msg-admin {
+    margin-left: 2.5rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .ticket-detail-page .ticket-msg-admin {
+    margin-left: 0 !important;
+  }
+}
+
+/* API docs */
+.api-docs-page .api-docs-pre {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  padding: 0.875rem;
+  border-radius: 0.625rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+/* Notifications */
+.notifications-page .notification-card {
+  margin-bottom: 0.75rem;
+  padding: 1rem;
+}
+
+.notifications-page .notification-card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Profile */
+.profile-page .profile-card {
+  max-width: 100%;
+  margin-bottom: 1rem;
+}
+
+.profile-page .profile-card .btn {
+  width: 100%;
+}
+
+/* Child panel form */
+.child-panel-page .child-panel-form-card {
+  max-width: 100%;
+}
+
+/* Referrals */
+.referrals-page .referral-code-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.referrals-page .referral-code-row code {
+  flex: 1 1 100%;
+  min-width: 0;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background: var(--bg-hover);
+  word-break: break-all;
+}
+
+.referrals-page .referral-code-row .btn {
+  flex: 1 1 100%;
+}
+
+@media (max-width: 767px) {
+  .user-panel-scroll {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .user-panel-scroll .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .user-panel-scroll .page-header .btn,
+  .user-panel-scroll .page-header > button {
+    width: 100%;
+  }
+
+  .user-panel-scroll .card {
+    max-width: 100% !important;
+  }
+
+  .user-panel-scroll .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .user-panel-scroll .btn:not(.btn-sm):not(.sidebar-link):not(.mobile-bottom-nav-item) {
+    min-height: 2.75rem;
+  }
+
+  .user-panel-table-wrap,
+  .orders-table-wrap {
+    display: none !important;
+  }
+
+  .user-panel-mobile-list,
+  .orders-mobile-list {
+    display: block;
+  }
+
+  .modal-overlay {
+    padding: 0.75rem;
+    padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    align-items: center;
+  }
+
+  .modal-panel {
+    width: 100%;
+    max-width: min(100%, 24rem);
+    max-height: min(88dvh, 560px);
+    padding: 1.25rem !important;
+    margin: auto;
+  }
+
+  .dashboard-page .dashboard-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.35rem;
+  }
+
+  .services-page .services-filter-card .btn-sm {
+    min-height: 2.25rem;
+  }
+
+  .orders-page .orders-page-header .btn {
+    width: 100%;
+  }
+
+  .tickets-page .ticket-form-card .btn,
+  .tickets-page .ticket-form-card .select {
+    width: 100%;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 900px) {
+  .user-panel-scroll {
+    padding-bottom: 2rem;
+  }
+
+  .user-panel-scroll .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

@@ -45,8 +45,8 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
   };
 
   return (
-    <div style={overlay} onClick={onClose}>
-      <div className="card fade-in" style={modal} onClick={(e) => e.stopPropagation()}>
+    <div className="modal-overlay" onClick={onClose} role="presentation">
+      <div className="card fade-in modal-panel" onClick={(e) => e.stopPropagation()} role="dialog">
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
           <h2 style={{ fontSize: 18, margin: 0 }}>Place Order</h2>
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
@@ -82,11 +82,5 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
     </div>
   );
 };
-
-const overlay = {
-  position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 10000,
-  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
-};
-const modal = { width: '100%', maxWidth: 440 };
 
 export default OrderFormModal;

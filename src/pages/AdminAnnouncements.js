@@ -11,7 +11,7 @@ const AdminAnnouncements = () => {
 
   return (
     <AdminLayout>
-      <h1 style={{ marginBottom: 24 }}>Popup Announcements</h1>
+      <h1 className="admin-page-title">Popup Announcements</h1>
       <div className="card" style={{ marginBottom: 24 }}>
         <input className="input" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} style={{ marginBottom: 8 }} />
         <textarea className="textarea" placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} style={{ marginBottom: 8 }} />

@@ -1,0 +1,45 @@
+.admin-api-diagnostics {
+  margin-bottom: 1.25rem;
+}
+
+.admin-api-diagnostics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-api-diagnostics-grid dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #8ca0b8);
+  margin-bottom: 0.2rem;
+}
+
+.admin-api-diagnostics-grid dd {
+  margin: 0;
+  font-size: 0.875rem;
+  word-break: break-all;
+}
+
+.admin-api-raw {
+  font-family: ui-monospace, monospace;
+  font-size: 0.75rem;
+  background: var(--bg-elevated, rgba(0, 0, 0, 0.25));
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  padding: 0.75rem;
+  max-height: 12rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-secondary, #b0bec5);
+}
+
+.admin-api-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}

@@ -55,7 +55,14 @@ export function buildRazorpayCheckoutOptions({
       purpose: 'wallet_recharge',
       user_id: String(user.id || ''),
     },
-    theme: { color: primary, backdrop_color: 'rgba(7, 11, 18, 0.85)' },
+    theme: {
+      color: primary,
+      backdrop_color:
+        typeof document !== 'undefined' &&
+        document.documentElement.getAttribute('data-theme') === 'light'
+          ? 'rgba(15, 23, 42, 0.45)'
+          : 'rgba(7, 11, 18, 0.85)',
+    },
     method: {
       upi: true,
       card: true,
