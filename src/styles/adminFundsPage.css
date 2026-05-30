@@ -143,6 +143,11 @@
   background: color-mix(in srgb, var(--danger) 8%, transparent);
 }
 
+.admin-funds-modal__option--warn:has(input:checked) {
+  border-color: var(--warning);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
+}
+
 .admin-funds-modal__option input {
   margin-top: 0.2rem;
   flex-shrink: 0;

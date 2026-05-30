@@ -331,7 +331,7 @@ const AdminSettings = () => {
                 rows={3}
                 value={draft.app_update_notes || ''}
                 onChange={(e) => updateDraft('app_update_notes', e.target.value)}
-                placeholder="Shown on the Download App page (what's new)"
+                placeholder="Release notes for the mobile app (optional)"
               />
             </div>
 

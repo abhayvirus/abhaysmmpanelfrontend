@@ -64,6 +64,7 @@ export const adminGetChatMessages = adminGetChatThread;
 export const adminReplyChat = (userId, message) => API.post(`/chat/admin/user/${userId}`, { message });
 export const adminDeleteChatMessage = (messageId) => API.delete(`/chat/admin/messages/${messageId}`);
 export const adminResolveChat = (userId) => API.post(`/chat/admin/user/${userId}/resolve`);
+export const adminClearChatConversation = (userId) => API.delete(`/chat/admin/user/${userId}/clear`);
 
 // Referrals & coupons
 export const getReferrals = () => API.get('/referrals/my');

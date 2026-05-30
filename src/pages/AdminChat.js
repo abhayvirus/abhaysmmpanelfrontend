@@ -8,6 +8,7 @@ import {
   adminReplyChat,
   adminDeleteChatMessage,
   adminResolveChat,
+  adminClearChatConversation,
   adminUpdateUser,
 } from '../api';
 
@@ -56,6 +57,8 @@ const AdminChat = () => {
   const [sending, setSending] = useState(false);
   const [mobileScreen, setMobileScreen] = useState('list');
   const [showDetails, setShowDetails] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
   const [toast, setToast] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -109,6 +112,7 @@ const AdminChat = () => {
   const closeMobileChat = () => {
     setMobileScreen('list');
     setShowDetails(false);
+    setSelectedId(null);
   };
 
   const send = async () => {
@@ -154,6 +158,21 @@ const AdminChat = () => {
     }
   };
 
+  const clearConversation = async () => {
+    if (!selectedId) return;
+    setClearing(true);
+    try {
+      const { data } = await adminClearChatConversation(selectedId);
+      setMsgs([]);
+      setClearOpen(false);
+      loadConvos();
+      showToast(`Conversation cleared (${data.deleted || 0} messages)`);
+    } catch (e) {
+      showToast(e.response?.data?.message || 'Clear failed');
+    }
+    setClearing(false);
+  };
+
   const blockUser = async () => {
     if (!threadUser) return;
     if (!window.confirm(`Block ${threadUser.name}? They will not be able to use the panel.`)) return;
@@ -192,7 +211,7 @@ const AdminChat = () => {
         </div>
         <div className="admin-chat-user-card-row">
           <span>Email</span>
-          <span style={{ color: 'var(--primary)' }}>{threadUser.email || '—'}</span>
+          <span className="admin-chat-user-email">{threadUser.email || '—'}</span>
         </div>
         <div className="admin-chat-user-card-row">
           <span>User ID</span>
@@ -214,13 +233,29 @@ const AdminChat = () => {
     );
   };
 
+  const ActionToolbar = ({ layout = 'row' }) => (
+    <div className={`admin-chat-toolbar admin-chat-toolbar--${layout}`}>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={markResolved}>
+        ✓ Resolved
+      </button>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={() => setClearOpen(true)}>
+        🗑 Clear conversation
+      </button>
+      <button type="button" className="btn btn-ghost btn-sm" onClick={blockUser}>
+        Block user
+      </button>
+      <Link to="/admin/users" className="btn btn-ghost btn-sm">
+        Open users
+      </Link>
+    </div>
+  );
+
   return (
     <AdminLayout>
       <div className={pageClass}>
         <h1 className="admin-page-title">Live Chat</h1>
 
         <div className="admin-chat-shell">
-          {/* Conversation list */}
           <aside className="admin-chat-list">
             <div className="admin-chat-list-header">Conversations</div>
             <div className="admin-chat-list-scroll">
@@ -261,7 +296,6 @@ const AdminChat = () => {
             </div>
           </aside>
 
-          {/* Chat thread */}
           <section className="admin-chat-thread">
             {!selectedId ? (
               <div className="admin-chat-thread-empty">
@@ -275,104 +309,138 @@ const AdminChat = () => {
                       ← Back
                     </button>
                   )}
-                  <h2 className="admin-chat-thread-title">{displayName}</h2>
-                  <p className="admin-chat-thread-email">{displayEmail}</p>
-                  <p className={`admin-chat-thread-status${online ? ' is-online' : ''}`}>
-                    {online ? (
-                      <>
-                        <span className="admin-chat-online-dot" aria-hidden="true" />
-                        Online
-                      </>
-                    ) : (
-                      <>Last seen {timeAgo(selectedConvo?.last_at)}</>
-                    )}
-                  </p>
+                  <div className="admin-chat-thread-header__main">
+                    <h2 className="admin-chat-thread-title">{displayName}</h2>
+                    <p className="admin-chat-thread-email">{displayEmail}</p>
+                    <p className={`admin-chat-thread-status${online ? ' is-online' : ''}`}>
+                      {online ? (
+                        <>
+                          <span className="admin-chat-online-dot" aria-hidden="true" />
+                          Online
+                        </>
+                      ) : (
+                        <>Last seen {timeAgo(selectedConvo?.last_at)}</>
+                      )}
+                    </p>
+                  </div>
                   {isMobile && (
                     <button
                       type="button"
-                      className="btn btn-ghost btn-sm"
-                      style={{ marginTop: 8 }}
+                      className="btn btn-ghost btn-sm admin-chat-details-toggle"
                       onClick={() => setShowDetails((v) => !v)}
                     >
-                      {showDetails ? 'Hide details' : 'User details'}
+                      {showDetails ? 'Hide' : 'Details'}
                     </button>
                   )}
                 </header>
 
                 {isMobile && showDetails && <UserDetailsCard className="admin-chat-user-card--mobile" />}
 
-                {!isMobile && <UserDetailsCard />}
-
-                <div className="admin-chat-toolbar">
-                  <button type="button" className="btn btn-ghost btn-sm" onClick={markResolved}>
-                    ✓ Resolved
-                  </button>
-                  <button type="button" className="btn btn-ghost btn-sm" onClick={blockUser}>
-                    Block user
-                  </button>
-                  <Link to="/admin/users" className="btn btn-ghost btn-sm">
-                    Open users
-                  </Link>
-                </div>
-
-                <div className="admin-chat-messages">
-                  {msgs.map((m) => {
-                    const role = m.sender_role === 'user' ? 'user' : m.sender_role === 'system' ? 'system' : 'admin';
-                    return (
-                      <div
-                        key={m.id}
-                        className={`admin-chat-msg-wrap admin-chat-msg-wrap--${role}`}
-                      >
-                        <div className={`chat-bubble chat-${role}`}>
-                          {role === 'user' && (
-                            <small style={{ display: 'block', opacity: 0.85, marginBottom: 4, fontSize: 10 }}>
-                              {displayName}
-                            </small>
-                          )}
-                          {role === 'admin' && (
-                            <small style={{ display: 'block', opacity: 0.85, marginBottom: 4, fontSize: 10 }}>
-                              Admin
-                            </small>
-                          )}
-                          {m.message}
-                          <span className="chat-time">{formatMsgTime(m.created_at)}</span>
-                        </div>
-                        {role !== 'system' && (
-                          <div className="admin-chat-msg-actions">
-                            <button
-                              type="button"
-                              className="admin-chat-delete-msg"
-                              onClick={() => deleteMsg(m.id)}
+                <div className="admin-chat-thread-body">
+                  <div className="admin-chat-messages-area">
+                    {isMobile && <ActionToolbar layout="row" />}
+                    <div className="admin-chat-messages">
+                      {msgs.length === 0 ? (
+                        <p className="admin-chat-messages-empty">No messages yet. Start the conversation below.</p>
+                      ) : (
+                        msgs.map((m) => {
+                          const role =
+                            m.sender_role === 'user' ? 'user' : m.sender_role === 'system' ? 'system' : 'admin';
+                          return (
+                            <div
+                              key={m.id}
+                              className={`admin-chat-msg-wrap admin-chat-msg-wrap--${role}`}
                             >
-                              Delete
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                  <div ref={messagesEndRef} />
-                </div>
+                              <div className={`chat-bubble chat-${role}`}>
+                                {role === 'user' && (
+                                  <small style={{ display: 'block', opacity: 0.85, marginBottom: 4, fontSize: 10 }}>
+                                    {displayName}
+                                  </small>
+                                )}
+                                {role === 'admin' && (
+                                  <small style={{ display: 'block', opacity: 0.85, marginBottom: 4, fontSize: 10 }}>
+                                    Admin
+                                  </small>
+                                )}
+                                {m.message}
+                                <span className="chat-time">{formatMsgTime(m.created_at)}</span>
+                              </div>
+                              {role !== 'system' && (
+                                <div className="admin-chat-msg-actions">
+                                  <button
+                                    type="button"
+                                    className="admin-chat-delete-msg"
+                                    onClick={() => deleteMsg(m.id)}
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+                    <div className="admin-chat-compose">
+                      <input
+                        className="input"
+                        value={reply}
+                        onChange={(e) => setReply(e.target.value)}
+                        placeholder="Type message..."
+                        onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
+                        disabled={sending}
+                        aria-label="Message"
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={send}
+                        disabled={sending || !reply.trim()}
+                      >
+                        Send
+                      </button>
+                    </div>
+                  </div>
 
-                <div className="admin-chat-compose">
-                  <input
-                    className="input"
-                    value={reply}
-                    onChange={(e) => setReply(e.target.value)}
-                    placeholder="Type message..."
-                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && send()}
-                    disabled={sending}
-                    aria-label="Message"
-                  />
-                  <button type="button" className="btn btn-primary" onClick={send} disabled={sending || !reply.trim()}>
-                    Send
-                  </button>
+                  {!isMobile && (
+                    <aside className="admin-chat-side-panel">
+                      <UserDetailsCard />
+                      <ActionToolbar layout="column" />
+                    </aside>
+                  )}
                 </div>
               </>
             )}
           </section>
         </div>
       </div>
+
+      {clearOpen && (
+        <div
+          className="admin-chat-modal-overlay"
+          role="presentation"
+          onClick={() => !clearing && setClearOpen(false)}
+        >
+          <div
+            className="admin-chat-modal"
+            role="dialog"
+            aria-modal="true"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3>Clear conversation?</h3>
+            <p>This permanently deletes all messages with {displayName}. This cannot be undone.</p>
+            <div className="admin-chat-modal__actions">
+              <button type="button" className="btn btn-ghost" disabled={clearing} onClick={() => setClearOpen(false)}>
+                Cancel
+              </button>
+              <button type="button" className="btn btn-danger" disabled={clearing} onClick={clearConversation}>
+                {clearing ? 'Clearing…' : 'Clear conversation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <div className="admin-chat-toast" role="status">{toast}</div>}
     </AdminLayout>

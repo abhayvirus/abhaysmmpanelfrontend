@@ -21,6 +21,7 @@ const AUTO_DELETE_OPTIONS = [
 ];
 
 const CLEAR_SCOPES = [
+  { value: 'pending', label: 'Clear Pending History', warn: true },
   { value: 'completed', label: 'Clear Completed History' },
   { value: 'rejected', label: 'Clear Rejected History' },
   { value: 'all', label: 'Clear All History (completed + rejected)' },
@@ -315,11 +316,16 @@ const AdminFunds = () => {
               <h3 id="clear-history-title">Clear Payment History?</h3>
               <p className="admin-funds-modal__warn">This action cannot be undone.</p>
               <p className="admin-funds-modal__pending-note">
-                Pending payments are never deleted. Only completed and/or rejected records are removed.
+                {clearScope === 'pending'
+                  ? 'Warning: This removes all pending payment requests. Users will not be credited unless you approve them first.'
+                  : 'Completed and rejected options do not remove pending requests. Use “Clear Pending History” only if you intend to wipe the pending queue.'}
               </p>
               <div className="admin-funds-modal__options">
                 {CLEAR_SCOPES.map((opt) => (
-                  <label key={opt.value} className="admin-funds-modal__option">
+                  <label
+                    key={opt.value}
+                    className={`admin-funds-modal__option${opt.warn ? ' admin-funds-modal__option--warn' : ''}`}
+                  >
                     <input
                       type="radio"
                       name="clearScope"
