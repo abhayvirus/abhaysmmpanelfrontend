@@ -6,6 +6,7 @@ import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
+import { getPostLoginPath, isAuthenticated, saveAuthSession } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 
 const Login = () => {
@@ -29,9 +30,9 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (token) navigate(user.role === 'admin' ? '/admin' : '/dashboard');
+    if (isAuthenticated()) {
+      navigate(getPostLoginPath(), { replace: true });
+    }
   }, [navigate]);
 
   const handleLogin = async () => {
@@ -46,9 +47,8 @@ const Login = () => {
         setLoading(false);
         return;
       }
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data.user));
-      navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+      saveAuthSession(res.data.token, res.data.user);
+      navigate(getPostLoginPath(res.data.user), { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err, 'Login failed'));
     }

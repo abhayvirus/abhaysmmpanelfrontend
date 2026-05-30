@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { getPublicStats, getServicesPreview } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import PublicNav from '../components/PublicNav';
+import DownloadAppButton from '../components/DownloadAppButton';
 import BrandLogo from '../components/BrandLogo';
+import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 import { formatStatCount } from '../utils/formatStat';
 
@@ -11,12 +13,28 @@ const Home = () => {
   const { settings } = useSettings();
   const [stats, setStats] = useState({});
   const [services, setServices] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem('token')));
   const sym = settings.currency_symbol || '₹';
 
   useEffect(() => {
     getPublicStats().then((r) => setStats(r.data)).catch(() => {});
     getServicesPreview().then((r) => setServices(r.data)).catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const syncAuth = () => setIsLoggedIn(Boolean(localStorage.getItem('token')));
+    syncAuth();
+    window.addEventListener('storage', syncAuth);
+    window.addEventListener('focus', syncAuth);
+    return () => {
+      window.removeEventListener('storage', syncAuth);
+      window.removeEventListener('focus', syncAuth);
+    };
+  }, []);
+
+  if (isLoggedIn) {
+    return <Navigate to={getPostLoginPath()} replace />;
+  }
 
   return (
     <div className="home-page">
@@ -31,8 +49,11 @@ const Home = () => {
           India&apos;s <span>Premium</span> SMM Panel
         </h1>
         <p>{settings.site_tagline || BRAND.tagline}</p>
-        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
-          <Link to="/signup" className="btn btn-primary btn-lg">Create Free Account</Link>
+        <div className="hero-cta">
+          <Link to="/signup" className="btn btn-primary btn-lg hero-cta__primary">
+            Create Free Account
+          </Link>
+          <DownloadAppButton />
         </div>
         <div className="stats-grid home-stats" style={{ marginTop: 48, maxWidth: 900, width: '100%' }}>
           <div className="stat-card">

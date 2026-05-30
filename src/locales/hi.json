@@ -1,11 +1,13 @@
 {
   "nav.dashboard": "नया ऑर्डर",
   "nav.services": "सेवाएं",
+  "nav.websiteDev": "वेबसाइट विकास",
   "nav.orders": "ऑर्डर",
   "nav.funds": "पैसे जोड़ें",
   "nav.support": "सहायता",
   "nav.notifications": "सूचनाएं",
   "nav.referrals": "रेफरल",
+  "nav.help": "सहायता गाइड",
   "chat.title": "लाइव सपोर्ट",
   "chat.placeholder": "संदेश लिखें...",
   "chat.send": "भेजें",

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import AuthBrandHeader from '../components/AuthBrandHeader';
+import { getPostLoginPath, saveAuthSession } from '../utils/authRedirect';
 
 /**
  * Handles redirect after server OAuth callback:
@@ -38,12 +39,11 @@ const GoogleOAuthCallback = () => {
         const json = atob(userB64.replace(/-/g, '+').replace(/_/g, '/'));
         user = JSON.parse(json);
       }
-      localStorage.setItem('token', token);
-      if (user) localStorage.setItem('user', JSON.stringify(user));
+      saveAuthSession(token, user);
       window.history.replaceState(null, '', window.location.pathname);
-      navigate(user?.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+      navigate(getPostLoginPath(user), { replace: true });
     } catch {
-      localStorage.setItem('token', token);
+      saveAuthSession(token, null);
       navigate('/dashboard', { replace: true });
     }
     return undefined;

@@ -12,7 +12,6 @@ const Tickets = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ subject: '', message: '', priority: 'medium' });
-  const [attachFile, setAttachFile] = useState(null);
   const [msg, setMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,11 +42,10 @@ const Tickets = () => {
     setSubmitting(true);
     setMsg('');
     try {
-      await createTicket(form, attachFile);
+      await createTicket(form);
       setMsg('Ticket created successfully');
       setShowForm(false);
       setForm({ subject: '', message: '', priority: 'medium' });
-      setAttachFile(null);
       load(true);
     } catch (e) {
       setMsg(e.response?.data?.message || 'Could not create ticket');
@@ -107,15 +105,6 @@ const Tickets = () => {
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
-            </div>
-            <div className="form-group">
-              <label className="label">Attachment (optional)</label>
-              <input
-                type="file"
-                className="input"
-                accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
-                onChange={(e) => setAttachFile(e.target.files?.[0] || null)}
-              />
             </div>
             <button type="button" className="btn btn-primary" onClick={submit} disabled={submitting}>
               {submitting ? 'Submitting…' : 'Submit ticket'}

@@ -1,0 +1,70 @@
+/* Admin Website Orders */
+
+.admin-website-dev-page .admin-website-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-website-dev-page .admin-website-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.admin-website-dev-page .filter-chip {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+.admin-website-dev-page .filter-chip.is-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.admin-website-detail-grid {
+  display: grid;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.admin-website-detail-grid dt {
+  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-website-detail-grid dd {
+  margin: 0 0 0.75rem;
+  word-break: break-word;
+}
+
+.admin-website-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .admin-website-dev-page .admin-website-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .admin-website-dev-page .admin-website-stats {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}

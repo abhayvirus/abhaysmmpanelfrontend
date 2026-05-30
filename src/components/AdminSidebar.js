@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { clearAuthSession } from '../utils/authRedirect';
+import { isNavActive } from '../utils/navActive';
 
 const AdminSidebar = ({ mobileOpen = false, onClose }) => {
   const location = useLocation();
@@ -11,6 +13,7 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
     { to: '/admin/services', label: 'Services', icon: '📋' },
     { to: '/admin/categories', label: 'Categories', icon: '🏷️' },
     { to: '/admin/orders', label: 'Orders', icon: '📦' },
+    { to: '/admin/website-dev', label: 'Website Orders', icon: '🌐' },
     { to: '/admin/funds', label: 'Payments', icon: '💰' },
     { to: '/admin/tickets', label: 'Tickets', icon: '🎫' },
     { to: '/admin/announcements', label: 'Announcements', icon: '📢' },
@@ -20,6 +23,7 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
     { to: '/admin/chat', label: 'Live Chat', icon: '💬' },
     { to: '/admin/activity-logs', label: 'Activity Logs', icon: '📜' },
     { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
+    { to: '/admin/help', label: 'Help Guide', icon: '📖' },
   ];
 
   const pathRef = React.useRef(location.pathname);
@@ -39,8 +43,7 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
         if (auth) await signOut(auth);
       }
     } catch (_) { /* optional */ }
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthSession();
     navigate('/login', { replace: true });
   };
 
@@ -63,7 +66,7 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
             <Link
               key={l.to}
               to={l.to}
-              className={`admin-sidebar-link${location.pathname === l.to ? ' active' : ''}`}
+              className={`admin-sidebar-link${isNavActive(location.pathname, l.to) ? ' active' : ''}`}
             >
               <span aria-hidden="true">{l.icon}</span>
               {l.label}

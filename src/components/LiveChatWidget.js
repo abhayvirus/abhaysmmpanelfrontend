@@ -5,7 +5,15 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDraggableFloat } from '../hooks/useDraggableFloat';
 
-const CRITICAL_PATHS = ['/dashboard', '/add-funds', '/services', '/orders', '/tickets', '/notifications'];
+const CRITICAL_PATHS = [
+  '/dashboard',
+  '/add-funds',
+  '/services',
+  '/orders',
+  '/tickets',
+  '/notifications',
+  '/profile',
+];
 
 const LiveChatWidget = () => {
   const location = useLocation();
@@ -23,11 +31,13 @@ const LiveChatWidget = () => {
   const isServicesPage = location.pathname.startsWith('/services');
   const isTicketsPage = location.pathname.startsWith('/tickets');
   const isNotificationsPage = location.pathname.startsWith('/notifications');
+  const isProfilePage = location.pathname.startsWith('/profile');
   let extraBottomReserve = 0;
   if (isMobile) {
     if (isTicketsPage && location.pathname !== '/tickets') extraBottomReserve = 120;
     else if (isTicketsPage) extraBottomReserve = 72;
     else if (isNotificationsPage) extraBottomReserve = 72;
+    else if (isProfilePage) extraBottomReserve = 140;
     else if (isServicesPage) extraBottomReserve = 56;
   }
 
@@ -72,6 +82,16 @@ const LiveChatWidget = () => {
       setPositionSafe(position.x, maxY);
     }
   }, [location.pathname, position, fabSize, setPositionSafe, getBottomReserve]);
+
+  useEffect(() => {
+    if (!isProfilePage || !position || typeof window === 'undefined') return;
+    const margin = 12;
+    const bottomR = getBottomReserve();
+    setPositionSafe(
+      window.innerWidth - fabSize - margin,
+      window.innerHeight - fabSize - bottomR - 20
+    );
+  }, [isProfilePage, fabSize, getBottomReserve, setPositionSafe]);
 
   const panelStyle = useMemo(() => {
     if (!position || typeof window === 'undefined') return {};

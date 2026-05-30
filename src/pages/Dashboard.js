@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import UserLayout from '../components/UserLayout';
 import InsufficientBalanceAlert from '../components/InsufficientBalanceAlert';
+import PanelLoading from '../components/PanelLoading';
 import { getServices, getPlatforms, placeOrder, getMe } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import '../styles/balanceWarning.css';
@@ -23,6 +24,9 @@ const Dashboard = () => {
   const [link, setLink] = useState('');
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
+  const [pageReady, setPageReady] = useState(false);
+  const [servicesLoading, setServicesLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [orderMessage, setOrderMessage] = useState(null);
   const [balanceWarningDismissed, setBalanceWarningDismissed] = useState(false);
 
@@ -34,19 +38,49 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    refreshUser();
-    getPlatforms().then((res) => setPlatforms(['All', ...res.data])).catch(() => {});
+    let cancelled = false;
+    setPageReady(false);
+    setLoadError('');
+    Promise.all([
+      getMe().then((res) => {
+        if (!cancelled) {
+          setUser(res.data);
+          localStorage.setItem('user', JSON.stringify(res.data));
+        }
+      }),
+      getPlatforms().then((res) => {
+        if (!cancelled) setPlatforms(['All', ...res.data]);
+      }),
+    ])
+      .catch(() => {
+        if (!cancelled) setLoadError('Could not load dashboard. Please refresh.');
+      })
+      .finally(() => {
+        if (!cancelled) setPageReady(true);
+      });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    setServicesLoading(true);
     const params = selectedPlatform !== 'All' ? { platform: selectedPlatform } : {};
-    getServices(params).then((res) => {
-      setServices(res.data);
-      setSelectedCategory('All');
-      setSelectedServiceId('');
-      setLink('');
-      setQuantity('');
-    }).catch(() => {});
+    getServices(params)
+      .then((res) => {
+        if (cancelled) return;
+        setServices(res.data);
+        setSelectedCategory('All');
+        setSelectedServiceId('');
+        setLink('');
+        setQuantity('');
+      })
+      .catch(() => {
+        if (!cancelled) setServices([]);
+      })
+      .finally(() => {
+        if (!cancelled) setServicesLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [selectedPlatform]);
 
   useEffect(() => {
@@ -166,7 +200,13 @@ const Dashboard = () => {
         </div>
 
         <div className="dashboard-services">
-          {services.length === 0 ? (
+          {!pageReady || servicesLoading ? (
+            <PanelLoading message={!pageReady ? 'Loading dashboard…' : 'Loading services…'} />
+          ) : loadError ? (
+            <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--danger)' }}>
+              <p>{loadError}</p>
+            </div>
+          ) : services.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
               <p>📭 No services found</p>
               <p style={{ fontSize: 13, marginTop: 8 }}>Ask admin to sync services from provider.</p>

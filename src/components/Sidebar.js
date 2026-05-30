@@ -6,6 +6,8 @@ import { useLanguage } from '../contexts/LanguageContext';
 import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import BrandLogo from './BrandLogo';
+import { clearAuthSession } from '../utils/authRedirect';
+import { isNavActive } from '../utils/navActive';
 
 const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
   const location = useLocation();
@@ -49,8 +51,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
         if (auth) await signOut(auth);
       }
     } catch (_) { /* optional */ }
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthSession();
     navigate('/login', { replace: true });
   };
 
@@ -58,6 +59,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     { to: '/dashboard', label: t('nav.dashboard'), icon: '⚡' },
     { to: '/services', label: t('nav.services'), icon: '📋' },
     { to: '/orders', label: t('nav.orders'), icon: '📦' },
+    { to: '/website-dev', label: t('nav.websiteDev'), icon: '🌐' },
     { to: '/add-funds', label: t('nav.funds'), icon: '💳' },
     {
       to: '/tickets',
@@ -68,6 +70,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     ...(settings.feature_referrals !== false ? [{ to: '/referrals', label: t('nav.referrals'), icon: '🎁' }] : []),
     { to: '/api-docs', label: 'API Docs', icon: '🔌' },
     ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: 'Child Panel', icon: '🌐' }] : []),
+    { to: '/help', label: t('nav.help'), icon: '📖' },
     { to: '/profile', label: 'Profile', icon: '⚙️' },
   ];
 
@@ -93,11 +96,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
             <Link
               key={l.to}
               to={l.to}
-              className={`sidebar-link${
-                location.pathname === l.to || (l.to === '/tickets' && location.pathname.startsWith('/tickets/'))
-                  ? ' active'
-                  : ''
-              }`}
+              className={`sidebar-link${isNavActive(location.pathname, l.to) ? ' active' : ''}`}
             >
               <span aria-hidden="true">{l.icon}</span>
               {l.label}

@@ -23,6 +23,10 @@ import ResetPassword from './pages/ResetPassword';
 import VerifyEmail from './pages/VerifyEmail';
 import Referrals from './pages/Referrals';
 import Profile from './pages/Profile';
+import WebsiteDev from './pages/WebsiteDev';
+import AdminWebsiteDev from './pages/AdminWebsiteDev';
+import UserGuide from './pages/UserGuide';
+import AdminGuide from './pages/AdminGuide';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminUsers from './pages/AdminUsers';
 import AdminServices from './pages/AdminServices';
@@ -76,11 +80,14 @@ function AppRoutes() {
             <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />
             <Route path="/api-docs" element={<ProtectedRoute><ApiDocs /></ProtectedRoute>} />
             <Route path="/child-panel" element={<ProtectedRoute><ChildPanel /></ProtectedRoute>} />
+            <Route path="/website-dev" element={<ProtectedRoute><WebsiteDev /></ProtectedRoute>} />
             <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            <Route path="/help" element={<ProtectedRoute><UserGuide /></ProtectedRoute>} />
 
             <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+            <Route path="/admin/help" element={<AdminRoute><AdminGuide /></AdminRoute>} />
             <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
             <Route path="/admin/services" element={<AdminRoute><AdminServices /></AdminRoute>} />
             <Route path="/admin/categories" element={<AdminRoute><AdminCategories /></AdminRoute>} />
@@ -89,6 +96,7 @@ function AppRoutes() {
             <Route path="/admin/tickets" element={<AdminRoute><AdminTickets /></AdminRoute>} />
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/admin/child-panels" element={<AdminRoute><AdminChildPanels /></AdminRoute>} />
+            <Route path="/admin/website-dev" element={<AdminRoute><AdminWebsiteDev /></AdminRoute>} />
             <Route path="/admin/settings" element={<AdminRoute><AdminSettings /></AdminRoute>} />
             <Route path="/admin/analytics" element={<AdminRoute><AdminAnalytics /></AdminRoute>} />
             <Route path="/admin/coupons" element={<AdminRoute><AdminCoupons /></AdminRoute>} />

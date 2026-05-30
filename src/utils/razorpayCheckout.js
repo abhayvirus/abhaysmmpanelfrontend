@@ -4,14 +4,14 @@
 
 export function assertLiveRazorpayKey(key) {
   if (!key || typeof key !== 'string') {
-    throw new Error('Razorpay key not configured on server');
+    throw new Error('Payment could not be started. Please try again.');
   }
   const k = key.trim();
   if (k.startsWith('rzp_test_')) {
-    throw new Error('Test mode is disabled. Configure live Razorpay keys (rzp_live_…).');
+    throw new Error('Payment could not be started. Please try again.');
   }
-  if (!k.startsWith('rzp_live_')) {
-    throw new Error('Invalid Razorpay live key');
+  if (!k.startsWith('rzp_live_') && !k.startsWith('rzp_')) {
+    throw new Error('Payment could not be started. Please try again.');
   }
   return k;
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { googleLogin } from '../api';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
+import { getPostLoginPath, saveAuthSession } from '../utils/authRedirect';
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -14,9 +15,8 @@ const GoogleIcon = () => (
 );
 
 function finishSession(navigate, data) {
-  localStorage.setItem('token', data.token);
-  localStorage.setItem('user', JSON.stringify(data.user));
-  navigate(data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+  saveAuthSession(data.token, data.user);
+  navigate(getPostLoginPath(data.user), { replace: true });
 }
 
 /**

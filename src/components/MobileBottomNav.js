@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
+import { isNavActive } from '../utils/navActive';
 
 const MobileBottomNav = ({ onMoreClick }) => {
   const location = useLocation();
@@ -16,7 +17,7 @@ const MobileBottomNav = ({ onMoreClick }) => {
   return (
     <nav className="mobile-bottom-nav" aria-label="Main navigation">
       {items.map((item) => {
-        const active = location.pathname === item.to;
+        const active = isNavActive(location.pathname, item.to);
         return (
           <Link
             key={item.to}

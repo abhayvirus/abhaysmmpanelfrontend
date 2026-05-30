@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_URL, API_BASE } from './config/env';
 import { isAuthPublicRequest } from './utils/apiError';
+import { getLoginPath, clearAuthSession } from './utils/authRedirect';
 
 export { API_BASE, API_URL };
 
@@ -13,6 +14,9 @@ const API = axios.create({
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (config.data instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
   return config;
 });
 
@@ -25,11 +29,11 @@ API.interceptors.response.use(
     }
 
     if (err.response.status === 401 && !isAuthPublicRequest(err.config)) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      clearAuthSession();
       const path = window.location.pathname;
+      const loginPath = getLoginPath();
       if (!path.includes('/login') && !path.includes('/signup')) {
-        window.location.replace('/login');
+        window.location.replace(loginPath);
       }
     }
     return Promise.reject(err);
@@ -129,27 +133,9 @@ export const adminClearPaymentHistory = (scope) =>
 // Tickets
 export const getTickets = () => API.get('/tickets');
 export const getTicketUnreadCount = () => API.get('/tickets/unread-count');
-export const createTicket = (data, file = null) => {
-  if (file) {
-    const fd = new FormData();
-    fd.append('subject', data.subject);
-    fd.append('message', data.message);
-    fd.append('priority', data.priority || 'medium');
-    fd.append('attachment', file);
-    return API.post('/tickets', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-  }
-  return API.post('/tickets', data);
-};
+export const createTicket = (data) => API.post('/tickets', data);
 export const getTicket = (id, params) => API.get(`/tickets/${id}`, { params });
-export const replyTicket = (id, message, file = null) => {
-  if (file) {
-    const fd = new FormData();
-    fd.append('message', message);
-    fd.append('attachment', file);
-    return API.post(`/tickets/${id}/reply`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-  }
-  return API.post(`/tickets/${id}/reply`, { message });
-};
+export const replyTicket = (id, message) => API.post(`/tickets/${id}/reply`, { message });
 
 // Notifications
 export const getNotifications = (params = {}) =>
@@ -214,5 +200,26 @@ export const adminUpdateTicketStatus = (id, status) => API.put(`/tickets/${id}/s
 export const adminGetPayments = adminGetAllPayments;
 export const adminGetChildPanels = () => API.get('/child-panel/admin/all');
 export const adminUpdateChildPanel = (id, data) => API.put(`/child-panel/admin/${id}`, data);
+
+// Website Development
+export const submitWebsiteDevRequest = (data) => API.post('/website-dev', data);
+export const getMyWebsiteDevRequests = () => API.get('/website-dev/my');
+export const getWebsiteDevDashboard = () => API.get('/website-dev/dashboard');
+export const getWebsiteDevMeta = () => API.get('/website-dev/meta');
+export const estimateWebsiteDev = (data) => API.post('/website-dev/estimate', data);
+export const getWebsiteDevOrder = (id) => API.get(`/website-dev/order/${id}`);
+export const adminGetWebsiteDevStats = () => API.get('/website-dev/admin/stats');
+export const adminGetWebsiteDevOrders = () => API.get('/website-dev/admin/all');
+export const adminGetWebsiteDevOrder = (id) => API.get(`/website-dev/admin/${id}`);
+export const adminWebsiteDevAction = (id, data) => API.put(`/website-dev/admin/${id}/action`, data);
+export const adminWebsiteDevProjectStatus = (id, project_status) => API.put(`/website-dev/admin/${id}/project-status`, { project_status });
+export const adminWebsiteDevQuote = (id, data) => API.post(`/website-dev/admin/${id}/quote`, data);
+export const adminRefundWebsiteDevFee = (id) => API.post(`/website-dev/admin/${id}/refund`);
+export const openWebsiteDevQuotePrint = async (id, admin = false) => {
+  const path = admin ? `/website-dev/admin/${id}/quote/print` : `/website-dev/order/${id}/quote/print`;
+  const { data } = await API.get(path, { responseType: 'text' });
+  const w = window.open('', '_blank');
+  if (w) { w.document.write(data); w.document.close(); }
+};
 
 export default API;

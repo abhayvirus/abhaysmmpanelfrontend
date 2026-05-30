@@ -6,6 +6,7 @@ import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
+import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 
 const Signup = () => {
@@ -24,8 +25,7 @@ const Signup = () => {
   const { enabled: googleEnabled } = useGoogleAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) navigate('/dashboard');
+    if (isAuthenticated()) navigate(getPostLoginPath(), { replace: true });
   }, [navigate]);
 
   useEffect(() => {

@@ -164,16 +164,6 @@
   flex-wrap: wrap;
 }
 
-/* Profile */
-.profile-page .profile-card {
-  max-width: 100%;
-  margin-bottom: 1rem;
-}
-
-.profile-page .profile-card .btn {
-  width: 100%;
-}
-
 /* Child panel form */
 .child-panel-page .child-panel-form-card {
   max-width: 100%;

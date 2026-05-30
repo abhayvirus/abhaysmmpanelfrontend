@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-const TicketReplyBar = ({ value, onChange, onSend, sending, file, onFileChange, onClearFile }) => {
+const TicketReplyBar = ({ value, onChange, onSend, sending }) => {
   const textareaRef = useRef(null);
 
   useEffect(() => {
@@ -20,21 +20,6 @@ const TicketReplyBar = ({ value, onChange, onSend, sending, file, onFileChange, 
   return (
     <div className="ticket-reply-bar" role="region" aria-label="Reply to ticket">
       <div className="ticket-reply-bar__inner">
-        <label className="ticket-reply-bar__file">
-          <input
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
-            onChange={onFileChange}
-            style={{ display: 'none' }}
-          />
-          <span className="btn btn-ghost btn-sm" style={{ minHeight: '2.25rem' }}>📎 Attach</span>
-          {file && (
-            <span className="ticket-reply-bar__file-name">
-              {file.name}
-              <button type="button" className="btn btn-ghost btn-sm" onClick={onClearFile} aria-label="Remove file">×</button>
-            </span>
-          )}
-        </label>
         <div className="ticket-reply-bar__row">
           <textarea
             ref={textareaRef}

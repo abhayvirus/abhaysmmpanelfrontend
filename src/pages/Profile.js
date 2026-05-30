@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import UserLayout from '../components/UserLayout';
 import { getMe, updateProfile, changePassword } from '../api';
+import { useSettings } from '../contexts/SettingsContext';
 import { BRAND } from '../config/brand';
 
 const Profile = () => {
+  const { settings } = useSettings();
+  const sym = settings.currency_symbol || '₹';
   const [user, setUser] = useState({});
   const [name, setName] = useState('');
   const [pw, setPw] = useState({ current: '', next: '' });
@@ -46,38 +49,106 @@ const Profile = () => {
   return (
     <UserLayout title="Profile">
       <div className="profile-page">
-        <h1 style={{ marginBottom: 8 }}>Profile Settings</h1>
-        <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{BRAND.domain}</p>
-        {msg && <div className={`alert alert-${msg.type === 'error' ? 'error' : 'success'}`}>{msg.text}</div>}
+        <header className="profile-page__header page-header">
+          <div className="profile-page__header-text">
+            <h1 className="profile-page__title">Profile Settings</h1>
+            <p className="profile-page__subtitle">{BRAND.domain}</p>
+          </div>
+          <div className="profile-page__balance" aria-label="Wallet balance">
+            <span className="profile-page__balance-label">Balance</span>
+            <span className="profile-page__balance-value">
+              {sym}{parseFloat(user.balance || 0).toFixed(2)}
+            </span>
+          </div>
+        </header>
 
-        <div className="card profile-card" style={{ padding: 24 }}>
-          <h3 style={{ marginBottom: 16 }}>Account</h3>
-          <div className="form-group">
-            <label className="label">Name</label>
-            <input className="input" value={name} onChange={(e) => setName(e.target.value)} />
+        {msg && (
+          <div className={`profile-page__alert alert alert-${msg.type === 'error' ? 'error' : 'success'}`} role="status">
+            {msg.text}
           </div>
-          <div className="form-group">
-            <label className="label">Email</label>
-            <input className="input" value={user.email || ''} disabled />
-          </div>
-          <div className="form-group">
-            <label className="label">Referral code</label>
-            <input className="input" value={user.referral_code || '—'} disabled />
-          </div>
-          <button type="button" className="btn btn-primary" onClick={saveProfile}>Save profile</button>
-        </div>
+        )}
 
-        <div className="card profile-card" style={{ padding: 24 }}>
-          <h3 style={{ marginBottom: 16 }}>Change password</h3>
-          <div className="form-group">
-            <input className="input" type="password" placeholder="Current password" value={pw.current}
-              onChange={(e) => setPw({ ...pw, current: e.target.value })} />
-          </div>
-          <div className="form-group">
-            <input className="input" type="password" placeholder="New password" value={pw.next}
-              onChange={(e) => setPw({ ...pw, next: e.target.value })} />
-          </div>
-          <button type="button" className="btn btn-ghost" onClick={savePassword}>Update password</button>
+        <div className="profile-page__grid">
+          <section className="card profile-card profile-card--account">
+            <h2 className="profile-card__title">Account</h2>
+            <div className="profile-card__body">
+              <div className="form-group profile-field">
+                <label className="label" htmlFor="profile-name">Name</label>
+                <input
+                  id="profile-name"
+                  className="input profile-input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                />
+              </div>
+              <div className="form-group profile-field">
+                <label className="label" htmlFor="profile-email">Email</label>
+                <input
+                  id="profile-email"
+                  className="input profile-input profile-input--readonly"
+                  value={user.email || ''}
+                  disabled
+                  readOnly
+                  title={user.email || ''}
+                />
+              </div>
+              <div className="form-group profile-field profile-field--last">
+                <label className="label" htmlFor="profile-referral">Referral code</label>
+                <input
+                  id="profile-referral"
+                  className="input profile-input profile-input--readonly profile-input--code"
+                  value={user.referral_code || '—'}
+                  disabled
+                  readOnly
+                />
+              </div>
+            </div>
+            <div className="profile-card__actions">
+              <button type="button" className="btn btn-primary profile-btn" onClick={saveProfile}>
+                Save profile
+              </button>
+            </div>
+          </section>
+
+          <section className="card profile-card profile-card--password">
+            <h2 className="profile-card__title">Change password</h2>
+            <div className="profile-card__body profile-card__body--stack">
+              <div className="form-group profile-field">
+                <label className="label visually-hidden" htmlFor="profile-pw-current">
+                  Current password
+                </label>
+                <input
+                  id="profile-pw-current"
+                  className="input profile-input"
+                  type="password"
+                  placeholder="Current password"
+                  value={pw.current}
+                  onChange={(e) => setPw({ ...pw, current: e.target.value })}
+                  autoComplete="current-password"
+                />
+              </div>
+              <div className="form-group profile-field profile-field--last">
+                <label className="label visually-hidden" htmlFor="profile-pw-new">
+                  New password
+                </label>
+                <input
+                  id="profile-pw-new"
+                  className="input profile-input"
+                  type="password"
+                  placeholder="New password"
+                  value={pw.next}
+                  onChange={(e) => setPw({ ...pw, next: e.target.value })}
+                  autoComplete="new-password"
+                />
+              </div>
+            </div>
+            <div className="profile-card__actions">
+              <button type="button" className="btn btn-ghost profile-btn" onClick={savePassword}>
+                Update password
+              </button>
+            </div>
+          </section>
         </div>
       </div>
     </UserLayout>

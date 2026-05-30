@@ -1,11 +1,13 @@
 {
   "nav.dashboard": "New Order",
   "nav.services": "Services",
+  "nav.websiteDev": "Website Development",
   "nav.orders": "Orders",
   "nav.funds": "Add Funds",
   "nav.support": "Support",
   "nav.notifications": "Notifications",
   "nav.referrals": "Referrals",
+  "nav.help": "Help Guide",
   "chat.title": "Live Support",
   "chat.placeholder": "Type a message...",
   "chat.send": "Send",

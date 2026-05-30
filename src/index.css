@@ -139,6 +139,26 @@ tr:hover td { background: var(--table-row-hover); }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .fade-in { animation: fadeIn 0.35s ease; }
 
+.panel-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+.panel-loading-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: panelSpin 0.75s linear infinite;
+}
+@keyframes panelSpin { to { transform: rotate(360deg); } }
+
 /* Public home */
 .hero { min-height: 90vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 20px; }
 .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; margin-bottom: 16px; }
@@ -148,6 +168,79 @@ tr:hover td { background: var(--table-row-hover); }
   display: inline-block; padding: 8px 16px; border-radius: 24px; font-size: 13px; font-weight: 600;
   background: rgba(37, 99, 235, 0.15); color: var(--accent); margin-bottom: 16px;
 }
+
+/* Hero CTAs — Create Account + Download App (guest landing only) */
+.hero-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  max-width: 22rem;
+  margin: 0 auto;
+}
+
+.hero-cta .btn {
+  width: 100%;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.hero-download-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+}
+
+.hero-download-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(37, 99, 235, 0.45);
+  opacity: 0.95;
+}
+
+.hero-download-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.3);
+}
+
+.hero-download-btn--soon {
+  opacity: 0.72;
+  cursor: default;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.hero-download-btn--soon:hover,
+.hero-download-btn--soon:active {
+  transform: none;
+  box-shadow: none;
+  opacity: 0.72;
+}
+
+.hero-download-btn__icon {
+  font-size: 1.125rem;
+  line-height: 1;
+}
+
+@media (min-width: 640px) {
+  .hero-cta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    max-width: none;
+    gap: 1rem;
+  }
+
+  .hero-cta .btn {
+    width: auto;
+    min-width: 12.5rem;
+  }
+}
+
 .card-hover { transition: transform 0.2s, border-color 0.2s; }
 .card-hover:hover { transform: translateY(-4px); border-color: var(--primary); }
 

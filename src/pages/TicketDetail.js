@@ -16,7 +16,6 @@ const TicketDetail = () => {
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [reply, setReply] = useState('');
-  const [attachFile, setAttachFile] = useState(null);
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef(null);
@@ -71,9 +70,8 @@ const TicketDetail = () => {
     if (!reply.trim()) return;
     setSending(true);
     try {
-      await replyTicket(id, reply.trim(), attachFile);
+      await replyTicket(id, reply.trim());
       setReply('');
-      setAttachFile(null);
       await load(true);
     } catch (e) {
       alert(e.response?.data?.message || 'Failed to send reply');
@@ -125,9 +123,6 @@ const TicketDetail = () => {
             onChange={setReply}
             onSend={send}
             sending={sending}
-            file={attachFile}
-            onFileChange={(e) => setAttachFile(e.target.files?.[0] || null)}
-            onClearFile={() => setAttachFile(null)}
           />
         )}
         {closed && (

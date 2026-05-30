@@ -20,6 +20,7 @@ import {
 } from '../utils/razorpayCheckout';
 import PaymentMethodLogo from '../components/PaymentMethodLogo';
 import { PAYMENT_METHODS, CARD_BRANDS, getPaymentMethod } from '../config/paymentMethods';
+import { friendlyPaymentError } from '../utils/paymentErrors';
 
 const ALL_PAYMENT_IDS = PAYMENT_METHODS.map((m) => m.id);
 
@@ -91,8 +92,8 @@ const AddFunds = () => {
     razorpayConfigured: false,
     razorpayEnabled: false,
     keyId: '',
-    configError: '',
   });
+  const [configChecked, setConfigChecked] = useState(false);
   const [loading, setLoading] = useState(false);
   const [paying, setPaying] = useState(false);
   const [payPhase, setPayPhase] = useState('idle'); // idle | creating | verifying
@@ -132,18 +133,18 @@ const AddFunds = () => {
   }, [refreshWallet]);
 
   useEffect(() => {
-    const applyConfig = (data, errorMsg = '') => {
+    const applyConfig = (data) => {
       const configured = Boolean(data?.razorpayConfigured ?? data?.razorpayEnabled);
       const settingsKey = settings.razorpay_key_id?.trim?.() || '';
-      const hasSettingsKey = settingsKey.startsWith('rzp_');
+      const hasSettingsKey = settingsKey.startsWith('rzp_live_') || settingsKey.startsWith('rzp_');
       const keyId = data?.keyId || (hasSettingsKey ? settingsKey : '');
       const ready = configured || (hasSettingsKey && keyId.startsWith('rzp_'));
       setRazorpayConfig({
         razorpayConfigured: ready,
         razorpayEnabled: ready,
         keyId,
-        configError: ready ? '' : (errorMsg || data?.issues?.join(', ') || ''),
       });
+      setConfigChecked(true);
     };
 
     getPaymentConfig()
@@ -151,15 +152,12 @@ const AddFunds = () => {
       .catch(() =>
         getPublicRazorpayConfig()
           .then((r) => applyConfig(r.data))
-          .catch((e) => {
+          .catch(() => {
             const settingsKey = settings.razorpay_key_id?.trim?.() || '';
             if (settingsKey.startsWith('rzp_')) {
               applyConfig({ razorpayConfigured: true, keyId: settingsKey });
             } else {
-              applyConfig(
-                { razorpayConfigured: false },
-                e.response?.data?.message || 'Could not load payment config'
-              );
+              applyConfig({ razorpayConfigured: false });
             }
           })
       );
@@ -228,8 +226,8 @@ const AddFunds = () => {
       setSuccessModal({
         open: true,
         type: 'failed',
-        title: 'Razorpay unavailable',
-        message: razorpayConfig.configError || 'Payment gateway is not configured.',
+        title: 'Payment unavailable',
+        message: 'Online payment is temporarily unavailable. Please try again in a few minutes.',
       });
       return;
     }
@@ -285,10 +283,10 @@ const AddFunds = () => {
             load();
           } catch (err) {
             const code = err.response?.data?.code;
-            const msg = err.response?.data?.message
-              || (code === 'INVALID_SIGNATURE'
-                ? 'Invalid payment signature. Contact support with your payment ID.'
-                : 'Payment received but verification failed. Wallet will update via webhook if payment succeeded.');
+            const msg =
+              code === 'INVALID_SIGNATURE'
+                ? 'Payment verification failed. Contact support with your payment ID if amount was deducted.'
+                : friendlyPaymentError(err);
             showToast('error', msg);
             setSuccessModal({
               open: true,
@@ -315,7 +313,9 @@ const AddFunds = () => {
       openRazorpayModal(options, {
         onFailed: (resp) => {
           resetPayState();
-          const msg = resp.error?.description || resp.error?.reason || 'Payment was not completed';
+          const msg = friendlyPaymentError(
+            resp.error?.description || resp.error?.reason || 'Payment was not completed'
+          );
           showToast('error', msg);
           setSuccessModal({
             open: true,
@@ -331,12 +331,12 @@ const AddFunds = () => {
       const isNetwork = !e.response && (
         e.code === 'ERR_NETWORK' || /network/i.test(e.message || '')
       );
-      const msg = e.response?.data?.message || e.message || 'Could not start payment';
+      const msg = friendlyPaymentError(e);
       showToast('error', msg);
       setSuccessModal({
         open: true,
         type: 'failed',
-        title: isNetwork ? 'Network error' : 'Cannot start payment',
+        title: isNetwork ? 'Network error' : 'Payment unavailable',
         message: isNetwork
           ? 'Check your internet connection and try again.'
           : msg,
@@ -384,18 +384,6 @@ const AddFunds = () => {
             <p className="add-funds-secure-sub">UPI • Cards • Netbanking • Wallets</p>
           </div>
         </div>
-        {!razorpayReady && (
-          <div className="alert alert-error" style={{ marginBottom: 16 }}>
-            Razorpay is not configured on the server. Add valid{' '}
-            <code>RAZORPAY_KEY_ID</code> and <code>RAZORPAY_KEY_SECRET</code> on Render, then redeploy.
-            {razorpayConfig.configError && (
-              <span style={{ display: 'block', marginTop: 8, fontSize: 13 }}>
-                {razorpayConfig.configError}
-              </span>
-            )}
-          </div>
-        )}
-
         <div className="add-funds-methods-grid" aria-label="Accepted payment methods">
           {paymentMethods.map((m) => (
             <button
@@ -482,7 +470,7 @@ const AddFunds = () => {
         <button
           type="button"
           className="add-funds-pay-btn-glow add-funds-pay-btn"
-          disabled={paying || !razorpayReady}
+          disabled={paying || (configChecked && !razorpayReady)}
           onClick={openRazorpayCheckout}
         >
           {paying ? (
