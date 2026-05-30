@@ -5,7 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDraggableFloat } from '../hooks/useDraggableFloat';
 
-const CRITICAL_PATHS = ['/dashboard', '/add-funds', '/services', '/orders'];
+const CRITICAL_PATHS = ['/dashboard', '/add-funds', '/services', '/orders', '/tickets', '/notifications'];
 
 const LiveChatWidget = () => {
   const location = useLocation();
@@ -19,6 +19,18 @@ const LiveChatWidget = () => {
   const bottom = useRef(null);
   const token = localStorage.getItem('token');
 
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
+  const isServicesPage = location.pathname.startsWith('/services');
+  const isTicketsPage = location.pathname.startsWith('/tickets');
+  const isNotificationsPage = location.pathname.startsWith('/notifications');
+  let extraBottomReserve = 0;
+  if (isMobile) {
+    if (isTicketsPage && location.pathname !== '/tickets') extraBottomReserve = 120;
+    else if (isTicketsPage) extraBottomReserve = 72;
+    else if (isNotificationsPage) extraBottomReserve = 72;
+    else if (isServicesPage) extraBottomReserve = 56;
+  }
+
   const {
     position,
     style: fabStyle,
@@ -26,9 +38,11 @@ const LiveChatWidget = () => {
     wasDragged,
     setPositionSafe,
     size: fabSize,
+    getBottomReserve,
   } = useDraggableFloat({
     storageKey: 'abhaysmm_live_chat_fab_pos',
     size: 52,
+    extraBottomReserve,
     enabled: Boolean(settings.live_chat_enabled && token),
   });
 
@@ -52,11 +66,12 @@ const LiveChatWidget = () => {
     if (!position) return;
     const isCritical = CRITICAL_PATHS.some((p) => location.pathname.startsWith(p));
     if (!isCritical) return;
-    const maxY = window.innerHeight - fabSize - (window.innerWidth <= 767 ? 140 : 24);
+    const bottomPad = getBottomReserve();
+    const maxY = window.innerHeight - fabSize - bottomPad;
     if (position.y > maxY) {
       setPositionSafe(position.x, maxY);
     }
-  }, [location.pathname, position, fabSize, setPositionSafe]);
+  }, [location.pathname, position, fabSize, setPositionSafe, getBottomReserve]);
 
   const panelStyle = useMemo(() => {
     if (!position || typeof window === 'undefined') return {};

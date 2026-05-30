@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import AdminResponsiveTable from '../components/AdminResponsiveTable';
 import { adminGetTickets } from '../api';
+import { ticketStatusClass } from '../utils/ticketStatus';
+import '../styles/ticketsPage.css';
 
 const AdminTickets = () => {
   const [tickets, setTickets] = useState([]);
@@ -16,7 +18,9 @@ const AdminTickets = () => {
       key: 'status',
       label: 'Status',
       highlight: true,
-      render: (t) => <span className="badge badge-info">{t.status}</span>,
+      render: (t) => (
+        <span className={`ticket-badge ${ticketStatusClass(t.status)}`}>{t.status}</span>
+      ),
     },
     {
       key: 'view',

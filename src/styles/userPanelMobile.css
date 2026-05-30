@@ -150,16 +150,6 @@
   }
 }
 
-/* API docs */
-.api-docs-page .api-docs-pre {
-  font-size: 0.75rem;
-  line-height: 1.5;
-  padding: 0.875rem;
-  border-radius: 0.625rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-}
-
 /* Notifications */
 .notifications-page .notification-card {
   margin-bottom: 0.75rem;

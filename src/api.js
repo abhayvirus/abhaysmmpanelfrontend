@@ -88,6 +88,8 @@ export const getPublicStats = () => API.get('/public/stats');
 export const getPublicRazorpayConfig = () => API.get('/public/razorpay-config');
 export const getPublicSettings = () => API.get('/settings/public');
 export const getAppSettings = () => API.get('/settings/app');
+export const trackApkDownload = () => API.post('/settings/app/apk/track');
+export const downloadApkFile = () => API.get('/settings/app/apk/download', { responseType: 'blob' });
 export const getServicesPreview = () => API.get('/public/services-preview');
 
 // Services & orders
@@ -115,15 +117,42 @@ export const adminGetAllPayments = (status) => API.get('/payments/admin/all', { 
 export const adminGetPendingPayments = () => API.get('/payments/admin/pending');
 export const adminApprovePayment = (id, data) => API.put(`/payments/admin/${id}/approve`, data);
 export const adminRejectPayment = (id, data) => API.put(`/payments/admin/${id}/reject`, data);
+export const adminGetPaymentStats = () => API.get('/payments/admin/stats');
+export const adminGetPaymentHistoryAccess = () => API.get('/payments/admin/history-access');
+export const adminGetPaymentHistorySettings = () => API.get('/payments/admin/history-settings');
+export const adminSetPaymentHistorySettings = (auto_delete_days) =>
+  API.put('/payments/admin/history-settings', { auto_delete_days });
+export const adminClearPaymentHistory = (scope) =>
+  API.post('/payments/admin/clear-history', { scope });
 
 // Tickets
 export const getTickets = () => API.get('/tickets');
-export const createTicket = (data) => API.post('/tickets', data);
-export const getTicket = (id) => API.get(`/tickets/${id}`);
-export const replyTicket = (id, message) => API.post(`/tickets/${id}/reply`, { message });
+export const getTicketUnreadCount = () => API.get('/tickets/unread-count');
+export const createTicket = (data, file = null) => {
+  if (file) {
+    const fd = new FormData();
+    fd.append('subject', data.subject);
+    fd.append('message', data.message);
+    fd.append('priority', data.priority || 'medium');
+    fd.append('attachment', file);
+    return API.post('/tickets', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  }
+  return API.post('/tickets', data);
+};
+export const getTicket = (id, params) => API.get(`/tickets/${id}`, { params });
+export const replyTicket = (id, message, file = null) => {
+  if (file) {
+    const fd = new FormData();
+    fd.append('message', message);
+    fd.append('attachment', file);
+    return API.post(`/tickets/${id}/reply`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  }
+  return API.post(`/tickets/${id}/reply`, { message });
+};
 
 // Notifications
-export const getNotifications = () => API.get('/notifications');
+export const getNotifications = (params = {}) =>
+  API.get('/notifications', { params: { page: 1, limit: 20, ...params } });
 export const getUnreadCount = () => API.get('/notifications/unread-count');
 export const markRead = (id) => API.put(`/notifications/${id}/read`);
 export const markAllRead = () => API.put('/notifications/read-all');
@@ -162,6 +191,7 @@ export const adminUploadLogo = (formData) => API.post('/settings/admin/logo', fo
 export const adminDeleteQR = () => API.delete('/settings/admin/qr');
 export const adminDeleteLogo = () => API.delete('/settings/admin/logo');
 export const adminUploadApk = (formData) => API.post('/settings/admin/apk', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
+export const adminDeleteApk = () => API.delete('/settings/admin/apk');
 export const adminUploadAppScreenshot = (formData) => API.post('/settings/admin/screenshot', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminDeleteAppScreenshot = (index) => API.delete(`/settings/admin/screenshots/${index}`);
 export const adminChangePassword = (data) => API.put('/settings/admin/password', data);

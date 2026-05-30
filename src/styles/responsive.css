@@ -541,6 +541,10 @@ body.mobile-menu-open {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
+.dashboard-order-details {
+  border-top: 1px solid var(--border);
+  padding-top: 0.25rem;
+}
 .services-row-card {
   padding: 16px;
   display: grid;
@@ -581,6 +585,21 @@ body.mobile-menu-open {
 }
 .orders-mobile-row span:first-child {
   color: var(--text-muted);
+}
+
+.orders-actions-cell {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.orders-actions-cell--mobile {
+  margin-top: 10px;
+}
+
+.orders-page-msg {
+  margin-bottom: 16px;
 }
 
 /* ——— Touch targets ——— */

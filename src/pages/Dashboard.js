@@ -1,6 +1,9 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import UserLayout from '../components/UserLayout';
+import InsufficientBalanceAlert from '../components/InsufficientBalanceAlert';
 import { getServices, getPlatforms, placeOrder, getMe } from '../api';
+import { useSettings } from '../contexts/SettingsContext';
+import '../styles/balanceWarning.css';
 
 const platformIcons = {
   All: '⚡', Instagram: '📸', TikTok: '🎵', YouTube: '▶️',
@@ -9,6 +12,8 @@ const platformIcons = {
 };
 
 const Dashboard = () => {
+  const { settings } = useSettings();
+  const sym = settings.currency_symbol || '₹';
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
   const [services, setServices] = useState([]);
   const [platforms, setPlatforms] = useState(['All']);
@@ -18,13 +23,18 @@ const Dashboard = () => {
   const [link, setLink] = useState('');
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState(null);
+  const [orderMessage, setOrderMessage] = useState(null);
+  const [balanceWarningDismissed, setBalanceWarningDismissed] = useState(false);
 
-  useEffect(() => {
+  const refreshUser = () => {
     getMe().then((res) => {
       setUser(res.data);
       localStorage.setItem('user', JSON.stringify(res.data));
     }).catch(() => {});
+  };
+
+  useEffect(() => {
+    refreshUser();
     getPlatforms().then((res) => setPlatforms(['All', ...res.data])).catch(() => {});
   }, []);
 
@@ -34,8 +44,14 @@ const Dashboard = () => {
       setServices(res.data);
       setSelectedCategory('All');
       setSelectedServiceId('');
+      setLink('');
+      setQuantity('');
     }).catch(() => {});
   }, [selectedPlatform]);
+
+  useEffect(() => {
+    if (selectedServiceId) refreshUser();
+  }, [selectedServiceId, quantity]);
 
   const categories = useMemo(() => {
     const set = new Set();
@@ -56,43 +72,65 @@ const Dashboard = () => {
     [visibleServices, selectedServiceId]
   );
 
-  const totalCost = () => {
+  const orderCost = useMemo(() => {
     if (!selectedService || !quantity || Number.isNaN(Number(quantity))) return null;
-    return ((selectedService.price / 1000) * parseInt(quantity, 10)).toFixed(2);
-  };
+    const qty = parseInt(quantity, 10);
+    if (qty < 1) return null;
+    return (selectedService.price / 1000) * qty;
+  }, [selectedService, quantity]);
+
+  const walletBalance = parseFloat(user.balance || 0);
+
+  const insufficientBalance = useMemo(() => {
+    if (orderCost == null) return null;
+    if (walletBalance >= orderCost) return null;
+    return {
+      need: orderCost.toFixed(2),
+      have: walletBalance.toFixed(2),
+    };
+  }, [orderCost, walletBalance]);
+
+  const showBalanceWarning = Boolean(insufficientBalance) && !balanceWarningDismissed;
+
+  useEffect(() => {
+    setBalanceWarningDismissed(false);
+  }, [selectedServiceId, insufficientBalance?.need, insufficientBalance?.have]);
 
   const handleOrder = async () => {
-    if (!selectedService) return setMessage({ type: 'error', text: 'Please select a service first' });
-    if (!link) return setMessage({ type: 'error', text: 'Please enter a valid link' });
-    if (!quantity) return setMessage({ type: 'error', text: 'Please enter quantity' });
+    if (!selectedService) return setOrderMessage({ type: 'error', text: 'Please select a service first' });
+    if (!link) return setOrderMessage({ type: 'error', text: 'Please enter a valid link' });
+    if (!quantity) return setOrderMessage({ type: 'error', text: 'Please enter quantity' });
+    if (insufficientBalance) {
+      return setOrderMessage({
+        type: 'error',
+        text: `Insufficient balance. Need ${sym}${insufficientBalance.need}, have ${sym}${insufficientBalance.have}`,
+      });
+    }
 
     setLoading(true);
-    setMessage(null);
+    setOrderMessage(null);
     try {
       const res = await placeOrder({
         service_id: selectedService.id,
         link,
         quantity: parseInt(quantity, 10),
       });
-      setMessage({ type: 'success', text: `✅ ${res.data.message}` });
+      setOrderMessage({ type: 'success', text: `✅ ${res.data.message}` });
       setLink('');
       setQuantity('');
       setSelectedServiceId('');
-      getMe().then((r) => {
-        setUser(r.data);
-        localStorage.setItem('user', JSON.stringify(r.data));
-      });
+      refreshUser();
     } catch (err) {
-      setMessage({ type: 'error', text: `❌ ${err.response?.data?.message || 'Order failed'}` });
+      setOrderMessage({ type: 'error', text: `❌ ${err.response?.data?.message || 'Order failed'}` });
     }
     setLoading(false);
   };
 
   return (
-    <UserLayout title="Dashboard">
+    <UserLayout title="New Order">
       <div className="dashboard-page fade-in">
         <div className="page-header">
-          <h1 className="page-title" style={{ marginBottom: 0 }}>Dashboard</h1>
+          <h1 className="page-title" style={{ marginBottom: 0 }}>New Order</h1>
         </div>
 
         <div className="dashboard-stats">
@@ -103,7 +141,7 @@ const Dashboard = () => {
           <div className="stat-card">
             <div className="stat-label">Balance</div>
             <div className="stat-value" style={{ fontSize: '1.25rem' }}>
-              ₹{parseFloat(user.balance || 0).toFixed(2)}
+              {sym}{walletBalance.toFixed(2)}
             </div>
           </div>
           <div className="stat-card">
@@ -134,11 +172,13 @@ const Dashboard = () => {
               <p style={{ fontSize: 13, marginTop: 8 }}>Ask admin to sync services from provider.</p>
             </div>
           ) : (
-            <div className="dashboard-order-form" style={{ marginTop: '1.5rem' }}>
-              <h3 style={{ marginBottom: 16, fontSize: 18 }}>📝 New Order</h3>
+            <div className="dashboard-order-form">
+              <h3 style={{ marginBottom: 16, fontSize: 18 }}>📝 Place order</h3>
 
-              {message && (
-                <div className={`alert alert-${message.type === 'success' ? 'success' : 'error'}`}>{message.text}</div>
+              {orderMessage && (
+                <div className={`alert alert-${orderMessage.type === 'success' ? 'success' : 'error'}`}>
+                  {orderMessage.text}
+                </div>
               )}
 
               <div className="dashboard-order-grid">
@@ -163,6 +203,8 @@ const Dashboard = () => {
                     onChange={(e) => {
                       setSelectedCategory(e.target.value);
                       setSelectedServiceId('');
+                      setLink('');
+                      setQuantity('');
                     }}
                   >
                     {categories.map((c) => (
@@ -176,62 +218,103 @@ const Dashboard = () => {
                   <select
                     className="select"
                     value={selectedServiceId}
-                    onChange={(e) => setSelectedServiceId(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedServiceId(e.target.value);
+                      setLink('');
+                      setQuantity('');
+                    }}
                   >
                     <option value="">Select service</option>
                     {visibleServices.map((svc) => (
                       <option key={svc.id} value={svc.id}>
-                        {svc.name} (₹{svc.price}/1000)
+                        {svc.name} ({sym}{svc.price}/1000)
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
+
+              {selectedService && (
+                <div className="dashboard-order-details">
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: 8,
+                      margin: '1.25rem 0 1rem',
+                      fontSize: 13,
+                      color: 'var(--text-muted)',
+                    }}
+                  >
+                    <span>🎯 {selectedService.name}</span>
+                    <span>
+                      Min: {selectedService.min_quantity} | Max: {selectedService.max_quantity?.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {showBalanceWarning && insufficientBalance && (
+                    <InsufficientBalanceAlert
+                      need={insufficientBalance.need}
+                      have={insufficientBalance.have}
+                      currencySymbol={sym}
+                      onDismiss={() => setBalanceWarningDismissed(true)}
+                    />
+                  )}
+
+                  <div className="form-group">
+                    <label className="label">🔗 Link</label>
+                    <input
+                      className="input"
+                      placeholder="https://instagram.com/username"
+                      value={link}
+                      onChange={(e) => setLink(e.target.value)}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label className="label">🔢 Quantity</label>
+                    <input
+                      className="input"
+                      type="number"
+                      placeholder={`${selectedService.min_quantity} – ${selectedService.max_quantity}`}
+                      value={quantity}
+                      onChange={(e) => setQuantity(e.target.value)}
+                      min={selectedService.min_quantity}
+                      max={selectedService.max_quantity}
+                    />
+                  </div>
+
+                  {orderCost != null && (
+                    <div
+                      className="card"
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        marginBottom: 16,
+                        padding: '0.875rem 1rem',
+                      }}
+                    >
+                      <span style={{ color: 'var(--text-muted)' }}>Total Cost</span>
+                      <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.375rem' }}>
+                        {sym}{orderCost.toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    style={{ width: '100%' }}
+                    disabled={loading || Boolean(insufficientBalance)}
+                    onClick={handleOrder}
+                  >
+                    {loading ? '⏳ Placing order…' : '🚀 Place Order'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
-
-        {selectedService && (
-          <div className="dashboard-order-form" style={{ marginTop: '1.5rem' }}>
-            <h3 style={{ marginBottom: 16, fontSize: 18 }}>📝 New Order</h3>
-            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8, marginBottom: 16, fontSize: 13, color: 'var(--text-muted)' }}>
-              <span>🎯 {selectedService.name}</span>
-              <span>Min: {selectedService.min_quantity} | Max: {selectedService.max_quantity?.toLocaleString()}</span>
-            </div>
-
-            {message && (
-              <div className={`alert alert-${message.type === 'success' ? 'success' : 'error'}`}>{message.text}</div>
-            )}
-
-            <div className="form-group">
-              <label className="label">🔗 Link</label>
-              <input className="input" placeholder="https://instagram.com/username" value={link} onChange={(e) => setLink(e.target.value)} />
-            </div>
-            <div className="form-group">
-              <label className="label">🔢 Quantity</label>
-              <input
-                className="input"
-                type="number"
-                placeholder={`${selectedService.min_quantity} – ${selectedService.max_quantity}`}
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-                min={selectedService.min_quantity}
-                max={selectedService.max_quantity}
-              />
-            </div>
-
-            {totalCost() && (
-              <div className="card" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16, padding: '0.875rem 1rem' }}>
-                <span style={{ color: 'var(--text-muted)' }}>Total Cost</span>
-                <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.375rem' }}>₹{totalCost()}</span>
-              </div>
-            )}
-
-            <button type="button" className="btn btn-primary" style={{ width: '100%' }} disabled={loading} onClick={handleOrder}>
-              {loading ? '⏳ Order ho raha hai...' : '🚀 Place Order'}
-            </button>
-          </div>
-        )}
       </div>
     </UserLayout>
   );

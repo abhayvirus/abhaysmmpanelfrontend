@@ -2,7 +2,7 @@
 
 .live-chat-fab--draggable {
   position: fixed;
-  z-index: 999;
+  z-index: 850;
   width: 3.25rem;
   height: 3.25rem;
   border-radius: 50%;
@@ -28,7 +28,7 @@
 
 .live-chat-panel--floating {
   position: fixed;
-  z-index: 1000;
+  z-index: 900;
   width: min(340px, calc(100vw - 1.5rem));
   max-width: none;
   max-height: min(420px, calc(100dvh - 8rem));

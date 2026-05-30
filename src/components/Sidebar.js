@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { getUnreadCount } from '../api';
+import { getUnreadCount, getTicketUnreadCount } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import ThemeToggle from './ThemeToggle';
@@ -14,10 +14,23 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
   const { t } = useLanguage();
   const user = propUser || JSON.parse(localStorage.getItem('user') || '{}');
   const [unread, setUnread] = React.useState(0);
+  const [ticketUnread, setTicketUnread] = React.useState(0);
   const sym = settings.currency_symbol || '₹';
-  React.useEffect(() => {
+  const refreshCounts = React.useCallback(() => {
     getUnreadCount().then((r) => setUnread(r.data.count)).catch(() => {});
-  }, [location.pathname]);
+    getTicketUnreadCount().then((r) => setTicketUnread(r.data.count)).catch(() => {});
+  }, []);
+
+  React.useEffect(() => {
+    refreshCounts();
+    const id = setInterval(refreshCounts, 15000);
+    const onUpdate = () => refreshCounts();
+    window.addEventListener('notifications-updated', onUpdate);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener('notifications-updated', onUpdate);
+    };
+  }, [location.pathname, refreshCounts]);
 
   const pathRef = React.useRef(location.pathname);
   React.useEffect(() => {
@@ -46,9 +59,14 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     { to: '/services', label: t('nav.services'), icon: '📋' },
     { to: '/orders', label: t('nav.orders'), icon: '📦' },
     { to: '/add-funds', label: t('nav.funds'), icon: '💳' },
-    { to: '/tickets', label: t('nav.support'), icon: '🎫' },
+    {
+      to: '/tickets',
+      label: ticketUnread > 0 ? `${t('nav.support')} (${ticketUnread})` : t('nav.support'),
+      icon: '🎫',
+    },
     { to: '/notifications', label: t('nav.notifications'), icon: '🔔', badge: unread },
     ...(settings.feature_referrals !== false ? [{ to: '/referrals', label: t('nav.referrals'), icon: '🎁' }] : []),
+    { to: '/download-app', label: t('nav.downloadApp'), icon: '📱' },
     { to: '/api-docs', label: 'API Docs', icon: '🔌' },
     ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: 'Child Panel', icon: '🌐' }] : []),
     { to: '/profile', label: 'Profile', icon: '⚙️' },
@@ -76,11 +94,14 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
             <Link
               key={l.to}
               to={l.to}
-              className={`sidebar-link${location.pathname === l.to ? ' active' : ''}`}
+              className={`sidebar-link${
+                location.pathname === l.to || (l.to === '/tickets' && location.pathname.startsWith('/tickets/'))
+                  ? ' active'
+                  : ''
+              }`}
             >
               <span aria-hidden="true">{l.icon}</span>
               {l.label}
-              {l.badge > 0 && <span className="sidebar-badge">{l.badge}</span>}
             </Link>
           ))}
         </nav>

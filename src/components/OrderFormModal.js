@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { placeOrder, getMe } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
+import InsufficientBalanceAlert from './InsufficientBalanceAlert';
+import '../styles/balanceWarning.css';
 
 const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
   const { settings } = useSettings();
@@ -9,23 +11,48 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
   const [quantity, setQuantity] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [balance, setBalance] = useState(parseFloat(JSON.parse(localStorage.getItem('user') || '{}').balance || 0));
+  const [balanceWarningDismissed, setBalanceWarningDismissed] = useState(false);
 
   useEffect(() => {
     if (open && service) {
       setLink('');
       setQuantity(String(service.min_quantity || ''));
       setError('');
+      setBalanceWarningDismissed(false);
+      getMe().then((r) => setBalance(parseFloat(r.data.balance || 0))).catch(() => {});
     }
   }, [open, service]);
 
-  if (!open || !service) return null;
+  const orderCost = useMemo(() => {
+    if (!open || !service || !quantity || Number.isNaN(Number(quantity))) return null;
+    const qty = parseInt(quantity, 10);
+    if (qty < 1) return null;
+    return (parseFloat(service.price) / 1000) * qty;
+  }, [open, service, quantity]);
 
-  const total = quantity && !isNaN(quantity)
-    ? ((parseFloat(service.price) / 1000) * parseInt(quantity, 10)).toFixed(2)
-    : null;
+  const total = orderCost != null ? orderCost.toFixed(2) : null;
+
+  const insufficientBalance = useMemo(() => {
+    if (orderCost == null) return null;
+    if (balance >= orderCost) return null;
+    return { need: orderCost.toFixed(2), have: balance.toFixed(2) };
+  }, [orderCost, balance]);
+
+  useEffect(() => {
+    setBalanceWarningDismissed(false);
+  }, [quantity, insufficientBalance?.need, insufficientBalance?.have]);
+
+  const showBalanceWarning = Boolean(insufficientBalance) && !balanceWarningDismissed;
+
+  if (!open || !service) return null;
 
   const submit = async (e) => {
     e.preventDefault();
+    if (insufficientBalance) {
+      setError(`Insufficient balance. Need ${sym}${insufficientBalance.need}, have ${sym}${insufficientBalance.have}`);
+      return;
+    }
     setLoading(true);
     setError('');
     try {
@@ -52,8 +79,16 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
           <button type="button" className="btn btn-ghost btn-sm" onClick={onClose}>✕</button>
         </div>
         <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>{service.name}</p>
-        {error && <div className="alert alert-error">{error}</div>}
+        {error && !showBalanceWarning && <div className="alert alert-error">{error}</div>}
         <form onSubmit={submit}>
+          {showBalanceWarning && insufficientBalance && (
+            <InsufficientBalanceAlert
+              need={insufficientBalance.need}
+              have={insufficientBalance.have}
+              currencySymbol={sym}
+              onDismiss={() => setBalanceWarningDismissed(true)}
+            />
+          )}
           <div className="form-group">
             <label className="label">Link / Username</label>
             <input className="input" required value={link} onChange={(e) => setLink(e.target.value)}
@@ -74,7 +109,7 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
               <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sym}{service.price} per 1000</div>
             </div>
           )}
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || Boolean(insufficientBalance)}>
             {loading ? 'Placing order...' : 'Confirm & Place Order'}
           </button>
         </form>

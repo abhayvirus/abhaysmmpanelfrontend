@@ -19,6 +19,7 @@ export function useDraggableFloat({
   storageKey = 'abhaysmm_live_chat_fab_pos',
   size = 52,
   margin = 12,
+  extraBottomReserve = 0,
   enabled = true,
 } = {}) {
   const [position, setPosition] = useState(null);
@@ -41,8 +42,8 @@ export function useDraggableFloat({
     const root = getComputedStyle(document.documentElement);
     const nav =
       parseFloat(root.getPropertyValue('--mobile-bottom-nav-h')) || 68;
-    return nav + margin + 72;
-  }, [isMobileViewport, margin]);
+    return nav + margin + 72 + (extraBottomReserve || 0);
+  }, [isMobileViewport, margin, extraBottomReserve]);
 
   const getTopReserve = useCallback(() => {
     if (!isMobileViewport()) return margin;
@@ -99,6 +100,11 @@ export function useDraggableFloat({
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [enabled, clampPosition, getDefaultPosition]);
+
+  useEffect(() => {
+    if (!enabled) return;
+    setPosition((prev) => (prev ? clampPosition(prev.x, prev.y) : getDefaultPosition()));
+  }, [enabled, extraBottomReserve, clampPosition, getDefaultPosition]);
 
   const setPositionSafe = useCallback(
     (x, y) => {

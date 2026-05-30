@@ -5,10 +5,17 @@ import { adminGetAllOrders, adminUpdateOrderStatus, adminDeleteOrder } from '../
 const STATUS_FILTERS = ['All', 'pending', 'processing', 'completed', 'cancelled', 'failed'];
 
 const STATUS_ACTIONS = [
-  { status: 'completed', label: '✓ Complete', className: 'btn-primary' },
+  { status: 'completed', label: '✅ Completed', className: 'btn-primary' },
   { status: 'processing', label: '⏳ Processing', className: 'btn-ghost' },
   { status: 'cancelled', label: '❌ Cancelled', className: 'btn-danger' },
 ];
+
+/** Terminal statuses — show only the current state, no other action buttons. */
+const TERMINAL_STATUS = {
+  completed: { label: '✅ Completed', className: 'btn-primary' },
+  cancelled: { label: '❌ Cancelled', className: 'btn-danger' },
+  failed: { label: '❌ Failed', className: 'btn-danger' },
+};
 
 const statusBadgeClass = (status) => {
   const s = (status || '').toLowerCase();
@@ -31,20 +38,12 @@ const formatDate = (value) => {
   });
 };
 
-const formatShortDate = (value) => {
-  if (!value) return '—';
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('en-GB');
-};
-
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('All');
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
-  const [expandedId, setExpandedId] = useState(null);
   const [toast, setToast] = useState(null);
 
   const showToast = (text, type = 'success') => {
@@ -128,19 +127,105 @@ const AdminOrders = () => {
     setUpdatingId(null);
   };
 
-  const renderStatusButtons = (order, compact = false) => (
-    <div className={compact ? 'admin-order-status-btns' : 'admin-order-status-actions'}>
-      {STATUS_ACTIONS.map((action) => (
-        <button
-          key={action.status}
-          type="button"
-          className={`btn btn-sm ${action.className}${order.status === action.status ? ' is-current' : ''}`}
-          disabled={updatingId === order.id}
-          onClick={() => changeStatus(order.id, action.status)}
+  const renderUserCell = (order) => (
+    <div className="admin-order-user-cell">
+      <span className="admin-order-user-name">{order.user_name || '—'}</span>
+      {order.user_email && (
+        <span className="admin-order-user-email">{order.user_email}</span>
+      )}
+    </div>
+  );
+
+  const renderStatusButtons = (order, compact = false) => {
+    const current = (order.status || '').toLowerCase();
+    const terminal = TERMINAL_STATUS[current];
+
+    if (terminal) {
+      return (
+        <div
+          className={`${compact ? 'admin-order-status-btns' : 'admin-order-status-actions'} admin-order-status-actions--terminal`}
         >
-          {action.label}
-        </button>
-      ))}
+          <span className={`btn btn-sm ${terminal.className} is-current is-terminal`} aria-current="true">
+            {terminal.label}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div className={compact ? 'admin-order-status-btns' : 'admin-order-status-actions'}>
+        {STATUS_ACTIONS.map((action) => (
+          <button
+            key={action.status}
+            type="button"
+            className={`btn btn-sm ${action.className}${current === action.status ? ' is-current' : ''}`}
+            disabled={updatingId === order.id}
+            onClick={() => changeStatus(order.id, action.status)}
+          >
+            {action.label}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
+  const renderOrderDetails = (order) => (
+    <div className="admin-order-details">
+      <h4 className="admin-order-details__title">Order details</h4>
+      <div className="admin-order-row">
+        <span>User Name</span>
+        <span>{order.user_name || '—'}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>User Email</span>
+        <span className="admin-order-user-email">{order.user_email || '—'}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Order ID</span>
+        <span>#{order.id}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Service Name</span>
+        <span>{order.service_name || '—'}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Quantity</span>
+        <span>{order.quantity ?? '—'}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Price</span>
+        <span>₹{parseFloat(order.price || 0).toFixed(2)}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Current Status</span>
+        <span className={statusBadgeClass(order.status)}>{order.status}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Created Date</span>
+        <span>{formatDate(order.created_at)}</span>
+      </div>
+      <div className="admin-order-row">
+        <span>Updated Date</span>
+        <span>{formatDate(order.updated_at)}</span>
+      </div>
+      {order.api_order_id && (
+        <div className="admin-order-row">
+          <span>API ID</span>
+          <span style={{ wordBreak: 'break-all' }}>{order.api_order_id}</span>
+        </div>
+      )}
+      {order.user_wallet_balance != null && (
+        <div className="admin-order-row">
+          <span>Wallet</span>
+          <span>₹{parseFloat(order.user_wallet_balance || 0).toFixed(2)}</span>
+        </div>
+      )}
+      {order.platform && (
+        <div className="admin-order-row">
+          <span>Platform</span>
+          <span>{order.platform}</span>
+        </div>
+      )}
     </div>
   );
 
@@ -218,7 +303,7 @@ const AdminOrders = () => {
                     {filtered.map((o) => (
                       <tr key={o.id}>
                         <td>#{o.id}</td>
-                        <td>{o.user_name}</td>
+                        <td>{renderUserCell(o)}</td>
                         <td style={{ maxWidth: 140 }}>{o.service_name}</td>
                         <td>
                           {o.link ? (
@@ -264,30 +349,19 @@ const AdminOrders = () => {
               {filtered.map((o) => (
                 <article key={o.id} className="admin-order-card">
                   <div className="admin-order-card-header">
-                    <h3>Order #{o.id}</h3>
+                    <div className="admin-order-card-header__main">
+                      <h3>Order #{o.id}</h3>
+                      <div className="admin-order-user-cell">
+                        <span className="admin-order-user-name">{o.user_name || '—'}</span>
+                        {o.user_email && (
+                          <span className="admin-order-user-email">{o.user_email}</span>
+                        )}
+                      </div>
+                    </div>
                     <span className={statusBadgeClass(o.status)}>{o.status}</span>
                   </div>
 
-                  <div className="admin-order-row">
-                    <span>User</span>
-                    <span>{o.user_name}</span>
-                  </div>
-                  <div className="admin-order-row">
-                    <span>Service</span>
-                    <span>{o.service_name}</span>
-                  </div>
-                  <div className="admin-order-row">
-                    <span>Quantity</span>
-                    <span>{o.quantity}</span>
-                  </div>
-                  <div className="admin-order-row">
-                    <span>Price</span>
-                    <span>₹{parseFloat(o.price || 0).toFixed(2)}</span>
-                  </div>
-                  <div className="admin-order-row">
-                    <span>Date</span>
-                    <span>{formatShortDate(o.created_at)}</span>
-                  </div>
+                  {renderOrderDetails(o)}
 
                   {o.link && (
                     <div className="admin-order-row admin-order-link-row">
@@ -304,20 +378,13 @@ const AdminOrders = () => {
                   )}
 
                   <div className="admin-order-status-section">
-                    <h4>Current status: {o.status}</h4>
+                    <h4>Current status: {(o.status || '').toUpperCase()}</h4>
                     {renderStatusButtons(o)}
                   </div>
 
                   {renderTimeline(o)}
 
                   <div className="admin-order-actions">
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => setExpandedId(expandedId === o.id ? null : o.id)}
-                    >
-                      {expandedId === o.id ? 'Hide details' : 'View details'}
-                    </button>
                     {o.link && (
                       <button
                         type="button"
@@ -337,26 +404,6 @@ const AdminOrders = () => {
                     </button>
                   </div>
 
-                  {expandedId === o.id && (
-                    <div className="admin-order-details">
-                      <div className="admin-order-row">
-                        <span>Email</span>
-                        <span>{o.user_email || '—'}</span>
-                      </div>
-                      <div className="admin-order-row">
-                        <span>Wallet</span>
-                        <span>₹{parseFloat(o.user_wallet_balance || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="admin-order-row">
-                        <span>API ID</span>
-                        <span style={{ wordBreak: 'break-all' }}>{o.api_order_id || '—'}</span>
-                      </div>
-                      <div className="admin-order-row">
-                        <span>Platform</span>
-                        <span>{o.platform || '—'}</span>
-                      </div>
-                    </div>
-                  )}
                 </article>
               ))}
             </div>

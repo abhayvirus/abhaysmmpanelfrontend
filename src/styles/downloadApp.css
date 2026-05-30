@@ -1,0 +1,15 @@
+.download-store-btn--unavailable {
+  opacity: 0.72;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-style: dashed;
+}
+
+.download-app-page .download-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}

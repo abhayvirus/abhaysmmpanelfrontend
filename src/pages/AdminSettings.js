@@ -11,6 +11,7 @@ import {
   adminDeleteQR,
   adminDeleteLogo,
   adminUploadApk,
+  adminDeleteApk,
   adminUploadAppScreenshot,
   adminDeleteAppScreenshot,
   adminChangePassword,
@@ -32,7 +33,8 @@ const TABS = [
   { id: 'branding', label: 'Branding', icon: '🎨' },
   { id: 'payments', label: 'Payments', icon: '💳' },
   { id: 'api', label: 'API & Profit', icon: '🔌' },
-  { id: 'social', label: 'Social & App', icon: '📱' },
+  { id: 'social', label: 'Social', icon: '🔗' },
+  { id: 'mobile', label: 'Mobile App', icon: '📱' },
   { id: 'theme', label: 'Theme', icon: '🌙' },
   { id: 'announce', label: 'Popups', icon: '📢' },
   { id: 'security', label: 'Security', icon: '🔒' },
@@ -283,38 +285,133 @@ const AdminSettings = () => {
             <Field label="Telegram" value={draft.telegram_link} onChange={(v) => updateDraft('telegram_link', v)} />
             <Field label="YouTube" value={draft.youtube_link} onChange={(v) => updateDraft('youtube_link', v)} />
             <Field label="WhatsApp" value={draft.whatsapp_link} onChange={(v) => updateDraft('whatsapp_link', v)} />
-            <hr className="admin-settings-divider" />
-            <h3 className="admin-settings-section-title">Mobile app</h3>
-            <Field label="App version" value={draft.app_version} onChange={(v) => updateDraft('app_version', v)} />
-            <Field label="Play Store link" value={draft.play_store_url} onChange={(v) => updateDraft('play_store_url', v)} />
-            <Field label="iOS / App Store URL" value={draft.app_ios_url} onChange={(v) => updateDraft('app_ios_url', v)} />
-            <Field label="Legacy download URL" value={draft.app_download_url} onChange={(v) => updateDraft('app_download_url', v)} />
+            <Field label="Play Store link (optional)" value={draft.play_store_url} onChange={(v) => updateDraft('play_store_url', v)} />
+          </>
+        );
+      case 'mobile':
+        return (
+          <>
+            <div className="admin-mobile-stats card" style={{ padding: 16, marginBottom: 20 }}>
+              <h3 className="admin-settings-section-title" style={{ marginTop: 0 }}>Download analytics</h3>
+              <p style={{ margin: 0, fontSize: 14, color: 'var(--text-muted)' }}>
+                Total APK downloads: <strong style={{ color: 'var(--text)' }}>{draft.app_apk_download_count || '0'}</strong>
+              </p>
+              <p style={{ margin: '8px 0 0', fontSize: 14, color: 'var(--text-muted)' }}>
+                Latest download:{' '}
+                <strong style={{ color: 'var(--text)' }}>
+                  {draft.app_apk_last_download_at
+                    ? new Date(draft.app_apk_last_download_at).toLocaleString()
+                    : 'Never'}
+                </strong>
+              </p>
+            </div>
+
+            <Field
+              label="Android APK URL"
+              value={draft.app_android_apk_url}
+              onChange={(v) => updateDraft('app_android_apk_url', v)}
+              placeholder="https://… or leave empty and upload APK below"
+            />
+            <Field
+              label="Android APK version"
+              value={draft.app_version}
+              onChange={(v) => updateDraft('app_version', v)}
+              placeholder="1.0.0"
+            />
+            <Field
+              label="iOS App Store URL"
+              value={draft.app_ios_url}
+              onChange={(v) => updateDraft('app_ios_url', v)}
+              placeholder="https://apps.apple.com/…"
+            />
+            <div className="form-group">
+              <label className="label">App update notes</label>
+              <textarea
+                className="textarea"
+                rows={3}
+                value={draft.app_update_notes || ''}
+                onChange={(e) => updateDraft('app_update_notes', e.target.value)}
+                placeholder="Shown on the Download App page (what's new)"
+              />
+            </div>
+
+            <div className="form-group">
+              <label className="label">Upload APK (.apk only)</label>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8 }}>
+                File is stored in uploads/apk/ and a public download URL is generated automatically.
+              </p>
+              {draft.app_apk_path && (
+                <div style={{ marginBottom: 12, fontSize: 13 }}>
+                  <span className="badge badge-success">Hosted on server</span>
+                  <a href={`${API_BASE}${draft.app_apk_path}`} target="_blank" rel="noreferrer" style={{ marginLeft: 8 }}>
+                    {draft.app_apk_path}
+                  </a>
+                  {draft.app_apk_size_bytes && (
+                    <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>
+                      ({(Number(draft.app_apk_size_bytes) / (1024 * 1024)).toFixed(2)} MB)
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    style={{ marginLeft: 8 }}
+                    onClick={async () => {
+                      if (!window.confirm('Remove hosted APK from server?')) return;
+                      await adminDeleteApk();
+                      updateDraft('app_apk_path', '');
+                      updateDraft('app_apk_size_bytes', '');
+                      if (String(draft.app_android_apk_url || '').startsWith(API_BASE)) {
+                        updateDraft('app_android_apk_url', '');
+                      }
+                      showMsg('Hosted APK removed');
+                    }}
+                  >
+                    Remove file
+                  </button>
+                </div>
+              )}
+              <input
+                type="file"
+                accept=".apk,application/vnd.android.package-archive"
+                className="input"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (!file.name.toLowerCase().endsWith('.apk')) {
+                    alert('Only .apk files are allowed');
+                    e.target.value = '';
+                    return;
+                  }
+                  const fd = new FormData();
+                  fd.append('apk', file);
+                  try {
+                    const res = await adminUploadApk(fd);
+                    updateDraft('app_apk_path', res.data.app_apk_path);
+                    updateDraft('app_android_apk_url', res.data.app_android_apk_url);
+                    updateDraft('app_apk_size_bytes', String(res.data.app_apk_size_bytes || ''));
+                    showMsg('APK uploaded — URL updated');
+                  } catch (err) {
+                    alert(err.response?.data?.message || 'Upload failed');
+                  }
+                  e.target.value = '';
+                }}
+              />
+            </div>
+
             <div className="form-group">
               <label className="label">App description</label>
               <textarea className="textarea" rows={2} value={draft.app_description || ''} onChange={(e) => updateDraft('app_description', e.target.value)} />
             </div>
-            <Toggle label="Enable PWA" checked={draft.pwa_enabled} onChange={(v) => updateDraft('pwa_enabled', v)} />
-            <div className="form-group" style={{ marginTop: 16 }}>
-              <label className="label">Android APK</label>
-              {draft.app_apk_path && (
-                <p style={{ fontSize: 13, color: 'var(--success)', marginBottom: 8 }}>
-                  <a href={`${API_BASE}${draft.app_apk_path}`} target="_blank" rel="noreferrer">{draft.app_apk_path}</a>
-                </p>
-              )}
-              <input type="file" accept=".apk,application/vnd.android.package-archive" className="input" onChange={async (e) => {
-                if (!e.target.files[0]) return;
-                const fd = new FormData();
-                fd.append('apk', e.target.files[0]);
-                const res = await adminUploadApk(fd);
-                updateDraft('app_apk_path', res.data.app_apk_path);
-                showMsg('APK uploaded');
-                e.target.value = '';
-              }} />
-            </div>
             <div className="form-group">
+              <label className="label">Install instructions (one step per line)</label>
+              <textarea className="textarea" rows={4} value={draft.app_install_instructions || ''} onChange={(e) => updateDraft('app_install_instructions', e.target.value)} />
+            </div>
+            <Toggle label="Enable PWA install prompt" checked={draft.pwa_enabled} onChange={(v) => updateDraft('pwa_enabled', v)} />
+
+            <div className="form-group" style={{ marginTop: 16 }}>
               <label className="label">App screenshots</label>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 12 }}>
-                {(draft.app_screenshots || []).map((src, i) => (
+                {(parseScreenshots(draft.app_screenshots)).map((src, i) => (
                   <div key={src} style={{ position: 'relative' }}>
                     <img src={`${API_BASE}${src}`} alt="" style={{ width: 72, height: 120, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border)' }} />
                     <button type="button" className="btn btn-danger btn-sm" style={{ position: 'absolute', top: 4, right: 4, padding: '2px 6px' }} onClick={async () => {

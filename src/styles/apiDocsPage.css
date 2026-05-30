@@ -1,0 +1,359 @@
+/* API Docs — developer documentation */
+
+.api-docs-page {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding-bottom: calc(
+    var(--mobile-bottom-nav-h, 4.25rem) + env(safe-area-inset-bottom, 0px) + 1rem
+  );
+}
+
+@media (min-width: 768px) {
+  .api-docs-page {
+    max-width: 48rem;
+    padding-bottom: 2rem;
+  }
+}
+
+.api-docs-page__hero {
+  margin-bottom: 1.5rem;
+}
+
+.api-docs-page__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 4.5vw, 1.75rem);
+  font-weight: 700;
+}
+
+.api-docs-page__subtitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.api-docs-section {
+  margin-bottom: 1.25rem;
+}
+
+.api-docs-section__heading {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+/* Endpoint card */
+.api-endpoint-card {
+  padding: 1rem 1.125rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg, var(--bg-elevated));
+}
+
+.api-endpoint-card__route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.625rem;
+  margin-bottom: 0.875rem;
+}
+
+.api-endpoint-card__method {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: 0.375rem;
+  background: #16a34a;
+  color: #fff;
+}
+
+.api-endpoint-card__path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.api-endpoint-card__label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+.api-endpoint-card__url {
+  display: block;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  color: #58a6ff;
+  word-break: break-all;
+  line-height: 1.45;
+}
+
+.api-endpoint-card__note {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* API key */
+.api-key-card {
+  padding: 1rem 1.125rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--card-bg, var(--bg-elevated));
+}
+
+.api-key-card__row {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.api-key-card__value {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0.875rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 0.5rem;
+  color: #c9d1d9;
+  word-break: break-all;
+}
+
+.api-key-card__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.api-key-card__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.api-key-card__icon-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.api-key-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+}
+
+.api-key-card__footer .btn {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.api-key-card__hint {
+  margin: 0.625rem 0 0;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Examples grid */
+.api-docs-examples {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.api-docs-example h4 {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.api-docs-example__pair {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.api-docs-example__label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin: 0.25rem 0 0;
+}
+
+/* Code block */
+.api-code-block {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #30363d;
+  background: #0d1117;
+}
+
+.api-code-block__bar {
+  padding: 0.5rem 0.875rem;
+  border-bottom: 1px solid #30363d;
+  background: #161b22;
+}
+
+.api-code-block__title,
+.api-code-block__lang {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b949e;
+}
+
+.api-code-block__wrap {
+  position: relative;
+}
+
+.api-code-block__copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  font-family: inherit;
+  color: #c9d1d9;
+  background: #21262d;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.api-code-block__copy:hover {
+  background: #30363d;
+  color: #fff;
+}
+
+.api-code-block__pre {
+  margin: 0;
+  padding: 0.75rem 0.5rem 0.75rem 0;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  tab-size: 2;
+  -webkit-overflow-scrolling: touch;
+}
+
+.api-code-block__line {
+  display: flex;
+  min-height: 1.55em;
+}
+
+.api-code-block__ln {
+  flex-shrink: 0;
+  width: 2.75rem;
+  padding-right: 0.75rem;
+  text-align: right;
+  user-select: none;
+  color: #484f58;
+  font-size: 0.75rem;
+}
+
+.api-code-block__content {
+  flex: 1;
+  min-width: 0;
+  padding-right: 3.5rem;
+  white-space: pre;
+}
+
+/* Syntax tokens — VS Code dark */
+.api-tok--plain {
+  color: #c9d1d9;
+}
+
+.api-tok--key {
+  color: #79c0ff;
+}
+
+.api-tok--string {
+  color: #7ee787;
+}
+
+.api-tok--number {
+  color: #ffa657;
+}
+
+.api-tok--keyword {
+  color: #d2a8ff;
+}
+
+.api-tok--comment {
+  color: #8b949e;
+  font-style: italic;
+}
+
+/* Confirm modal */
+.api-docs-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.api-docs-confirm {
+  width: 100%;
+  max-width: 22rem;
+  padding: 1.25rem;
+  border-radius: 0.75rem;
+  background: var(--card-bg, var(--bg-elevated));
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+}
+
+.api-docs-confirm h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.0625rem;
+}
+
+.api-docs-confirm p {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.api-docs-confirm__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}

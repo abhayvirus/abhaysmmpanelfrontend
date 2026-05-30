@@ -1,112 +1,195 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import { getTickets, createTicket } from '../api';
+import { ticketStatusClass, formatTicketTime } from '../utils/ticketStatus';
+import '../styles/ticketsPage.css';
 
-const statusBadge = (status) => {
-  if (status === 'closed') return 'badge-danger';
-  if (status === 'open') return 'badge-success';
-  return 'badge-warning';
-};
+const POLL_MS = 15000;
 
 const Tickets = () => {
   const [tickets, setTickets] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ subject: '', message: '', priority: 'medium' });
+  const [attachFile, setAttachFile] = useState(null);
   const [msg, setMsg] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
-  const load = () => getTickets().then((r) => setTickets(r.data)).catch(() => setTickets([]));
-  useEffect(() => { load(); }, []);
+  const load = useCallback((silent = false) => {
+    if (!silent) setLoading(true);
+    return getTickets()
+      .then((r) => setTickets(r.data))
+      .catch(() => setTickets([]))
+      .finally(() => { if (!silent) setLoading(false); });
+  }, []);
+
+  useEffect(() => {
+    load();
+    const id = setInterval(() => load(true), POLL_MS);
+    return () => clearInterval(id);
+  }, [load]);
+
+  const openNewTicket = () => {
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const submit = async () => {
+    if (!form.subject.trim() || !form.message.trim()) {
+      setMsg('Subject and message are required');
+      return;
+    }
+    setSubmitting(true);
+    setMsg('');
     try {
-      await createTicket(form);
-      setMsg('Ticket created');
+      await createTicket(form, attachFile);
+      setMsg('Ticket created successfully');
       setShowForm(false);
       setForm({ subject: '', message: '', priority: 'medium' });
-      load();
+      setAttachFile(null);
+      load(true);
     } catch (e) {
-      setMsg(e.response?.data?.message || 'Error');
+      setMsg(e.response?.data?.message || 'Could not create ticket');
     }
+    setSubmitting(false);
   };
 
   return (
     <UserLayout title="Support">
       <div className="tickets-page">
-        <div className="page-header">
-          <h1 style={{ marginBottom: 0 }}>Support Tickets</h1>
-          <button type="button" className="btn btn-primary" onClick={() => setShowForm(!showForm)}>
-            + New Ticket
+        <div className="tickets-sticky-header">
+          <h1 className="tickets-page__title">Support</h1>
+          <button
+            type="button"
+            className="btn btn-primary btn-new-ticket"
+            onClick={() => (showForm ? setShowForm(false) : openNewTicket())}
+          >
+            {showForm ? 'Close form' : '+ New Ticket'}
           </button>
         </div>
-        {msg && <div className="alert alert-success">{msg}</div>}
+
+        {msg && (
+          <div className={`alert ${msg.includes('success') ? 'alert-success' : 'alert-error'} tickets-page__toast`}>
+            {msg}
+          </div>
+        )}
+
         {showForm && (
-          <div className="card ticket-form-card" style={{ marginBottom: 24 }}>
+          <div className="card tickets-form-card">
             <div className="form-group">
               <label className="label">Subject</label>
-              <input className="input" value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} />
+              <input
+                className="input"
+                value={form.subject}
+                onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                placeholder="Brief summary of your issue"
+              />
             </div>
             <div className="form-group">
               <label className="label">Message</label>
-              <textarea className="textarea" rows={4} value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} />
+              <textarea
+                className="textarea"
+                rows={4}
+                value={form.message}
+                onChange={(e) => setForm({ ...form, message: e.target.value })}
+                placeholder="Describe your issue in detail…"
+              />
             </div>
             <div className="form-group">
               <label className="label">Priority</label>
-              <select className="select" value={form.priority} onChange={(e) => setForm({ ...form, priority: e.target.value })}>
+              <select
+                className="select"
+                value={form.priority}
+                onChange={(e) => setForm({ ...form, priority: e.target.value })}
+              >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
               </select>
             </div>
-            <button type="button" className="btn btn-primary" onClick={submit}>Submit</button>
+            <div className="form-group">
+              <label className="label">Attachment (optional)</label>
+              <input
+                type="file"
+                className="input"
+                accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                onChange={(e) => setAttachFile(e.target.files?.[0] || null)}
+              />
+            </div>
+            <button type="button" className="btn btn-primary" onClick={submit} disabled={submitting}>
+              {submitting ? 'Submitting…' : 'Submit ticket'}
+            </button>
           </div>
         )}
 
-        {tickets.length === 0 ? (
-          <div className="card user-panel-empty">
-            <p className="user-panel-empty-title">No tickets found</p>
-            <span>Create a ticket if you need help with orders or payments.</span>
+        {loading ? (
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem 1rem' }}>Loading tickets…</p>
+        ) : tickets.length === 0 ? (
+          <div className="card tickets-empty">
+            <div className="tickets-empty__icon" aria-hidden="true">🎫</div>
+            <p className="tickets-empty__title">No tickets yet</p>
+            <p className="tickets-empty__text">
+              Need help with orders, payments, or your account? Create a support ticket and our team will reply soon.
+            </p>
+            <button type="button" className="btn btn-primary" onClick={openNewTicket}>
+              Create Ticket
+            </button>
           </div>
         ) : (
           <>
-            <div className="table-wrap user-panel-table-wrap">
+            <div className="tickets-list">
+              {tickets.map((t) => (
+                <Link
+                  key={t.id}
+                  to={`/tickets/${t.id}`}
+                  className={`card ticket-card${t.unread ? ' ticket-card--unread' : ''}`}
+                >
+                  <div className="ticket-card__top">
+                    <span className="ticket-card__id">#{t.id}</span>
+                    <span className={`ticket-badge ${ticketStatusClass(t.status)}`}>{t.status}</span>
+                  </div>
+                  <h2 className="ticket-card__subject">{t.subject}</h2>
+                  {t.last_message_preview && (
+                    <p className="ticket-card__preview">{t.last_message_preview}</p>
+                  )}
+                  <div className="ticket-card__meta">
+                    <span>Created {formatTicketTime(t.created_at)}</span>
+                    {t.last_reply_at && (
+                      <span>Last reply {formatTicketTime(t.last_reply_at)}</span>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="table-wrap user-panel-table-wrap" style={{ marginTop: '1rem' }}>
               <table>
                 <thead>
-                  <tr><th>ID</th><th>Subject</th><th>Status</th><th>Date</th><th></th></tr>
+                  <tr>
+                    <th>ID</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Last reply</th>
+                    <th>Created</th>
+                    <th />
+                  </tr>
                 </thead>
                 <tbody>
                   {tickets.map((t) => (
                     <tr key={t.id}>
                       <td>#{t.id}</td>
                       <td>{t.subject}</td>
-                      <td><span className={`badge ${statusBadge(t.status)}`}>{t.status}</span></td>
-                      <td>{new Date(t.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <span className={`ticket-badge ${ticketStatusClass(t.status)}`}>{t.status}</span>
+                      </td>
+                      <td>{formatTicketTime(t.last_reply_at)}</td>
+                      <td>{formatTicketTime(t.created_at)}</td>
                       <td><Link to={`/tickets/${t.id}`}>View</Link></td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
-            <div className="user-panel-mobile-list">
-              {tickets.map((t) => (
-                <article className="card user-panel-mobile-card" key={`ticket-m-${t.id}`}>
-                  <div className="user-panel-mobile-top">
-                    <strong>Ticket #{t.id}</strong>
-                    <span className={`badge ${statusBadge(t.status)}`}>{t.status}</span>
-                  </div>
-                  <div className="user-panel-mobile-row user-panel-mobile-row--stack">
-                    <span>Subject</span>
-                    <span>{t.subject}</span>
-                  </div>
-                  <div className="user-panel-mobile-row">
-                    <span>Date</span>
-                    <span>{new Date(t.created_at).toLocaleString()}</span>
-                  </div>
-                  <div className="user-panel-mobile-actions">
-                    <Link to={`/tickets/${t.id}`} className="btn btn-primary btn-sm">View ticket</Link>
-                  </div>
-                </article>
-              ))}
             </div>
           </>
         )}

@@ -21,11 +21,12 @@ export function useNotificationPoll(enabled = true) {
             return [...fresh.map((n) => ({ ...n, ts: Date.now() })), ...prev].slice(0, 5);
           });
           sinceRef.current = data.notifications[0].created_at;
+          window.dispatchEvent(new CustomEvent('notifications-updated'));
         }
       } catch (_) { /* ignore */ }
     };
     tick();
-    const id = setInterval(tick, 8000);
+    const id = setInterval(tick, 15000);
     return () => clearInterval(id);
   }, [enabled]);
 
