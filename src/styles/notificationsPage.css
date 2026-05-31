@@ -301,10 +301,100 @@
   font-size: 0.875rem;
 }
 
+/* Mobile — stack actions so Clear History is never clipped */
+@media (max-width: 767px) {
+  .notifications-page {
+    padding-bottom: calc(
+      var(--user-mobile-content-pad-bottom, 6.25rem) + env(safe-area-inset-bottom, 0px) + 1rem
+    );
+  }
+
+  .notifications-page__header {
+    position: relative;
+    top: auto;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0 0 0.85rem;
+    margin-bottom: 0.85rem;
+    overflow: visible;
+  }
+
+  .notifications-page__mobile-unread {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .notifications-page__actions {
+    width: 100%;
+    flex: none;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    min-width: 0;
+    gap: 0.5rem;
+  }
+
+  .notifications-clear-btn,
+  .notifications-page__actions .btn {
+    width: 100%;
+    max-width: 100%;
+    min-height: 2.75rem;
+    flex: none;
+    white-space: normal;
+    box-sizing: border-box;
+  }
+
+  .notifications-toast {
+    top: calc(env(safe-area-inset-top, 0px) + var(--mobile-header-h, 3.5rem) + 0.5rem);
+    max-width: calc(100vw - 1.5rem);
+  }
+
+  .notification-item {
+    padding: 0.75rem 0.85rem;
+    gap: 0.65rem;
+  }
+
+  .notification-item__icon {
+    width: 2rem;
+    height: 2rem;
+    font-size: 1rem;
+  }
+
+  .notification-item__title {
+    font-size: 0.875rem;
+  }
+
+  .notification-item__message {
+    font-size: 0.8125rem;
+  }
+
+  .notifications-clear-modal__panel {
+    width: min(22rem, calc(100vw - 1.5rem));
+    margin: 0 auto;
+  }
+
+  .notifications-clear-modal__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+
+  .notifications-clear-modal__actions .btn {
+    width: 100%;
+    min-height: 2.75rem;
+  }
+}
+
 @media (min-width: 768px) {
   .notifications-page {
     max-width: 42rem;
     padding-bottom: 1.5rem;
+  }
+
+  .notifications-page__mobile-unread {
+    display: none;
   }
 
   .notifications-empty {

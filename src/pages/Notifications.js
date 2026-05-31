@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import UserLayout from '../components/UserLayout';
+import { useMedia } from '../hooks/useMedia';
 import { getNotifications, markRead, markAllRead, clearNotificationHistory } from '../api';
 import '../styles/notificationsPage.css';
 
@@ -30,6 +31,7 @@ function formatDateTime(iso) {
 }
 
 const Notifications = () => {
+  const { isMobile } = useMedia();
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -124,10 +126,17 @@ const Notifications = () => {
         )}
 
         <header className="notifications-page__header">
-          <h1 className="notifications-page__title">
-            Notifications
-            {unreadCount > 0 ? ` (${unreadCount})` : ''}
-          </h1>
+          {!isMobile && (
+            <h1 className="notifications-page__title">
+              Notifications
+              {unreadCount > 0 ? ` (${unreadCount})` : ''}
+            </h1>
+          )}
+          {isMobile && unreadCount > 0 && (
+            <p className="notifications-page__mobile-unread" aria-live="polite">
+              {unreadCount} unread notification{unreadCount === 1 ? '' : 's'}
+            </p>
+          )}
           <div className="notifications-page__actions">
             <button
               type="button"
