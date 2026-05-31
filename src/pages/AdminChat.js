@@ -86,9 +86,10 @@ const AdminChat = () => {
   const [emailForm, setEmailForm] = useState({ template: 'custom', to: '', subject: '', message: '' });
   const [emailSending, setEmailSending] = useState(false);
   const [broadcastForm, setBroadcastForm] = useState({
-    audience: 'all', channels: 'notification', message: '',
+    audience: 'all', channels: 'inbox', message: '',
   });
   const [broadcastSending, setBroadcastSending] = useState(false);
+  const [checkedIds, setCheckedIds] = useState(() => new Set());
   const [toast, setToast] = useState(null);
   const messagesEndRef = useRef(null);
 
@@ -138,6 +139,30 @@ const AdminChat = () => {
   const openChat = (userId) => {
     setSelectedId(userId);
     if (isMobile) setMobileScreen('chat');
+  };
+
+  const toggleChecked = (userId) => {
+    setCheckedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  };
+
+  const selectAllVisible = () => {
+    setCheckedIds(new Set(conversations.map((c) => c.user_id)));
+  };
+
+  const clearChecked = () => setCheckedIds(new Set());
+
+  const openBroadcastModal = (audience = 'all') => {
+    setBroadcastForm((f) => ({
+      ...f,
+      audience,
+      channels: audience === 'selected' ? 'inbox' : f.channels,
+    }));
+    setBroadcastOpen(true);
   };
 
   const closeMobileChat = () => {
@@ -262,8 +287,15 @@ const AdminChat = () => {
         channels: broadcastForm.channels,
         message: broadcastForm.message,
       };
-      if (broadcastForm.audience === 'selected' && selectedId) {
-        payload.user_ids = [selectedId];
+      if (broadcastForm.audience === 'selected') {
+        let ids = Array.from(checkedIds);
+        if (!ids.length && selectedId) ids = [selectedId];
+        if (!ids.length) {
+          showToast('Select at least one user (checkboxes)', 'error');
+          setBroadcastSending(false);
+          return;
+        }
+        payload.user_ids = ids;
       }
       const { data } = await adminBroadcastMessage(payload);
       setBroadcastOpen(false);
@@ -371,9 +403,19 @@ const AdminChat = () => {
       <div className={pageClass}>
         <header className="admin-chat-page-header">
           <h1 className="admin-page-title">Support Inbox</h1>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => setBroadcastOpen(true)}>
-            📢 Broadcast
-          </button>
+          <div className="admin-chat-header-actions">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              disabled={!checkedCount}
+              onClick={() => openBroadcastModal('selected')}
+            >
+              📢 Message selected ({checkedCount || 0})
+            </button>
+            <button type="button" className="btn btn-primary btn-sm" onClick={() => openBroadcastModal('all')}>
+              📢 Broadcast all
+            </button>
+          </div>
         </header>
 
         <div className="admin-chat-shell">
@@ -381,11 +423,32 @@ const AdminChat = () => {
             <div className="admin-chat-list-header">Conversations</div>
             <input
               className="input admin-chat-search"
-              placeholder="Search user…"
+              placeholder="Search name, email or user ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               aria-label="Search users"
             />
+            <div className="admin-chat-select-bar">
+              <label className="admin-chat-select-all">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={(e) => (e.target.checked ? selectAllVisible() : clearChecked())}
+                  aria-label="Select all visible users"
+                />
+                <span>Select all</span>
+              </label>
+              {checkedCount > 0 && (
+                <button type="button" className="btn btn-ghost btn-sm" onClick={clearChecked}>
+                  Clear ({checkedCount})
+                </button>
+              )}
+            </div>
+            {search.trim() && (
+              <p className="admin-chat-search-hint">
+                Showing all matching users — select one to send a personal message.
+              </p>
+            )}
             <div className="admin-chat-filters" role="group" aria-label="Filter conversations">
               {FILTERS.map((f) => (
                 <button
@@ -399,31 +462,53 @@ const AdminChat = () => {
               ))}
             </div>
             <div className="admin-chat-list-scroll">
-              {conversations.map((c) => (
-                <button
-                  key={c.user_id}
-                  type="button"
-                  className={`admin-chat-convo-btn${selectedId === c.user_id ? ' is-active' : ''}`}
-                  onClick={() => openChat(c.user_id)}
-                >
-                  <div className="admin-chat-convo-top">
-                    <div style={{ minWidth: 0, flex: 1 }}>
-                      <span className="admin-chat-convo-name">
-                        {c.is_important ? '⭐ ' : ''}{c.name || 'User'}
-                      </span>
-                      <span className="admin-chat-convo-email">{c.email || 'No email'}</span>
+              {conversations.map((c) => {
+                const hasChat = Boolean(c.has_chat);
+                return (
+                  <div
+                    key={c.user_id}
+                    className={`admin-chat-convo-item${selectedId === c.user_id ? ' is-active' : ''}${checkedIds.has(c.user_id) ? ' is-checked' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      className="admin-chat-convo-check"
+                      checked={checkedIds.has(c.user_id)}
+                      onChange={() => toggleChecked(c.user_id)}
+                      aria-label={`Select ${c.name || 'user'}`}
+                    />
+                    <button
+                      type="button"
+                      className="admin-chat-convo-btn"
+                      onClick={() => openChat(c.user_id)}
+                    >
+                    <div className="admin-chat-convo-body">
+                      <div className="admin-chat-convo-top">
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <span className="admin-chat-convo-name">
+                            {c.is_important ? '⭐ ' : ''}{c.name || 'User'}
+                          </span>
+                          <span className="admin-chat-convo-email">{c.email || 'No email'}</span>
+                        </div>
+                        {c.unread > 0 && <span className="admin-chat-unread">{c.unread}</span>}
+                      </div>
+                      <p className="admin-chat-convo-preview">
+                        {hasChat
+                          ? (c.last_message?.slice(0, 80) || '—')
+                          : 'No messages yet — tap to send a personal message'}
+                      </p>
+                      <div className="admin-chat-convo-meta">
+                        <span>{!hasChat ? 'New' : c.is_resolved ? '✓ Resolved' : 'Open'}</span>
+                        <span>{hasChat ? timeAgo(c.last_at) : '—'}</span>
+                      </div>
                     </div>
-                    {c.unread > 0 && <span className="admin-chat-unread">{c.unread}</span>}
+                    </button>
                   </div>
-                  <p className="admin-chat-convo-preview">{c.last_message?.slice(0, 80) || '—'}</p>
-                  <div className="admin-chat-convo-meta">
-                    <span>{c.is_resolved ? '✓ Resolved' : 'Open'}</span>
-                    <span>{timeAgo(c.last_at)}</span>
-                  </div>
-                </button>
-              ))}
+                );
+              })}
               {!conversations.length && (
-                <p className="admin-chat-list-empty">No conversations</p>
+                <p className="admin-chat-list-empty">
+                  {search.trim() ? 'No users found — try another name or email' : 'No conversations'}
+                </p>
               )}
             </div>
           </aside>
@@ -497,7 +582,18 @@ const AdminChat = () => {
                           {sending ? 'Sending…' : '📨 Send Message'}
                         </button>
                         <button type="button" className="btn btn-ghost btn-sm" onClick={openEmailModal}>📧 Send Email</button>
-                        <button type="button" className="btn btn-ghost btn-sm" onClick={() => { setBroadcastForm((f) => ({ ...f, audience: 'selected' })); setBroadcastOpen(true); }}>📢 Broadcast</button>
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => {
+                            if (selectedId) {
+                              setCheckedIds(new Set([selectedId]));
+                            }
+                            openBroadcastModal('selected');
+                          }}
+                        >
+                          📢 Broadcast
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -570,17 +666,26 @@ const AdminChat = () => {
                 <label className="label">Audience</label>
                 <select className="select" value={broadcastForm.audience} onChange={(e) => setBroadcastForm({ ...broadcastForm, audience: e.target.value })}>
                   <option value="all">All Users</option>
-                  <option value="selected">Selected User (current chat)</option>
+                  <option value="selected">Selected users ({checkedCount || 0} checked)</option>
                   <option value="active">Active Users (30 days)</option>
                   <option value="premium">Premium Users (5+ orders)</option>
                 </select>
               </div>
+              {broadcastForm.audience === 'selected' && (
+                <p className="admin-chat-broadcast-hint">
+                  {checkedCount > 0
+                    ? `Will send to ${checkedCount} selected user(s). Use checkboxes in the list to add or remove.`
+                    : 'Check users in the conversation list, or open a chat and use Broadcast from the thread.'}
+                </p>
+              )}
               <div className="form-group">
                 <label className="label">Message Type</label>
                 <select className="select" value={broadcastForm.channels} onChange={(e) => setBroadcastForm({ ...broadcastForm, channels: e.target.value })}>
+                  <option value="inbox">Support Inbox (personal chat)</option>
                   <option value="notification">In-App Notification</option>
                   <option value="email">Email</option>
-                  <option value="both">Both</option>
+                  <option value="both">Notification + Email</option>
+                  <option value="all">Inbox + Notification + Email</option>
                 </select>
               </div>
               <div className="form-group">

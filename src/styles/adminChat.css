@@ -55,26 +55,51 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.admin-chat-convo-btn {
-  display: block;
-  width: 100%;
-  text-align: left;
-  padding: 0.875rem 1rem;
-  border: none;
+.admin-chat-convo-item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.5rem;
   border-bottom: 1px solid var(--border);
   background: transparent;
-  color: inherit;
-  cursor: pointer;
   transition: background 0.15s;
 }
 
-.admin-chat-convo-btn:hover {
+.admin-chat-convo-item:hover {
   background: var(--bg-hover);
 }
 
-.admin-chat-convo-btn.is-active {
+.admin-chat-convo-item.is-active {
   background: var(--bg-hover);
   border-left: 3px solid var(--primary);
+}
+
+.admin-chat-convo-item.is-checked {
+  background: rgba(37, 99, 235, 0.08);
+}
+
+.admin-chat-convo-check {
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin: 1rem 0 0 0.75rem;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+
+.admin-chat-convo-btn {
+  display: block;
+  flex: 1;
+  min-width: 0;
+  text-align: left;
+  padding: 0.875rem 1rem 0.875rem 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.admin-chat-convo-body {
+  width: 100%;
 }
 
 .admin-chat-convo-top {
@@ -555,9 +580,48 @@
   flex-shrink: 0;
 }
 
+.admin-chat-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
 .admin-chat-search {
   margin: 0 0.75rem 0.5rem;
   font-size: 0.8125rem;
+}
+
+.admin-chat-select-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.75rem 0.5rem;
+  flex-shrink: 0;
+}
+
+.admin-chat-select-all {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.admin-chat-select-all input {
+  accent-color: var(--primary);
+}
+
+.admin-chat-search-hint,
+.admin-chat-broadcast-hint {
+  margin: 0 0.75rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .admin-chat-filters {
