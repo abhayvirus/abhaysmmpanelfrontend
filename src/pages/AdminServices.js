@@ -226,11 +226,14 @@ const AdminServices = () => {
   const confirmDelete = async () => {
     if (!deleteTarget || deletingId) return;
     const svc = deleteTarget;
+    const serviceId = Number(svc.id);
+    console.log('Deleting Service ID:', serviceId, 'name:', svc.name);
     setDeletingId(svc.id);
     setDeleteError('');
     try {
-      await adminDeleteService(svc.id);
-      setServices((prev) => prev.filter((s) => s.id !== svc.id));
+      const res = await adminDeleteService(serviceId);
+      console.log('Delete service response:', res.data);
+      setServices((prev) => prev.filter((s) => Number(s.id) !== serviceId));
       setEditDrafts((prev) => {
         const next = { ...prev };
         delete next[svc.id];
@@ -242,11 +245,13 @@ const AdminServices = () => {
         return next;
       });
       setDeleteTarget(null);
-      setSyncMsg({ type: 'success', text: 'Service deleted successfully' });
+      setSyncMsg({ type: 'success', text: '✅ Service deleted successfully' });
+      await loadServices();
     } catch (err) {
+      console.error('Delete service failed:', err.response?.data || err.message);
       const message = err.response?.data?.message || 'Failed to delete service';
       setDeleteError(message);
-      setSyncMsg({ type: 'error', text: message });
+      setSyncMsg({ type: 'error', text: '❌ Failed to delete service' });
     } finally {
       setDeletingId(null);
     }
