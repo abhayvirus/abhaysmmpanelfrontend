@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
 import AnimatedCounter from '../components/AnimatedCounter';
+import { useMedia } from '../hooks/useMedia';
 import {
   getMe,
   submitWebsiteDevRequest,
@@ -31,10 +32,10 @@ import {
 import '../styles/websiteDevPage.css';
 
 const TABS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'categories', label: 'Categories' },
-  { id: 'estimator', label: 'Price Estimator' },
-  { id: 'requests', label: 'My Requests' },
+  { id: 'overview', label: 'Overview', shortLabel: 'Overview' },
+  { id: 'categories', label: 'Categories', shortLabel: 'Categories' },
+  { id: 'estimator', label: 'Price Estimator', shortLabel: 'Estimator' },
+  { id: 'requests', label: 'My Requests', shortLabel: 'Requests' },
 ];
 
 const EMPTY_FORM = {
@@ -51,6 +52,7 @@ const EMPTY_FORM = {
 
 const WebsiteDev = () => {
   const { settings } = useSettings();
+  const { isMobile } = useMedia();
   const sym = settings.currency_symbol || '₹';
   const [tab, setTab] = useState('overview');
   const [dash, setDash] = useState({});
@@ -152,7 +154,7 @@ const WebsiteDev = () => {
     { label: 'Active Projects', value: dash.active_projects || 0, icon: '⚡' },
     { label: 'Quotations Sent', value: dash.quotations_sent || 0, icon: '📝' },
     { label: 'Completed Projects', value: dash.completed_projects || 0, icon: '✅' },
-    { label: 'Revenue Generated', value: dash.revenue_generated || 0, icon: '💰', isMoney: true },
+    { label: 'Revenue Generated', value: dash.revenue_generated || 0, icon: '💰', isMoney: true, wide: true },
   ];
 
   const estimatorFeatures = FEATURE_OPTIONS.filter((f) => !f.estimatorOnly || estFeatures.includes(f.id) || f.id === 'custom_design');
@@ -168,24 +170,30 @@ const WebsiteDev = () => {
           </p>
         </header>
 
-        <nav className="website-dev-tabs" aria-label="Sections">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              className={`website-dev-tab${tab === t.id ? ' is-active' : ''}`}
-              onClick={() => setTab(t.id)}
-            >
-              {t.label}
-            </button>
-          ))}
-        </nav>
+        <div className="website-dev-tabs-wrap">
+          <nav className="website-dev-tabs" aria-label="Sections">
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                className={`website-dev-tab${tab === t.id ? ' is-active' : ''}`}
+                onClick={() => setTab(t.id)}
+                aria-label={t.label}
+              >
+                {isMobile ? t.shortLabel : t.label}
+              </button>
+            ))}
+          </nav>
+        </div>
 
         {tab === 'overview' && (
           <>
             <div className="website-dev-dash-grid">
               {dashCards.map((c) => (
-                <div key={c.label} className="website-dev-glass website-dev-stat">
+                <div
+                  key={c.label}
+                  className={`website-dev-glass website-dev-stat${c.wide ? ' website-dev-stat--wide' : ''}`}
+                >
                   <span className="website-dev-stat__icon" aria-hidden="true">{c.icon}</span>
                   <div className="stat-value website-dev-stat__value">
                     {c.isMoney ? (
