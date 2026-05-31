@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { isFirebaseConfigured, getFirebaseAuth, getGoogleProvider } from '../firebase';
 import { firebaseLogin } from '../api';
+import { saveAuthSession, clearAuthSession } from '../utils/authRedirect';
 
 /**
  * Auth hook: Firebase Google popup → backend JWT → localStorage → dashboard redirect
@@ -14,8 +15,7 @@ export function useAuth() {
 
   const persistSession = useCallback(
     (data) => {
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      saveAuthSession(data.token, data.user);
       const path = data.user.role === 'admin' ? '/admin' : '/dashboard';
       navigate(path, { replace: true });
     },
@@ -67,8 +67,7 @@ export function useAuth() {
         /* ignore */
       }
     }
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthSession();
     navigate('/login', { replace: true });
   }, [navigate]);
 

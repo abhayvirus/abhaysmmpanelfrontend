@@ -190,6 +190,50 @@
   flex-wrap: wrap;
   gap: 0.35rem;
   align-items: center;
+  min-width: 14rem;
+}
+
+.admin-services-table-wrap .admin-svc-actions-cell .admin-svc-card__actions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(3.25rem, 1fr));
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.admin-svc-table-input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.75rem;
+  min-height: 2rem;
+}
+
+.admin-svc-table-input--num {
+  max-width: 5.5rem;
+}
+
+.admin-svc-row--editing {
+  background: rgba(245, 158, 11, 0.06);
+}
+
+.btn-edit {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #111827;
+  border: 1px solid rgba(251, 191, 36, 0.45);
+  font-weight: 700;
+}
+
+.btn-edit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #111827;
+  transform: translateY(-1px);
+}
+
+.btn-edit:disabled,
+.btn-edit--active {
+  opacity: 0.72;
+  cursor: default;
+  transform: none;
 }
 
 /* ——— Mobile service cards ——— */
@@ -271,9 +315,30 @@
   font-size: 0.875rem;
 }
 
+.admin-svc-card--editing {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: 0 0 0 1px rgba(245, 158, 11, 0.15);
+}
+
+.admin-svc-card__title-input {
+  width: 100%;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  min-height: 2.375rem;
+}
+
+.admin-svc-card__field-input,
+.admin-svc-card__select {
+  width: 100%;
+  min-height: 2.125rem;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.8125rem;
+}
+
 .admin-svc-card__actions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.35rem;
 }
 
@@ -299,6 +364,42 @@
 
 .admin-category-form__icon {
   margin-bottom: 0.25rem;
+}
+
+.admin-svc-delete-modal {
+  max-width: 22rem;
+  width: calc(100% - 2rem);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.admin-svc-delete-modal__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.admin-svc-delete-modal__text {
+  margin: 0 0 0.35rem;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+.admin-svc-delete-modal__name {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.admin-svc-delete-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.admin-svc-delete-modal__actions .btn {
+  min-height: 2.625rem;
+  width: 100%;
 }
 
 @media (max-width: 1023px) {

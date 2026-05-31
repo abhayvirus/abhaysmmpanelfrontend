@@ -6,7 +6,7 @@ import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
-import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
+import { getPostLoginPath, isAuthenticated, saveAuthSession } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 
 const Signup = () => {
@@ -95,8 +95,7 @@ const Signup = () => {
         return;
       }
       if (res.data?.token && res.data?.user) {
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data.user));
+        saveAuthSession(res.data.token, res.data.user);
         setSuccess('Welcome! A welcome email has been sent to your Gmail.');
         setTimeout(() => {
           navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });

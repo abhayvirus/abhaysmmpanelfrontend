@@ -1,5 +1,7 @@
 /** Post-login routing and auth path helpers */
 
+import { notifyAuthSessionChanged } from './authEvents';
+
 export function getStoredUser() {
   try {
     return JSON.parse(localStorage.getItem('user') || '{}');
@@ -24,9 +26,11 @@ export function isAuthenticated() {
 export function clearAuthSession() {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
+  notifyAuthSessionChanged();
 }
 
 export function saveAuthSession(token, user) {
   localStorage.setItem('token', token);
   localStorage.setItem('user', JSON.stringify(user));
+  notifyAuthSessionChanged();
 }

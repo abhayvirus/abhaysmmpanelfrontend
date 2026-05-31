@@ -28,6 +28,32 @@ function keyStatusLabel(status) {
   return { text: 'Unknown', className: 'badge-danger' };
 }
 
+function serviceToDraft(svc) {
+  return {
+    name: svc.name || '',
+    platform: svc.platform || '',
+    category: svc.category || '',
+    original_price: svc.original_price ?? '',
+    custom_price: svc.custom_price ?? '',
+    min_quantity: svc.min_quantity ?? '',
+    max_quantity: svc.max_quantity ?? '',
+    is_active: Boolean(svc.is_active),
+  };
+}
+
+function draftToPayload(draft) {
+  return {
+    name: String(draft.name).trim(),
+    platform: String(draft.platform).trim(),
+    category: String(draft.category).trim(),
+    original_price: parseFloat(draft.original_price),
+    custom_price: parseFloat(draft.custom_price),
+    min_quantity: parseInt(draft.min_quantity, 10),
+    max_quantity: parseInt(draft.max_quantity, 10),
+    is_active: Boolean(draft.is_active),
+  };
+}
+
 const AdminServices = () => {
   const [services, setServices] = useState([]);
   const [syncing, setSyncing] = useState(false);
@@ -35,11 +61,14 @@ const AdminServices = () => {
   const [adding, setAdding] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
   const [providerInfo, setProviderInfo] = useState(null);
-  const [editPrices, setEditPrices] = useState({});
+  const [editDrafts, setEditDrafts] = useState({});
+  const [editingIds, setEditingIds] = useState({});
   const [search, setSearch] = useState('');
   const [platform, setPlatform] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [deletingId, setDeletingId] = useState(null);
+  const [savingId, setSavingId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [addForm, setAddForm] = useState({
     name: '',
     platform: '',
@@ -70,9 +99,24 @@ const AdminServices = () => {
   const loadServices = async () => {
     const res = await adminGetServices();
     setServices(res.data);
-    const prices = {};
-    res.data.forEach((s) => { prices[s.id] = s.custom_price; });
-    setEditPrices(prices);
+    const drafts = {};
+    res.data.forEach((s) => {
+      drafts[s.id] = serviceToDraft(s);
+    });
+    setEditDrafts(drafts);
+    setEditingIds({});
+  };
+
+  const updateDraft = (id, field, value) => {
+    setEditDrafts((prev) => ({
+      ...prev,
+      [id]: { ...prev[id], [field]: value },
+    }));
+  };
+
+  const startEdit = (svc) => {
+    setEditDrafts((prev) => ({ ...prev, [svc.id]: serviceToDraft(svc) }));
+    setEditingIds((prev) => ({ ...prev, [svc.id]: true }));
   };
 
   const handleTestConnection = async () => {
@@ -126,38 +170,78 @@ const AdminServices = () => {
   };
 
   const handleSave = async (svc) => {
+    const draft = editDrafts[svc.id];
+    if (!draft) return;
+
+    setSavingId(svc.id);
     try {
-      await adminUpdateService(svc.id, {
-        custom_price: parseFloat(editPrices[svc.id]),
-        is_active: svc.is_active,
+      const payload = draftToPayload(draft);
+      await adminUpdateService(svc.id, payload);
+      const updated = { ...svc, ...payload, is_active: payload.is_active ? 1 : 0 };
+      setServices((prev) => prev.map((s) => (s.id === svc.id ? { ...s, ...updated, is_active: payload.is_active } : s)));
+      setEditDrafts((prev) => ({ ...prev, [svc.id]: serviceToDraft({ ...svc, ...updated, is_active: payload.is_active }) }));
+      setEditingIds((prev) => {
+        const next = { ...prev };
+        delete next[svc.id];
+        return next;
       });
-      setSyncMsg({ type: 'success', text: 'Service saved' });
-    } catch {
-      setSyncMsg({ type: 'error', text: 'Save failed' });
+      setSyncMsg({ type: 'success', text: 'Service updated successfully' });
+    } catch (err) {
+      setSyncMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update service' });
     }
+    setSavingId(null);
   };
 
   const toggleActive = async (svc) => {
+    if (editingIds[svc.id]) {
+      setEditDrafts((prev) => ({
+        ...prev,
+        [svc.id]: { ...prev[svc.id], is_active: !prev[svc.id].is_active },
+      }));
+      return;
+    }
+
+    const nextActive = !svc.is_active;
     try {
       await adminUpdateService(svc.id, {
-        custom_price: parseFloat(editPrices[svc.id]),
-        is_active: !svc.is_active,
+        custom_price: parseFloat(svc.custom_price),
+        is_active: nextActive,
       });
-      setServices((prev) => prev.map((s) => (s.id === svc.id ? { ...s, is_active: !s.is_active } : s)));
+      setServices((prev) => prev.map((s) => (s.id === svc.id ? { ...s, is_active: nextActive } : s)));
+      setEditDrafts((prev) => ({
+        ...prev,
+        [svc.id]: { ...prev[svc.id], is_active: nextActive },
+      }));
     } catch {
-      setSyncMsg({ type: 'error', text: 'Toggle failed' });
+      setSyncMsg({ type: 'error', text: 'Failed to update service' });
     }
   };
 
-  const handleDelete = async (svc) => {
-    if (!window.confirm(`Delete "${svc.name}"?\n\nIf this service has orders, it will be deactivated instead.`)) return;
+  const requestDelete = (svc) => {
+    setDeleteTarget(svc);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    const svc = deleteTarget;
     setDeletingId(svc.id);
     try {
-      const res = await adminDeleteService(svc.id);
-      setSyncMsg({ type: 'success', text: res.data.message || 'Service removed' });
-      await loadServices();
+      await adminDeleteService(svc.id);
+      setServices((prev) => prev.filter((s) => s.id !== svc.id));
+      setEditDrafts((prev) => {
+        const next = { ...prev };
+        delete next[svc.id];
+        return next;
+      });
+      setEditingIds((prev) => {
+        const next = { ...prev };
+        delete next[svc.id];
+        return next;
+      });
+      setDeleteTarget(null);
+      setSyncMsg({ type: 'success', text: 'Service deleted successfully' });
     } catch (err) {
-      setSyncMsg({ type: 'error', text: err.response?.data?.message || 'Delete failed' });
+      setSyncMsg({ type: 'error', text: err.response?.data?.message || 'Failed to delete service' });
     }
     setDeletingId(null);
   };
@@ -207,70 +291,166 @@ const AdminServices = () => {
     ? JSON.stringify(providerInfo.raw_response, null, 2)
     : null;
 
-  const renderServiceCard = (svc) => (
-    <article key={svc.id} className="admin-svc-card">
-      <h3 className="admin-svc-card__title">{svc.name}</h3>
-      <div className="admin-svc-card__grid">
-        <div className="admin-svc-card__cell">
-          <span>Platform</span>
-          <strong>{svc.platform || '—'}</strong>
-        </div>
-        <div className="admin-svc-card__cell">
-          <span>Status</span>
-          <strong>{svc.is_active ? 'Active' : 'Disabled'}</strong>
-        </div>
-        <div className="admin-svc-card__cell">
-          <span>Provider /1000</span>
-          <strong>₹{parseFloat(svc.original_price).toFixed(2)}</strong>
-        </div>
-        <div className="admin-svc-card__cell">
-          <span>Min order</span>
-          <strong>{svc.min_quantity}</strong>
-        </div>
-        <div className="admin-svc-card__cell">
-          <span>Max order</span>
-          <strong>{svc.max_quantity?.toLocaleString()}</strong>
-        </div>
-        {svc.category && (
-          <div className="admin-svc-card__cell">
-            <span>Category</span>
-            <strong>{svc.category}</strong>
-          </div>
-        )}
-      </div>
-      <div className="admin-svc-card__price">
-        <label htmlFor={`price-${svc.id}`}>Your price / 1000 (₹)</label>
-        <input
-          id={`price-${svc.id}`}
-          type="number"
-          step="0.01"
-          className="input"
-          value={editPrices[svc.id] ?? ''}
-          onChange={(e) => setEditPrices((prev) => ({ ...prev, [svc.id]: e.target.value }))}
-        />
-      </div>
-      <div className="admin-svc-card__actions">
-        <button
-          type="button"
-          onClick={() => toggleActive(svc)}
-          className={`btn btn-sm ${svc.is_active ? 'btn-primary' : 'btn-danger'}`}
-        >
-          {svc.is_active ? 'ON' : 'OFF'}
-        </button>
-        <button type="button" className="btn btn-primary btn-sm" onClick={() => handleSave(svc)}>
-          Save
-        </button>
-        <button
-          type="button"
-          className="btn btn-danger btn-sm"
-          onClick={() => handleDelete(svc)}
-          disabled={deletingId === svc.id}
-        >
-          {deletingId === svc.id ? '…' : 'Delete'}
-        </button>
-      </div>
-    </article>
+  const isEditing = (id) => Boolean(editingIds[id]);
+  const draftFor = (svc) => editDrafts[svc.id] || serviceToDraft(svc);
+  const isActive = (svc) => (isEditing(svc.id) ? draftFor(svc).is_active : svc.is_active);
+
+  const renderActionButtons = (svc) => (
+    <div className="admin-svc-card__actions">
+      <button
+        type="button"
+        onClick={() => toggleActive(svc)}
+        className={`btn btn-sm ${isActive(svc) ? 'btn-primary' : 'btn-danger'}`}
+      >
+        {isActive(svc) ? 'ON' : 'OFF'}
+      </button>
+      <button
+        type="button"
+        className={`btn btn-sm btn-edit${isEditing(svc.id) ? ' btn-edit--active' : ''}`}
+        onClick={() => startEdit(svc)}
+        disabled={isEditing(svc.id)}
+      >
+        Edit
+      </button>
+      <button
+        type="button"
+        className="btn btn-primary btn-sm"
+        onClick={() => handleSave(svc)}
+        disabled={!isEditing(svc.id) || savingId === svc.id}
+      >
+        {savingId === svc.id ? '…' : 'Save'}
+      </button>
+      <button
+        type="button"
+        className="btn btn-danger btn-sm"
+        onClick={() => requestDelete(svc)}
+        disabled={deletingId === svc.id}
+      >
+        Delete
+      </button>
+    </div>
   );
+
+  const renderServiceCard = (svc) => {
+    const draft = draftFor(svc);
+    const editing = isEditing(svc.id);
+
+    return (
+      <article key={svc.id} className={`admin-svc-card${editing ? ' admin-svc-card--editing' : ''}`}>
+        {editing ? (
+          <input
+            className="input admin-svc-card__title-input"
+            value={draft.name}
+            onChange={(e) => updateDraft(svc.id, 'name', e.target.value)}
+            placeholder="Service name"
+            aria-label="Service name"
+          />
+        ) : (
+          <h3 className="admin-svc-card__title">{svc.name}</h3>
+        )}
+
+        <div className="admin-svc-card__grid">
+          <div className="admin-svc-card__cell">
+            <span>Platform</span>
+            {editing ? (
+              <SocialIconPicker
+                mode="platform"
+                value={draft.platform}
+                onChange={(v) => updateDraft(svc.id, 'platform', v)}
+                placeholder="Platform"
+              />
+            ) : (
+              <strong>{svc.platform || '—'}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Status</span>
+            {editing ? (
+              <select
+                className="input admin-svc-card__select"
+                value={draft.is_active ? '1' : '0'}
+                onChange={(e) => updateDraft(svc.id, 'is_active', e.target.value === '1')}
+              >
+                <option value="1">Active</option>
+                <option value="0">Disabled</option>
+              </select>
+            ) : (
+              <strong>{svc.is_active ? 'Active' : 'Disabled'}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Provider /1000</span>
+            {editing ? (
+              <input
+                type="number"
+                step="0.0001"
+                className="input admin-svc-card__field-input"
+                value={draft.original_price}
+                onChange={(e) => updateDraft(svc.id, 'original_price', e.target.value)}
+              />
+            ) : (
+              <strong>₹{parseFloat(svc.original_price).toFixed(2)}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Selling /1000</span>
+            {editing ? (
+              <input
+                type="number"
+                step="0.01"
+                className="input admin-svc-card__field-input"
+                value={draft.custom_price}
+                onChange={(e) => updateDraft(svc.id, 'custom_price', e.target.value)}
+              />
+            ) : (
+              <strong>₹{parseFloat(svc.custom_price).toFixed(2)}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Min order</span>
+            {editing ? (
+              <input
+                type="number"
+                className="input admin-svc-card__field-input"
+                value={draft.min_quantity}
+                onChange={(e) => updateDraft(svc.id, 'min_quantity', e.target.value)}
+              />
+            ) : (
+              <strong>{svc.min_quantity}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Max order</span>
+            {editing ? (
+              <input
+                type="number"
+                className="input admin-svc-card__field-input"
+                value={draft.max_quantity}
+                onChange={(e) => updateDraft(svc.id, 'max_quantity', e.target.value)}
+              />
+            ) : (
+              <strong>{svc.max_quantity?.toLocaleString()}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell admin-svc-card__cell--full">
+            <span>Category</span>
+            {editing ? (
+              <input
+                className="input admin-svc-card__field-input"
+                value={draft.category}
+                onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
+                placeholder="Category (optional)"
+              />
+            ) : (
+              <strong>{svc.category || '—'}</strong>
+            )}
+          </div>
+        </div>
+
+        {renderActionButtons(svc)}
+      </article>
+    );
+  };
 
   return (
     <AdminLayout>
@@ -432,7 +612,7 @@ const AdminServices = () => {
           )}
         </div>
 
-        <p className="admin-services-hint">Original = provider price · Your Price = user charge</p>
+        <p className="admin-services-hint">Original = provider price · Your Price = user charge · Click Edit to modify all fields</p>
 
         {!filtered.length ? (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>No services found</p>
@@ -442,53 +622,121 @@ const AdminServices = () => {
               <table className="table">
                 <thead>
                   <tr>
-                    {['Service', 'Platform', 'Original/1000', 'Your Price/1000', 'Min', 'Max', 'Active', 'Actions'].map((h) => (
+                    {['Service', 'Platform', 'Category', 'Provider/1000', 'Selling/1000', 'Min', 'Max', 'Status', 'Actions'].map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((svc) => (
-                    <tr key={svc.id}>
-                      <td style={{ maxWidth: 180 }}>{svc.name}</td>
-                      <td>{svc.platform}</td>
-                      <td style={{ color: 'var(--text-muted)' }}>₹{parseFloat(svc.original_price).toFixed(4)}</td>
-                      <td>
-                        <input
-                          type="number"
-                          step="0.01"
-                          className="input"
-                          value={editPrices[svc.id] ?? ''}
-                          onChange={(e) => setEditPrices((prev) => ({ ...prev, [svc.id]: e.target.value }))}
-                          style={{ width: '100%', maxWidth: 90, padding: '4px 6px', fontSize: 12 }}
-                        />
-                      </td>
-                      <td>{svc.min_quantity}</td>
-                      <td>{svc.max_quantity}</td>
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() => toggleActive(svc)}
-                          className={`btn btn-sm ${svc.is_active ? 'btn-primary' : 'btn-danger'}`}
-                        >
-                          {svc.is_active ? 'ON' : 'OFF'}
-                        </button>
-                      </td>
-                      <td className="admin-svc-actions-cell">
-                        <button type="button" className="btn btn-primary btn-sm" onClick={() => handleSave(svc)}>
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleDelete(svc)}
-                          disabled={deletingId === svc.id}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
+                  {filtered.map((svc) => {
+                    const draft = draftFor(svc);
+                    const editing = isEditing(svc.id);
+                    return (
+                      <tr key={svc.id} className={editing ? 'admin-svc-row--editing' : ''}>
+                        <td style={{ maxWidth: 180 }}>
+                          {editing ? (
+                            <input
+                              className="input admin-svc-table-input"
+                              value={draft.name}
+                              onChange={(e) => updateDraft(svc.id, 'name', e.target.value)}
+                            />
+                          ) : (
+                            svc.name
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <SocialIconPicker
+                              mode="platform"
+                              value={draft.platform}
+                              onChange={(v) => updateDraft(svc.id, 'platform', v)}
+                              placeholder="Platform"
+                            />
+                          ) : (
+                            svc.platform
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <input
+                              className="input admin-svc-table-input"
+                              value={draft.category}
+                              onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
+                            />
+                          ) : (
+                            svc.category || '—'
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <input
+                              type="number"
+                              step="0.0001"
+                              className="input admin-svc-table-input admin-svc-table-input--num"
+                              value={draft.original_price}
+                              onChange={(e) => updateDraft(svc.id, 'original_price', e.target.value)}
+                            />
+                          ) : (
+                            <span style={{ color: 'var(--text-muted)' }}>₹{parseFloat(svc.original_price).toFixed(4)}</span>
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <input
+                              type="number"
+                              step="0.01"
+                              className="input admin-svc-table-input admin-svc-table-input--num"
+                              value={draft.custom_price}
+                              onChange={(e) => updateDraft(svc.id, 'custom_price', e.target.value)}
+                            />
+                          ) : (
+                            `₹${parseFloat(svc.custom_price).toFixed(2)}`
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <input
+                              type="number"
+                              className="input admin-svc-table-input admin-svc-table-input--num"
+                              value={draft.min_quantity}
+                              onChange={(e) => updateDraft(svc.id, 'min_quantity', e.target.value)}
+                            />
+                          ) : (
+                            svc.min_quantity
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <input
+                              type="number"
+                              className="input admin-svc-table-input admin-svc-table-input--num"
+                              value={draft.max_quantity}
+                              onChange={(e) => updateDraft(svc.id, 'max_quantity', e.target.value)}
+                            />
+                          ) : (
+                            svc.max_quantity
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <select
+                              className="input admin-svc-table-input"
+                              value={draft.is_active ? '1' : '0'}
+                              onChange={(e) => updateDraft(svc.id, 'is_active', e.target.value === '1')}
+                            >
+                              <option value="1">Active</option>
+                              <option value="0">Disabled</option>
+                            </select>
+                          ) : (
+                            svc.is_active ? 'Active' : 'Disabled'
+                          )}
+                        </td>
+                        <td className="admin-svc-actions-cell">
+                          {renderActionButtons(svc)}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -499,6 +747,34 @@ const AdminServices = () => {
           </>
         )}
       </div>
+
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={() => setDeleteTarget(null)} role="presentation">
+          <div
+            className="card fade-in modal-panel admin-svc-delete-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="admin-svc-delete-title"
+          >
+            <h3 id="admin-svc-delete-title" className="admin-svc-delete-modal__title">Delete Service?</h3>
+            <p className="admin-svc-delete-modal__text">This action cannot be undone.</p>
+            <p className="admin-svc-delete-modal__name">{deleteTarget.name}</p>
+            <div className="admin-svc-delete-modal__actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setDeleteTarget(null)}>
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={confirmDelete}
+                disabled={deletingId === deleteTarget.id}
+              >
+                {deletingId === deleteTarget.id ? 'Deleting…' : 'Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AdminLayout>
   );
 };

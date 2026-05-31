@@ -1,6 +1,8 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useIdleLogout } from '../hooks/useIdleLogout';
+import { useAuthSession } from '../hooks/useAuthSession';
+import { shouldShowLandingTelegramWidgets } from '../constants/telegramChannel';
 import WhatsAppFloat from './WhatsAppFloat';
 import TelegramFloat from './TelegramFloat';
 import StickyTelegramBanner from './StickyTelegramBanner';
@@ -10,38 +12,25 @@ import NotificationToasts from './NotificationToasts';
 /** Global premium widgets for authenticated user routes */
 const PremiumFeatures = () => {
   const location = useLocation();
-  const isAuth = !!localStorage.getItem('token');
-  const isPublicAuth = ['/login', '/signup', '/forgot-password', '/reset-password', '/verify-email'].includes(location.pathname);
-  const show = isAuth && !location.pathname.startsWith('/admin');
+  const isLoggedIn = useAuthSession();
+  const showLandingTelegram = shouldShowLandingTelegramWidgets(location.pathname, isLoggedIn);
+  const showUserWidgets = isLoggedIn && !location.pathname.startsWith('/admin');
 
-  useIdleLogout(show);
-
-  if (!show && !isPublicAuth) {
-    return (
-      <>
-        <WhatsAppFloat />
-        <TelegramFloat />
-      </>
-    );
-  }
+  useIdleLogout(showUserWidgets);
 
   return (
     <>
-      <StickyTelegramBanner />
-      {show && (
+      {showLandingTelegram && <StickyTelegramBanner />}
+      {showUserWidgets ? (
         <>
           <WhatsAppFloat />
-          <TelegramFloat />
           <LiveChatWidget />
           <NotificationToasts />
         </>
+      ) : (
+        <WhatsAppFloat />
       )}
-      {!show && (
-        <>
-          <WhatsAppFloat />
-          <TelegramFloat />
-        </>
-      )}
+      {showLandingTelegram && <TelegramFloat />}
     </>
   );
 };

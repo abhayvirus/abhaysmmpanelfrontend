@@ -19,6 +19,21 @@
   padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
   box-sizing: border-box;
   pointer-events: none;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
+
+.sticky-telegram-banner--exiting {
+  opacity: 0;
+  transform: translateY(-20px);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-telegram-banner {
+    transition: none;
+  }
 }
 
 .sticky-telegram-banner__glass {
@@ -128,14 +143,32 @@
 /* Push page content below fixed telegram banner (auth pages without public nav) */
 body.has-public-telegram-banner:not(.has-public-nav) {
   padding-top: var(--telegram-banner-h, 3.5rem);
+  transition: padding-top 300ms ease;
 }
 
 body.has-public-telegram-banner.has-public-nav {
   padding-top: 0;
 }
 
+body.has-public-telegram-banner.telegram-banner-exiting:not(.has-public-nav) {
+  padding-top: 0;
+}
+
 body.has-public-telegram-banner .sticky-announcement {
   top: calc(var(--telegram-banner-h, 3.5rem) + var(--public-nav-h, 3.75rem));
+  transition: top 300ms ease;
+}
+
+body.has-public-telegram-banner .nav-public {
+  transition: top 300ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.has-public-telegram-banner:not(.has-public-nav),
+  body.has-public-telegram-banner .sticky-announcement,
+  body.has-public-telegram-banner .nav-public {
+    transition: none;
+  }
 }
 
 @media (min-width: 640px) {

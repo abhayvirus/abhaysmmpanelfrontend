@@ -5,6 +5,7 @@ import { getApiErrorMessage } from '../utils/apiError';
 import { getPasswordStrength, validateResetPassword } from '../utils/passwordStrength';
 import PasswordInput from '../components/PasswordInput';
 import AuthBrandHeader from '../components/AuthBrandHeader';
+import { saveAuthSession } from '../utils/authRedirect';
 
 const ResetPassword = () => {
   const [params] = useSearchParams();
@@ -33,8 +34,7 @@ const ResetPassword = () => {
     try {
       const { data } = await resetPassword({ token, password });
       if (data?.token && data?.user) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        saveAuthSession(data.token, data.user);
         setMsg({ type: 'success', text: data.message || 'Password updated. Redirecting...' });
         setTimeout(() => {
           navigate(data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });

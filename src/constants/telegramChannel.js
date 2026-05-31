@@ -1,14 +1,21 @@
 /** Official ABHAYSMM Telegram channel — admin can override via settings.telegram_link */
 export const DEFAULT_TELEGRAM_CHANNEL_URL = 'https://t.me/abhayd95';
 
-export const PUBLIC_GUEST_PATHS = [
-  '/',
-  '/login',
-  '/signup',
-  '/forgot-password',
-  '/reset-password',
-  '/verify-email',
-];
+export function normalizePathname(pathname = '/') {
+  return String(pathname).replace(/\/$/, '') || '/';
+}
+
+export function isLandingPage(pathname) {
+  return normalizePathname(pathname) === '/';
+}
+
+/** Sticky banner + floating FAB — landing page only, guests only */
+export function shouldShowLandingTelegramWidgets(
+  pathname,
+  isLoggedIn = Boolean(typeof localStorage !== 'undefined' && localStorage.getItem('token'))
+) {
+  return !isLoggedIn && isLandingPage(pathname);
+}
 
 export function resolveTelegramChannelUrl(settings = {}) {
   const url = String(settings.telegram_link || '').trim();
@@ -16,7 +23,10 @@ export function resolveTelegramChannelUrl(settings = {}) {
   return DEFAULT_TELEGRAM_CHANNEL_URL;
 }
 
-export function shouldShowPublicTelegramBanner(pathname) {
-  const path = pathname.replace(/\/$/, '') || '/';
-  return PUBLIC_GUEST_PATHS.includes(path) && !localStorage.getItem('token');
+export function shouldShowPublicTelegramBanner(pathname, isLoggedIn) {
+  return shouldShowLandingTelegramWidgets(pathname, isLoggedIn);
+}
+
+export function shouldShowTelegramFloat(pathname, isLoggedIn) {
+  return shouldShowLandingTelegramWidgets(pathname, isLoggedIn);
 }

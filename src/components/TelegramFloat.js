@@ -2,42 +2,28 @@ import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import TelegramIcon from './TelegramIcon';
-import { resolveTelegramChannelUrl } from '../constants/telegramChannel';
+import { useAuthSession } from '../hooks/useAuthSession';
+import { resolveTelegramChannelUrl, shouldShowLandingTelegramWidgets } from '../constants/telegramChannel';
 import { useDraggableFloat } from '../hooks/useDraggableFloat';
 import '../styles/floatingWidgets.css';
-
-const USER_PANEL_PREFIXES = [
-  '/dashboard',
-  '/orders',
-  '/services',
-  '/add-funds',
-  '/tickets',
-  '/notifications',
-  '/profile',
-  '/referrals',
-  '/child-panel',
-  '/website-dev',
-  '/api-docs',
-  '/help',
-];
 
 const TelegramFloat = () => {
   const { settings } = useSettings();
   const location = useLocation();
   const [dragging, setDragging] = useState(false);
+  const isLoggedIn = useAuthSession();
+  const visible = shouldShowLandingTelegramWidgets(location.pathname, isLoggedIn);
   const url = resolveTelegramChannelUrl(settings);
 
   const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
-  const onUserPanel = USER_PANEL_PREFIXES.some((p) => location.pathname.startsWith(p));
-  const extraBottomReserve = isMobile && onUserPanel ? 72 : 0;
   const fabSize = isMobile ? 44 : 52;
 
   const { style, handlers, wasDragged } = useDraggableFloat({
     storageKey: 'abhaysmm_telegram_fab_pos',
     size: fabSize,
     margin: 12,
-    extraBottomReserve,
-    enabled: true,
+    extraBottomReserve: 0,
+    enabled: visible,
   });
 
   const handleClick = (e) => {
@@ -55,6 +41,8 @@ const TelegramFloat = () => {
     handlers.onPointerUp(e);
     setTimeout(() => setDragging(false), 0);
   };
+
+  if (!visible) return null;
 
   return (
     <a

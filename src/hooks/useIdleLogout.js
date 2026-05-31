@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
+import { clearAuthSession } from '../utils/authRedirect';
 
 export function useIdleLogout(enabled = true) {
   const navigate = useNavigate();
@@ -9,8 +10,7 @@ export function useIdleLogout(enabled = true) {
   const minutes = parseInt(settings.session_timeout_minutes || '30', 10);
 
   const logout = useCallback(() => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    clearAuthSession();
     navigate('/login?reason=idle');
   }, [navigate]);
 
