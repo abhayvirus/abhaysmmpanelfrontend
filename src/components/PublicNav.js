@@ -7,7 +7,9 @@ const PublicNav = () => {
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem('token')));
   const [scrolled, setScrolled] = useState(false);
+  const [compact, setCompact] = useState(false);
   const navRef = useRef(null);
+  const lastScrollY = useRef(0);
   const { settings } = useSettings();
   const close = () => setOpen(false);
 
@@ -54,7 +56,35 @@ const PublicNav = () => {
   }, []);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const el = navRef.current;
+    if (!el) return undefined;
+    const syncHeight = () => {
+      document.documentElement.style.setProperty('--public-nav-h', `${el.offsetHeight}px`);
+    };
+    syncHeight();
+    const t = setTimeout(syncHeight, 320);
+    return () => clearTimeout(t);
+  }, [compact, scrolled]);
+
+  useEffect(() => {
+    const SCROLL_THRESHOLD = 8;
+    const COMPACT_AFTER = 48;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > SCROLL_THRESHOLD);
+
+      if (y <= SCROLL_THRESHOLD) {
+        setCompact(false);
+      } else if (y > lastScrollY.current && y > COMPACT_AFTER) {
+        setCompact(true);
+      } else if (y < lastScrollY.current) {
+        setCompact(false);
+      }
+
+      lastScrollY.current = y;
+    };
+
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
@@ -64,7 +94,7 @@ const PublicNav = () => {
     <>
       <header
         ref={navRef}
-        className={`nav-public${scrolled ? ' nav-public--scrolled' : ''}`}
+        className={`nav-public${scrolled ? ' navbar-scrolled nav-public--scrolled' : ''}${compact ? ' nav-public--compact' : ''}`}
       >
         <Link to="/" className="nav-public-brand" onClick={close}>
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />

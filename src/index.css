@@ -51,12 +51,16 @@ body.public-nav-open {
   height: 100%;
 }
 
+body.has-public-nav {
+  padding-top: var(--public-nav-h, 3.75rem);
+  transition: padding-top 300ms ease;
+}
+
 .home-page {
   min-height: 100vh;
   min-height: 100dvh;
   background: var(--bg);
   color: var(--text);
-  padding-top: var(--public-nav-h, 3.75rem);
 }
 
 a { color: var(--primary); text-decoration: none; }

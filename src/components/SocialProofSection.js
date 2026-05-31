@@ -8,6 +8,14 @@ import '../styles/socialProofSection.css';
 /** Creator profile — bundled in public/abhay_d95.jpeg */
 const DEFAULT_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ''}/abhay_d95.jpeg`;
 
+const PROFILE_TAGS = [
+  'AI Powered Full Stack Developer',
+  'VFX Editor',
+];
+
+const PROFILE_BIO =
+  'AI Powered Full Stack Developer & VFX Editor specializing in modern web applications, automation systems, AI integrations, visual effects, and premium digital experiences.';
+
 function resolveImageUrl(url) {
   const s = String(url || '').trim();
   if (!s) return '';
@@ -69,10 +77,13 @@ const SocialProofSection = () => {
             <span className="social-proof-featured__count-num">{instagramCount}</span>
             <span className="social-proof-featured__count-label">Followers</span>
           </p>
-          <ul className="social-proof-featured__tags">
-            <li>AI Powered Full Stack Developer</li>
-            <li>Software Engineer</li>
-            <li>Website Developer</li>
+          <p className="social-proof-featured__bio">{PROFILE_BIO}</p>
+          <ul className="social-proof-featured__tags" aria-label="Professional highlights">
+            {PROFILE_TAGS.map((tag) => (
+              <li key={tag} className="social-proof-featured__tag">
+                {tag}
+              </li>
+            ))}
           </ul>
           <div className="social-proof-featured__actions">
             <a

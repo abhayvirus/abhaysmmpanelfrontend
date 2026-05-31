@@ -10,9 +10,9 @@ import LandingHero from '../components/landing/LandingHero';
 import LandingTrustBadges from '../components/landing/LandingTrustBadges';
 import LandingWhyChoose from '../components/landing/LandingWhyChoose';
 import LandingServices from '../components/landing/LandingServices';
-import LandingTestimonials from '../components/landing/LandingTestimonials';
 import LandingTelegramSection from '../components/landing/LandingTelegramSection';
 import LandingFooter from '../components/landing/LandingFooter';
+import LandingLiveActivity from '../components/landing/LandingLiveActivity';
 import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 import '../styles/homePage.css';
@@ -70,14 +70,13 @@ const Home = () => {
           <LandingServices services={services} sym={sym} />
         )}
 
-        <LandingTestimonials />
-
         <SocialProofSection />
 
         <LandingTelegramSection />
       </main>
 
       <LandingFooter settings={settings} />
+      <LandingLiveActivity />
     </div>
   );
 };

@@ -7,7 +7,7 @@
 }
 
 .public-guide-page__main {
-  padding-top: calc(var(--public-nav-h, 3.75rem) + 1.25rem);
+  padding-top: 1.25rem;
   padding-bottom: 2rem;
   max-width: 56rem;
   margin: 0 auto;
