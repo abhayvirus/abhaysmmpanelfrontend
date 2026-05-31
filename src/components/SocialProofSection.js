@@ -1,25 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSettings } from '../contexts/SettingsContext';
 import { useInViewOnce } from '../hooks/useInViewOnce';
 import { useAnimatedCounter } from '../hooks/useAnimatedCounter';
 import { API_BASE } from '../config/env';
 import '../styles/socialProofSection.css';
 
+/** Creator profile — bundled in public/abhay_d95.jpeg */
+const DEFAULT_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ''}/abhay_d95.jpeg`;
+
 function resolveImageUrl(url) {
   const s = String(url || '').trim();
   if (!s) return '';
   if (s.startsWith('http') || s.startsWith('data:')) return s;
   if (s.startsWith('/uploads/')) return `${API_BASE.replace(/\/$/, '')}${s}`;
+  if (s.startsWith('/')) return `${process.env.PUBLIC_URL || ''}${s}`;
   return s;
 }
 
 const SocialProofSection = () => {
   const { settings } = useSettings();
   const { ref, inView } = useInViewOnce(0.12);
+  const [imgError, setImgError] = useState(false);
 
   const instagramFollowers = settings.social_instagram_followers || '13200';
   const instagramCount = useAnimatedCounter(instagramFollowers, inView);
-  const profileImg = resolveImageUrl(settings.instagram_profile_image);
+  const profileImg = resolveImageUrl(settings.instagram_profile_image) || DEFAULT_PROFILE_IMAGE;
+  const showPhoto = Boolean(profileImg) && !imgError;
 
   return (
     <section className="social-proof-section home-section" ref={ref} aria-labelledby="social-proof-title">
@@ -38,13 +44,14 @@ const SocialProofSection = () => {
       <article className="social-proof-featured">
         <div className="social-proof-featured__glow" aria-hidden="true" />
         <div className="social-proof-featured__avatar-wrap">
-          {profileImg ? (
+          {showPhoto ? (
             <img
               src={profileImg}
               alt="Abhay D95"
               className="social-proof-featured__avatar"
-              loading="lazy"
+              loading="eager"
               decoding="async"
+              onError={() => setImgError(true)}
             />
           ) : (
             <div className="social-proof-featured__avatar social-proof-featured__avatar--fallback" aria-hidden="true">
