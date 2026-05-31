@@ -48,9 +48,18 @@
   opacity: 0.025;
 }
 
-.landing-page > *:not(.landing-watermark) {
+.landing-page > *:not(.landing-watermark):not(.nav-public) {
   position: relative;
   z-index: 1;
+}
+
+/* Keep public nav pinned — do not inherit relative from landing stacking rule */
+.landing-page > .nav-public {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9990;
 }
 
 /* ——— Section shell ——— */

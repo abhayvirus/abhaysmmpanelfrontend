@@ -15,7 +15,11 @@ const PublicNav = () => {
 
   useEffect(() => {
     document.body.classList.toggle('public-nav-open', open);
-    return () => document.body.classList.remove('public-nav-open');
+    document.body.style.overflow = open ? 'hidden' : '';
+    return () => {
+      document.body.classList.remove('public-nav-open');
+      document.body.style.overflow = '';
+    };
   }, [open]);
 
   useEffect(() => {
@@ -90,11 +94,19 @@ const PublicNav = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape' && open) close();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [open]);
+
   return (
     <>
       <header
         ref={navRef}
-        className={`nav-public${scrolled ? ' navbar-scrolled nav-public--scrolled' : ''}${compact ? ' nav-public--compact' : ''}`}
+        className={`nav-public${scrolled ? ' navbar-scrolled nav-public--scrolled' : ''}${compact ? ' nav-public--compact' : ''}${open ? ' nav-public--menu-open' : ''}`}
       >
         <Link to="/" className="nav-public-brand" onClick={close}>
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
@@ -115,40 +127,62 @@ const PublicNav = () => {
         <button
           type="button"
           className="nav-public-menu-btn"
-          onClick={() => setOpen((o) => !o)}
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          onClick={() => setOpen(true)}
+          aria-label="Open menu"
           aria-expanded={open}
+          aria-controls="public-mobile-menu"
         >
-          <span className={`hamburger${open ? ' open' : ''}`}>
+          <span className="hamburger">
             <span /><span /><span />
           </span>
         </button>
       </header>
 
       {open && (
-        <div className="nav-mobile-screen nav-mobile-screen--open" role="dialog" aria-modal="true" aria-label="Menu">
-          <div className="nav-mobile-screen-inner">
-            <div className="nav-mobile-top">
-              <p className="nav-mobile-menu-label">Menu</p>
-              <button type="button" className="nav-drawer-close" onClick={close} aria-label="Close menu">
-                ✕
-              </button>
+        <>
+          <button
+            type="button"
+            className="nav-mobile-close"
+            onClick={close}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
+          <div
+            id="public-mobile-menu"
+            className="nav-mobile-screen nav-mobile-screen--open"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Menu"
+          >
+            <div className="nav-mobile-screen-inner">
+              <div className="nav-mobile-top">
+                <Link to="/" className="nav-mobile-brand" onClick={close}>
+                  <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
+                </Link>
+              </div>
+              <nav className="nav-mobile-links" aria-label="Mobile navigation">
+                <Link to="/how-to-use" className="btn btn-ghost nav-drawer-btn" onClick={close}>
+                  How to Use Guide
+                </Link>
+                {isLoggedIn ? (
+                  <Link to="/dashboard" className="btn btn-primary nav-drawer-btn" onClick={close}>
+                    Dashboard
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/login" className="btn btn-ghost nav-drawer-btn" onClick={close}>
+                      Login
+                    </Link>
+                    <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </nav>
             </div>
-            <nav className="nav-mobile-links">
-              <Link to="/how-to-use" className="btn btn-ghost nav-drawer-btn" onClick={close}>
-                How to Use Guide
-              </Link>
-              {isLoggedIn ? (
-                <Link to="/dashboard" className="btn btn-primary nav-drawer-btn" onClick={close}>Dashboard</Link>
-              ) : (
-                <>
-                  <Link to="/login" className="btn btn-ghost nav-drawer-btn" onClick={close}>Login</Link>
-                  <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>Get Started</Link>
-                </>
-              )}
-            </nav>
           </div>
-        </div>
+        </>
       )}
     </>
   );

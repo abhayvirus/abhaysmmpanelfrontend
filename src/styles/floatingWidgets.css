@@ -58,7 +58,7 @@
 /* Landing page — fixed Telegram (bottom-left), below activity popup z-index */
 .telegram-float--landing-fixed {
   position: fixed;
-  z-index: 9998;
+  z-index: 100;
   left: 20px;
   bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   top: auto;
