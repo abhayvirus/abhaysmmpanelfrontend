@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import UserLayout from '../components/UserLayout';
-import { useMedia } from '../hooks/useMedia';
 import { getNotifications, markRead, markAllRead, clearNotificationHistory } from '../api';
 import '../styles/notificationsPage.css';
 
@@ -31,7 +30,6 @@ function formatDateTime(iso) {
 }
 
 const Notifications = () => {
-  const { isMobile } = useMedia();
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -125,19 +123,26 @@ const Notifications = () => {
           </div>
         )}
 
-        <header className="notifications-page__header">
-          {!isMobile && (
-            <h1 className="notifications-page__title">
-              Notifications
-              {unreadCount > 0 ? ` (${unreadCount})` : ''}
-            </h1>
-          )}
-          {isMobile && unreadCount > 0 && (
-            <p className="notifications-page__mobile-unread" aria-live="polite">
-              {unreadCount} unread notification{unreadCount === 1 ? '' : 's'}
+        <div className="notifications-toolbar">
+          <h1 className="notifications-page__title">
+            Notifications
+            {unreadCount > 0 ? ` (${unreadCount})` : ''}
+          </h1>
+          {unreadCount > 0 && (
+            <p className="notifications-page__unread-hint" aria-live="polite">
+              {unreadCount} unread
             </p>
           )}
           <div className="notifications-page__actions">
+            {hasUnread && (
+              <button
+                type="button"
+                className="btn btn-ghost notifications-mark-all-btn"
+                onClick={handleMarkAll}
+              >
+                Mark all read
+              </button>
+            )}
             <button
               type="button"
               className="notifications-clear-btn"
@@ -145,15 +150,10 @@ const Notifications = () => {
               disabled={!canClear || clearing}
               aria-label="Clear notification history"
             >
-              🗑 Clear History
+              Clear History
             </button>
-            {hasUnread && (
-              <button type="button" className="btn btn-ghost btn-sm" onClick={handleMarkAll}>
-                Mark all read
-              </button>
-            )}
           </div>
-        </header>
+        </div>
 
         {loading && items.length === 0 ? (
           <p className="notifications-loading">Loading notifications…</p>
