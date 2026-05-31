@@ -3,6 +3,8 @@ import { Link, Navigate } from 'react-router-dom';
 import { getPublicStats, getServicesPreview } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import PublicNav from '../components/PublicNav';
+import StickyAnnouncementBar from '../components/StickyAnnouncementBar';
+import SocialProofSection from '../components/SocialProofSection';
 import DownloadAppButton from '../components/DownloadAppButton';
 import BrandLogo from '../components/BrandLogo';
 import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
@@ -39,6 +41,7 @@ const Home = () => {
   return (
     <div className="home-page">
       <PublicNav />
+      <StickyAnnouncementBar />
 
       <section className="hero fade-in">
         <div className="hero-logo-wrap">
@@ -76,6 +79,8 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      <SocialProofSection />
 
       <section className="home-section">
         <div className="responsive-grid-auto">

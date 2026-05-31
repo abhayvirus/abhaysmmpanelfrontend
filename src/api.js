@@ -171,6 +171,7 @@ export const adminProviderStatus = (provider_id) => API.get('/services/admin/pro
 export const adminTestConnection = (provider_id) => API.post('/services/admin/test-connection', { provider_id });
 export const adminCreateService = (data) => API.post('/services/admin', data);
 export const adminUpdateService = (id, data) => API.put(`/services/admin/${id}`, data);
+export const adminDeleteService = (id) => API.delete(`/services/admin/${id}`);
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);
 export const adminUploadQR = (formData) => API.post('/settings/admin/qr', formData, { headers: { 'Content-Type': 'multipart/form-data' } });

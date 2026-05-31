@@ -13,6 +13,7 @@ import './styles/addFunds.css';
 import './styles/profilePage.css';
 import './styles/websiteDevPage.css';
 import './styles/adminWebsiteDev.css';
+import './styles/adminCategories.css';
 import App from './App';
 import ErrorBoundary from './components/ErrorBoundary';
 

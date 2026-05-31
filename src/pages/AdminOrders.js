@@ -127,6 +127,29 @@ const AdminOrders = () => {
     setUpdatingId(null);
   };
 
+  const renderLinkCell = (link) => {
+    if (!link) return '—';
+    return (
+      <div className="admin-order-link-actions">
+        <a
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+          className="admin-order-link-btn admin-order-link-btn--view"
+        >
+          View ↗
+        </a>
+        <button
+          type="button"
+          className="admin-order-link-btn admin-order-link-btn--copy"
+          onClick={() => copyLink(link)}
+        >
+          Copy
+        </button>
+      </div>
+    );
+  };
+
   const renderUserCell = (order) => (
     <div className="admin-order-user-cell">
       <span className="admin-order-user-name">{order.user_name || '—'}</span>
@@ -304,33 +327,19 @@ const AdminOrders = () => {
                       <tr key={o.id}>
                         <td>#{o.id}</td>
                         <td>{renderUserCell(o)}</td>
-                        <td style={{ maxWidth: 140 }}>{o.service_name}</td>
-                        <td>
-                          {o.link ? (
-                            <a
-                              href={o.link}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="order-link-cell"
-                            >
-                              View Link
-                            </a>
-                          ) : (
-                            '—'
-                          )}
-                        </td>
+                        <td style={{ maxWidth: 160 }}>{o.service_name}</td>
+                        <td>{renderLinkCell(o.link)}</td>
                         <td>{o.quantity}</td>
                         <td>₹{parseFloat(o.price || 0).toFixed(2)}</td>
                         <td>
                           <span className={statusBadgeClass(o.status)}>{o.status}</span>
                         </td>
                         <td style={{ fontSize: 12, whiteSpace: 'nowrap' }}>{formatDate(o.created_at)}</td>
-                        <td>
+                        <td className="admin-order-actions-cell">
                           {renderStatusButtons(o, true)}
                           <button
                             type="button"
-                            className="btn btn-danger btn-sm"
-                            style={{ marginTop: 6 }}
+                            className="btn btn-danger btn-sm admin-order-delete-btn"
                             disabled={updatingId === o.id}
                             onClick={() => deleteOrder(o.id)}
                           >
@@ -366,14 +375,7 @@ const AdminOrders = () => {
                   {o.link && (
                     <div className="admin-order-row admin-order-link-row">
                       <span>Link</span>
-                      <a
-                        href={o.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="admin-order-view-link"
-                      >
-                        View Link ↗
-                      </a>
+                      {renderLinkCell(o.link)}
                     </div>
                   )}
 
@@ -385,15 +387,6 @@ const AdminOrders = () => {
                   {renderTimeline(o)}
 
                   <div className="admin-order-actions">
-                    {o.link && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => copyLink(o.link)}
-                      >
-                        Copy link
-                      </button>
-                    )}
                     <button
                       type="button"
                       className="btn btn-danger btn-sm"

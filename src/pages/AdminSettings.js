@@ -280,12 +280,25 @@ const AdminSettings = () => {
         return (
           <>
             <h3 className="admin-settings-section-title">Social links</h3>
-            <Field label="Facebook" value={draft.facebook_link} onChange={(v) => updateDraft('facebook_link', v)} />
-            <Field label="Instagram" value={draft.instagram_link} onChange={(v) => updateDraft('instagram_link', v)} />
-            <Field label="Telegram" value={draft.telegram_link} onChange={(v) => updateDraft('telegram_link', v)} />
-            <Field label="YouTube" value={draft.youtube_link} onChange={(v) => updateDraft('youtube_link', v)} />
-            <Field label="WhatsApp" value={draft.whatsapp_link} onChange={(v) => updateDraft('whatsapp_link', v)} />
+            <Field label="Facebook page URL" value={draft.facebook_link} onChange={(v) => updateDraft('facebook_link', v)} />
+            <Field label="Instagram profile URL" value={draft.instagram_link} onChange={(v) => updateDraft('instagram_link', v)} placeholder="https://instagram.com/abhay_d95" />
+            <Field label="Instagram username" value={draft.instagram_username} onChange={(v) => updateDraft('instagram_username', v)} placeholder="@abhay_d95" />
+            <Field label="Instagram profile image URL" value={draft.instagram_profile_image} onChange={(v) => updateDraft('instagram_profile_image', v)} placeholder="https://… or /uploads/…" />
+            <Field label="YouTube channel URL" value={draft.youtube_link} onChange={(v) => updateDraft('youtube_link', v)} />
+            <Field label="LinkedIn profile URL" value={draft.linkedin_link} onChange={(v) => updateDraft('linkedin_link', v)} />
+            <Field label="Telegram channel URL" value={draft.telegram_link} onChange={(v) => updateDraft('telegram_link', v)} />
+            <Field label="WhatsApp (direct)" value={draft.whatsapp_link} onChange={(v) => updateDraft('whatsapp_link', v)} />
+            <Field label="WhatsApp Community URL" value={draft.whatsapp_community_link} onChange={(v) => updateDraft('whatsapp_community_link', v)} />
             <Field label="Play Store link (optional)" value={draft.play_store_url} onChange={(v) => updateDraft('play_store_url', v)} />
+
+            <h3 className="admin-settings-section-title" style={{ marginTop: 24 }}>Social proof counters (landing page)</h3>
+            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 12 }}>
+              Enter raw numbers (e.g. 13200). The landing page animates and displays them as 13.2K+ automatically.
+            </p>
+            <Field label="Instagram followers" value={draft.social_instagram_followers} onChange={(v) => updateDraft('social_instagram_followers', v)} placeholder="13200" />
+            <Field label="YouTube subscribers" value={draft.social_youtube_subscribers} onChange={(v) => updateDraft('social_youtube_subscribers', v)} placeholder="2500" />
+            <Field label="LinkedIn followers" value={draft.social_linkedin_followers} onChange={(v) => updateDraft('social_linkedin_followers', v)} placeholder="1200" />
+            <Field label="Facebook followers" value={draft.social_facebook_followers} onChange={(v) => updateDraft('social_facebook_followers', v)} placeholder="3500" />
           </>
         );
       case 'mobile':
