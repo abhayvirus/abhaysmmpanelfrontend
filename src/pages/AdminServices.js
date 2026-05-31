@@ -69,6 +69,7 @@ const AdminServices = () => {
   const [deletingId, setDeletingId] = useState(null);
   const [savingId, setSavingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteError, setDeleteError] = useState('');
   const [addForm, setAddForm] = useState({
     name: '',
     platform: '',
@@ -218,13 +219,15 @@ const AdminServices = () => {
   };
 
   const requestDelete = (svc) => {
+    setDeleteError('');
     setDeleteTarget(svc);
   };
 
   const confirmDelete = async () => {
-    if (!deleteTarget) return;
+    if (!deleteTarget || deletingId) return;
     const svc = deleteTarget;
     setDeletingId(svc.id);
+    setDeleteError('');
     try {
       await adminDeleteService(svc.id);
       setServices((prev) => prev.filter((s) => s.id !== svc.id));
@@ -241,9 +244,12 @@ const AdminServices = () => {
       setDeleteTarget(null);
       setSyncMsg({ type: 'success', text: 'Service deleted successfully' });
     } catch (err) {
-      setSyncMsg({ type: 'error', text: err.response?.data?.message || 'Failed to delete service' });
+      const message = err.response?.data?.message || 'Failed to delete service';
+      setDeleteError(message);
+      setSyncMsg({ type: 'error', text: message });
+    } finally {
+      setDeletingId(null);
     }
-    setDeletingId(null);
   };
 
   const createManualService = async () => {
@@ -749,7 +755,7 @@ const AdminServices = () => {
       </div>
 
       {deleteTarget && (
-        <div className="modal-overlay" onClick={() => setDeleteTarget(null)} role="presentation">
+        <div className="modal-overlay" onClick={() => !deletingId && setDeleteTarget(null)} role="presentation">
           <div
             className="card fade-in modal-panel admin-svc-delete-modal"
             onClick={(e) => e.stopPropagation()}
@@ -759,15 +765,23 @@ const AdminServices = () => {
             <h3 id="admin-svc-delete-title" className="admin-svc-delete-modal__title">Delete Service?</h3>
             <p className="admin-svc-delete-modal__text">This action cannot be undone.</p>
             <p className="admin-svc-delete-modal__name">{deleteTarget.name}</p>
+            {deleteError && (
+              <p className="admin-svc-delete-modal__error" role="alert">{deleteError}</p>
+            )}
             <div className="admin-svc-delete-modal__actions">
-              <button type="button" className="btn btn-ghost" onClick={() => setDeleteTarget(null)}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setDeleteTarget(null)}
+                disabled={Boolean(deletingId)}
+              >
                 Cancel
               </button>
               <button
                 type="button"
                 className="btn btn-danger"
                 onClick={confirmDelete}
-                disabled={deletingId === deleteTarget.id}
+                disabled={Boolean(deletingId)}
               >
                 {deletingId === deleteTarget.id ? 'Deleting…' : 'Delete'}
               </button>
