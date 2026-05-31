@@ -1,0 +1,163 @@
+/* Sticky Telegram channel banner — public guest pages, dark glassmorphism */
+
+:root {
+  --telegram-brand: #229ED9;
+  --telegram-brand-dark: #1a8bc4;
+  --telegram-glow: rgba(34, 158, 217, 0.45);
+  --telegram-banner-h: 3.5rem;
+}
+
+.sticky-telegram-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 62;
+  width: 100%;
+  max-width: 100%;
+  padding: 0.5rem clamp(0.625rem, 2.5vw, 1.25rem);
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
+  pointer-events: none;
+}
+
+.sticky-telegram-banner__glass {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.625rem;
+  width: 100%;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+  box-sizing: border-box;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.88) 0%,
+    rgba(30, 41, 59, 0.82) 50%,
+    rgba(15, 23, 42, 0.9) 100%
+  );
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 0.875rem;
+  border: 1px solid rgba(34, 158, 217, 0.35);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    0 0 28px var(--telegram-glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.sticky-telegram-banner__glass:hover {
+  border-color: rgba(34, 158, 217, 0.55);
+  box-shadow:
+    0 6px 32px rgba(0, 0, 0, 0.4),
+    0 0 36px rgba(34, 158, 217, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.sticky-telegram-banner__text {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: clamp(0.8125rem, 2.4vw, 0.9375rem);
+  line-height: 1.45;
+  font-weight: 500;
+  color: rgba(248, 250, 252, 0.95);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.sticky-telegram-banner__emoji {
+  flex-shrink: 0;
+  line-height: 1.45;
+}
+
+.sticky-telegram-banner__btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  min-height: 2.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 999px;
+  background: var(--telegram-brand);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow:
+    0 2px 14px rgba(34, 158, 217, 0.45),
+    0 0 20px rgba(34, 158, 217, 0.25);
+  transition:
+    transform 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
+}
+
+.sticky-telegram-banner__btn:hover {
+  background: var(--telegram-brand-dark);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 6px 22px rgba(34, 158, 217, 0.55),
+    0 0 32px rgba(34, 158, 217, 0.4);
+  color: #fff;
+}
+
+.sticky-telegram-banner__btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.sticky-telegram-banner__btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.sticky-telegram-banner__btn-icon {
+  flex-shrink: 0;
+}
+
+/* Push page content below fixed telegram banner (auth pages without public nav) */
+body.has-public-telegram-banner:not(.has-public-nav) {
+  padding-top: var(--telegram-banner-h, 3.5rem);
+}
+
+body.has-public-telegram-banner.has-public-nav {
+  padding-top: 0;
+}
+
+body.has-public-telegram-banner .sticky-announcement {
+  top: calc(var(--telegram-banner-h, 3.5rem) + var(--public-nav-h, 3.75rem));
+}
+
+@media (min-width: 640px) {
+  .sticky-telegram-banner__glass {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.625rem 1.125rem;
+  }
+
+  .sticky-telegram-banner__text {
+    align-items: center;
+  }
+
+  .sticky-telegram-banner__btn {
+    align-self: center;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sticky-telegram-banner__glass {
+    padding: 0.75rem 1.25rem;
+  }
+}

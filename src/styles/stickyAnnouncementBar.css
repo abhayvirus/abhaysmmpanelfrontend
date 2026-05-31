@@ -6,7 +6,7 @@
 
 .sticky-announcement {
   position: sticky;
-  top: var(--public-nav-h);
+  top: calc(var(--telegram-banner-h, 0px) + var(--public-nav-h, 3.75rem));
   z-index: 49;
   width: 100%;
   max-width: 100%;

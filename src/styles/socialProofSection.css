@@ -1,9 +1,9 @@
-/* Landing page — social proof section */
+/* Landing page — social proof section (creator profile + trust stats) */
 
 .social-proof-section {
   position: relative;
   width: 100%;
-  max-width: 72rem;
+  max-width: 52rem;
   margin: 0 auto;
   padding: clamp(2.5rem, 6vw, 4rem) clamp(1rem, 4vw, 2rem);
   overflow: hidden;
@@ -21,8 +21,7 @@
 
 .social-proof-section__header,
 .social-proof-featured,
-.social-proof-trust,
-.social-proof-grid {
+.social-proof-trust {
   position: relative;
   z-index: 1;
 }
@@ -51,13 +50,16 @@
   color: var(--text-muted);
 }
 
-/* ——— Featured Instagram ——— */
+/* ——— Featured Instagram creator card ——— */
 .social-proof-featured {
+  position: relative;
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.25rem;
   align-items: center;
-  margin-bottom: 1.5rem;
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto 1.5rem;
   padding: clamp(1.25rem, 3vw, 1.75rem);
   border-radius: 1.25rem;
   background: linear-gradient(145deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 58, 138, 0.35) 100%);
@@ -99,6 +101,7 @@
   height: 7.5rem;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center;
   border: 3px solid rgba(96, 165, 250, 0.5);
   box-shadow: 0 8px 32px rgba(37, 99, 235, 0.35);
 }
@@ -206,12 +209,13 @@
   min-width: 8.5rem;
 }
 
-/* ——— Trust strip ——— */
+/* ——— Trust stats strip ——— */
 .social-proof-trust {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.75rem;
-  margin-bottom: 1.5rem;
+  max-width: 36rem;
+  margin: 0 auto;
 }
 
 .social-proof-trust__item {
@@ -240,118 +244,11 @@
   font-weight: 600;
 }
 
-/* ——— Social cards grid ——— */
-.social-proof-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1rem;
-}
-
-.social-proof-card {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1.25rem 1rem;
-  border-radius: 1rem;
-  background: rgba(15, 23, 42, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  overflow: hidden;
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.social-proof-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(96, 165, 250, 0.35);
-  box-shadow: 0 12px 36px rgba(37, 99, 235, 0.18);
-}
-
-.social-proof-card__glow {
-  position: absolute;
-  inset: auto 20% -40% 20%;
-  height: 60%;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-}
-
-.social-proof-card:hover .social-proof-card__glow {
-  opacity: 1;
-}
-
-.social-proof-card__icon {
-  font-size: 2rem;
-  line-height: 1;
-  margin-bottom: 0.5rem;
-}
-
-.social-proof-card__name {
-  margin: 0 0 0.25rem;
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.social-proof-card__handle {
-  margin: 0 0 0.75rem;
-  font-size: 0.8125rem;
-  color: var(--text-muted);
-  word-break: break-word;
-}
-
-.social-proof-counter {
-  margin-bottom: 0.875rem;
-}
-
-.social-proof-counter__value {
-  display: block;
-  font-size: 1.375rem;
-  font-weight: 800;
-  color: var(--primary);
-  line-height: 1.2;
-}
-
-.social-proof-counter__label {
-  display: block;
-  font-size: 0.6875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  margin-top: 0.15rem;
-}
-
-.social-proof-card__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  justify-content: center;
-  width: 100%;
-  margin-top: auto;
-}
-
-.social-proof-card__cta,
-.social-proof-card__cta-secondary {
-  flex: 1 1 auto;
-  min-width: min(100%, 7.5rem);
-  min-height: 2.375rem;
-  font-size: 0.8125rem;
-}
-
 /* ——— Responsive ——— */
-@media (min-width: 540px) {
-  .social-proof-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (min-width: 768px) {
   .social-proof-featured {
     grid-template-columns: auto 1fr;
-    text-align: left;
+    max-width: 100%;
     gap: 2rem;
   }
 
@@ -374,21 +271,14 @@
   .social-proof-featured__actions {
     justify-content: flex-start;
   }
-
-  .social-proof-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
 }
 
-@media (min-width: 1024px) {
-  .social-proof-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.125rem;
+@media (max-width: 767px) {
+  .social-proof-trust {
+    gap: 0.5rem;
   }
 
-  .social-proof-trust {
-    max-width: 36rem;
-    margin-left: auto;
-    margin-right: auto;
+  .social-proof-trust__item {
+    padding: 0.75rem 0.35rem;
   }
 }

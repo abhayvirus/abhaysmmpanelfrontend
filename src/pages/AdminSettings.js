@@ -23,6 +23,7 @@ import {
   adminCreateAnnouncement,
   adminDeleteAnnouncement,
   adminTestTelegram,
+  adminGetTelegramStatus,
   adminTestConnection,
   API_BASE,
 } from '../api';
@@ -38,6 +39,7 @@ const TABS = [
   { id: 'theme', label: 'Theme', icon: '🌙' },
   { id: 'announce', label: 'Popups', icon: '📢' },
   { id: 'security', label: 'Security', icon: '🔒' },
+  { id: 'telegram', label: 'Telegram', icon: '📲' },
   { id: 'premium', label: 'Premium', icon: '✨' },
 ];
 
@@ -69,6 +71,8 @@ const AdminSettings = () => {
   const [newProvider, setNewProvider] = useState({ name: '', api_url: '', api_key: '', profit_margin: 50, is_default: true });
   const [annForm, setAnnForm] = useState({ title: '', content: '', is_active: true, show_on_login: true });
   const [apiStatus, setApiStatus] = useState(null);
+  const [telegramStatus, setTelegramStatus] = useState(null);
+  const [telegramTesting, setTelegramTesting] = useState(false);
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
 
@@ -94,6 +98,16 @@ const AdminSettings = () => {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const loadTelegramStatus = useCallback(() => {
+    adminGetTelegramStatus()
+      .then((r) => setTelegramStatus(r.data))
+      .catch(() => setTelegramStatus({ connected: false, configured: false }));
+  }, []);
+
+  useEffect(() => {
+    if (tab === 'telegram') loadTelegramStatus();
+  }, [tab, loadTelegramStatus]);
 
   const showMsg = (text, type = 'success') => {
     setMsg({ text, type });
@@ -162,6 +176,17 @@ const AdminSettings = () => {
         reasonCode: r.data.reasonCode,
       }))
       .catch((e) => setApiStatus({ ok: false, message: e.response?.data?.message || 'Test failed' }));
+  };
+
+  const testTelegram = () => {
+    setTelegramTesting(true);
+    adminTestTelegram()
+      .then(() => {
+        showMsg('Test notification sent to Telegram');
+        loadTelegramStatus();
+      })
+      .catch((e) => showMsg(e.response?.data?.message || 'Telegram test failed', 'error'))
+      .finally(() => setTelegramTesting(false));
   };
 
   const renderTab = () => {
@@ -518,6 +543,58 @@ const AdminSettings = () => {
             </button>
           </>
         );
+      case 'telegram':
+        return (
+          <>
+            <h3 className="admin-settings-section-title">Telegram Notifications</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+              Real-time admin alerts via Telegram Bot API. Environment variables on Render take priority over saved fields below.
+            </p>
+            <div className="admin-settings-status-row" style={{ marginBottom: 20, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span className="label">Connection status</span>
+              <span
+                className={`badge ${telegramStatus?.connected ? 'badge-success' : 'badge-warning'}`}
+              >
+                {telegramStatus?.connected ? '● Connected' : '○ Not Connected'}
+              </span>
+              {telegramStatus?.source && telegramStatus.source !== 'none' && (
+                <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                  ({telegramStatus.source === 'env' ? 'from env vars' : 'from database'})
+                </span>
+              )}
+            </div>
+            <Field
+              label="Bot Token"
+              value={draft.telegram_bot_token}
+              onChange={(v) => updateDraft('telegram_bot_token', v)}
+              type="password"
+              placeholder={telegramStatus?.envTokenSet ? 'Set via TELEGRAM_BOT_TOKEN env' : '123456789:ABC...'}
+            />
+            <Field
+              label="Chat ID"
+              value={draft.telegram_admin_chat_id}
+              onChange={(v) => updateDraft('telegram_admin_chat_id', v)}
+              placeholder={telegramStatus?.envChatIdSet ? 'Set via TELEGRAM_CHAT_ID env' : '5572416825'}
+            />
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, marginBottom: 16 }}>
+              <button type="button" className="btn btn-primary btn-sm" onClick={testTelegram} disabled={telegramTesting}>
+                {telegramTesting ? 'Sending…' : 'Send Test Notification'}
+              </button>
+              <button type="button" className="btn btn-ghost btn-sm" onClick={loadTelegramStatus}>
+                Refresh status
+              </button>
+            </div>
+            <hr className="admin-settings-divider" />
+            <h4 style={{ fontSize: 14, marginBottom: 8 }}>Active notification events</h4>
+            <ul style={{ fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.7, paddingLeft: 18, margin: 0 }}>
+              <li>New user registration · User login · Add funds request</li>
+              <li>Successful Razorpay payment · Failed payment</li>
+              <li>New order · Completed · Cancelled · Refunded</li>
+              <li>Website development order · Child panel · Support ticket</li>
+              <li>Referral signup · Referral commission · Admin login</li>
+            </ul>
+          </>
+        );
       case 'premium':
         return (
           <>
@@ -544,13 +621,6 @@ const AdminSettings = () => {
             <Field label="SMTP user" value={draft.smtp_user} onChange={(v) => updateDraft('smtp_user', v)} />
             <Field label="SMTP password" value={draft.smtp_pass} onChange={(v) => updateDraft('smtp_pass', v)} type="password" />
             <Field label="From email" value={draft.smtp_from} onChange={(v) => updateDraft('smtp_from', v)} />
-            <hr className="admin-settings-divider" />
-            <h3 className="admin-settings-section-title">Telegram bot</h3>
-            <Field label="Bot token" value={draft.telegram_bot_token} onChange={(v) => updateDraft('telegram_bot_token', v)} type="password" />
-            <Field label="Admin chat ID" value={draft.telegram_admin_chat_id} onChange={(v) => updateDraft('telegram_admin_chat_id', v)} />
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => adminTestTelegram().then(() => showMsg('Test message sent')).catch((e) => showMsg(e.response?.data?.message || 'Failed', 'error'))}>
-              Test Telegram
-            </button>
           </>
         );
       default:

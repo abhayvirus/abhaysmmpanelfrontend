@@ -5,6 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import PublicNav from '../components/PublicNav';
 import StickyAnnouncementBar from '../components/StickyAnnouncementBar';
 import SocialProofSection from '../components/SocialProofSection';
+import TelegramFooterCTA from '../components/TelegramFooterCTA';
 import DownloadAppButton from '../components/DownloadAppButton';
 import BrandLogo from '../components/BrandLogo';
 import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
@@ -105,8 +106,12 @@ const Home = () => {
         </section>
       )}
 
-      <footer style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
-        © {new Date().getFullYear()} {settings.site_name || BRAND.name} · <a href={BRAND.domain}>{BRAND.domain.replace('https://', '')}</a>
+      <footer className="home-footer">
+        <TelegramFooterCTA />
+        <p className="home-footer__copy">
+          © {new Date().getFullYear()} {settings.site_name || BRAND.name} ·{' '}
+          <a href={BRAND.domain}>{BRAND.domain.replace('https://', '')}</a>
+        </p>
       </footer>
     </div>
   );

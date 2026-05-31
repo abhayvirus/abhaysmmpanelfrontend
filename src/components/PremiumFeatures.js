@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useIdleLogout } from '../hooks/useIdleLogout';
 import WhatsAppFloat from './WhatsAppFloat';
 import TelegramFloat from './TelegramFloat';
+import StickyTelegramBanner from './StickyTelegramBanner';
 import LiveChatWidget from './LiveChatWidget';
 import NotificationToasts from './NotificationToasts';
 
@@ -26,6 +27,7 @@ const PremiumFeatures = () => {
 
   return (
     <>
+      <StickyTelegramBanner />
       {show && (
         <>
           <WhatsAppFloat />

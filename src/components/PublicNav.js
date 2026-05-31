@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import BrandLogo from './BrandLogo';
@@ -6,6 +6,8 @@ import BrandLogo from './BrandLogo';
 const PublicNav = () => {
   const [open, setOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(() => Boolean(localStorage.getItem('token')));
+  const [scrolled, setScrolled] = useState(false);
+  const navRef = useRef(null);
   const { settings } = useSettings();
   const close = () => setOpen(false);
 
@@ -27,9 +29,43 @@ const PublicNav = () => {
     };
   }, []);
 
+  useEffect(() => {
+    document.body.classList.add('has-public-nav');
+    const el = navRef.current;
+    if (!el) {
+      return () => document.body.classList.remove('has-public-nav');
+    }
+
+    const syncHeight = () => {
+      document.documentElement.style.setProperty('--public-nav-h', `${el.offsetHeight}px`);
+    };
+
+    syncHeight();
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(syncHeight) : null;
+    ro?.observe(el);
+    window.addEventListener('resize', syncHeight);
+
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener('resize', syncHeight);
+      document.body.classList.remove('has-public-nav');
+      document.documentElement.style.removeProperty('--public-nav-h');
+    };
+  }, []);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <>
-      <header className="nav-public">
+      <header
+        ref={navRef}
+        className={`nav-public${scrolled ? ' nav-public--scrolled' : ''}`}
+      >
         <Link to="/" className="nav-public-brand" onClick={close}>
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
         </Link>
