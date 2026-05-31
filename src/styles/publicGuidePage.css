@@ -1,0 +1,77 @@
+/* Public how-to-use guide — fixed nav offset, responsive layout */
+
+.public-guide-page {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.public-guide-page__main {
+  padding-top: calc(var(--public-nav-h, 3.75rem) + 1.25rem);
+  padding-bottom: 2rem;
+  max-width: 56rem;
+  margin: 0 auto;
+}
+
+.public-guide-page .guide-page {
+  padding-bottom: 1.5rem;
+}
+
+.public-guide-cta {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--primary) 14%, var(--bg-card)),
+    var(--bg-card)
+  );
+}
+
+.public-guide-cta__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.125rem, 3.5vw, 1.35rem);
+}
+
+.public-guide-cta__text {
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.public-guide-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  justify-content: center;
+}
+
+.public-guide-cta__actions .btn {
+  min-width: 10rem;
+  min-height: 2.75rem;
+}
+
+.public-guide-page__footer {
+  padding: 1.5rem 1rem 2rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.public-guide-page__footer a {
+  color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .public-guide-page__main {
+    padding-left: 0.875rem;
+    padding-right: 0.875rem;
+  }
+
+  .public-guide-cta__actions .btn {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}

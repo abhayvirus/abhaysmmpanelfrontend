@@ -9,10 +9,11 @@ import {
   adminWebsiteDevQuote,
   adminRefundWebsiteDevFee,
   adminWebsiteDevProjectStatus,
+  adminWebsiteDevAssign,
   openWebsiteDevQuotePrint,
   API_BASE,
 } from '../api';
-import { PROJECT_STAGES } from '../content/websiteDevCategories';
+import { CRM_STATUSES, CONSULTATION_FEE, getCrmStatusLabel } from '../content/websiteDevCategories';
 import '../styles/adminWebsiteDev.css';
 
 const STATUS_FILTERS = [
@@ -41,6 +42,7 @@ const AdminWebsiteDev = () => {
   });
   const [busyId, setBusyId] = useState(null);
   const [toast, setToast] = useState('');
+  const [developerName, setDeveloperName] = useState('');
 
   const load = () => {
     adminGetWebsiteDevStats().then((r) => setStats(r.data || {})).catch(() => {});
@@ -67,9 +69,23 @@ const AdminWebsiteDev = () => {
     try {
       const { data } = await adminGetWebsiteDevOrder(id);
       setDetail(data);
+      setDeveloperName(data.assigned_developer || '');
     } catch (e) {
       showToast(e.response?.data?.message || 'Load failed');
     }
+  };
+
+  const assignDeveloper = async () => {
+    if (!detail || !developerName.trim()) return;
+    setBusyId(detail.id);
+    try {
+      await adminWebsiteDevAssign(detail.id, developerName.trim());
+      showToast('Developer assigned');
+      openDetail(detail.id);
+    } catch (e) {
+      showToast(e.response?.data?.message || 'Assign failed');
+    }
+    setBusyId(null);
   };
 
   const runAction = async (id, action) => {
@@ -134,7 +150,8 @@ const AdminWebsiteDev = () => {
     { key: 'budget', label: 'Budget', render: (o) => o.budget || '—' },
     { key: 'fee', label: 'Fee', render: (o) => `₹${parseFloat(o.wallet_fee || 99).toFixed(0)}` },
     { key: 'date', label: 'Submitted', render: (o) => new Date(o.created_at).toLocaleDateString() },
-    { key: 'status', label: 'Status', highlight: true, render: (o) => <span className="badge badge-info">{o.status}</span> },
+    { key: 'status', label: 'Status', highlight: true, render: (o) => <span className="badge badge-info">{getCrmStatusLabel(o.project_status, o.status)}</span> },
+    { key: 'developer', label: 'Developer', render: (o) => o.assigned_developer || '—' },
     {
       key: 'actions',
       label: 'Actions',
@@ -153,7 +170,10 @@ const AdminWebsiteDev = () => {
   return (
     <AdminLayout>
       <div className="admin-website-dev-page">
-        <h1 className="admin-page-title">🌐 Website Orders</h1>
+        <h1 className="admin-page-title">🌐 Website Requests Management</h1>
+        <p className="admin-website-consult-note">
+          Consultation fee ₹{CONSULTATION_FEE} is non-refundable and auto-adjusted in final quotation (payable = final price − ₹{CONSULTATION_FEE}).
+        </p>
         {toast && <div className="alert alert-success">{toast}</div>}
 
         <div className="stats-grid admin-website-stats">
@@ -183,10 +203,9 @@ const AdminWebsiteDev = () => {
           <div className="modal-panel card" style={{ maxWidth: '36rem', maxHeight: '90vh', overflow: 'auto' }}>
             <h2>{detail.request_code || `#${detail.id}`}</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-              Status: <span className="badge badge-info">{detail.status}</span>
-              {' · '}Project: {detail.project_status?.replace(/_/g, ' ')}
-              {' · '}Refund: {detail.refund_status}
+              Status: <span className="badge badge-info">{getCrmStatusLabel(detail.project_status, detail.status)}</span>
               {' · '}Quote: {detail.quotation_status}
+              {' · '}Developer: {detail.assigned_developer || 'Unassigned'}
             </p>
             <dl className="admin-website-detail-grid">
               <div><dt>Full Name</dt><dd>{detail.full_name}</dd></div>
@@ -213,13 +232,36 @@ const AdminWebsiteDev = () => {
             {detail.quotation && (
               <div className="card" style={{ padding: 12, marginBottom: 12 }}>
                 <strong>Quotation: ₹{Number(detail.quotation.final_price || 0).toLocaleString('en-IN')}</strong>
+                {detail.quotation.payable_after_consultation != null && (
+                  <p style={{ margin: '6px 0 0', fontSize: 13 }}>Payable after ₹{CONSULTATION_FEE} credit: ₹{Number(detail.quotation.payable_after_consultation).toLocaleString('en-IN')}</p>
+                )}
                 <button type="button" className="btn btn-ghost btn-sm" style={{ marginLeft: 8 }} onClick={() => openWebsiteDevQuotePrint(detail.id, true)}>Print PDF</button>
               </div>
             )}
+            <div style={{ marginBottom: 12 }}>
+              <label className="label">Assign Developer</label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <input className="input" placeholder="Developer name" value={developerName} onChange={(e) => setDeveloperName(e.target.value)} style={{ flex: 1, minWidth: 140 }} />
+                <button type="button" className="btn btn-primary btn-sm" disabled={busyId === detail.id} onClick={assignDeveloper}>Assign</button>
+              </div>
+            </div>
             <div className="admin-website-actions">
               <button type="button" className="btn btn-ghost btn-sm" disabled={busyId === detail.id} onClick={() => runAction(detail.id, 'reviewed')}>Mark Reviewed</button>
               <button type="button" className="btn btn-primary btn-sm" disabled={busyId === detail.id} onClick={() => runAction(detail.id, 'contacted')}>Contact User</button>
-              <button type="button" className="btn btn-primary btn-sm" onClick={() => { setQuoteForm({ ...quoteForm, project_name: detail.website_type }); setQuoteOpen(true); }}>Send Quote</button>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => {
+                  setQuoteForm({
+                    ...quoteForm,
+                    project_name: detail.website_type,
+                    discount: String(CONSULTATION_FEE),
+                  });
+                  setQuoteOpen(true);
+                }}
+              >
+                Send Quote
+              </button>
               <button type="button" className="btn btn-primary btn-sm" disabled={busyId === detail.id} onClick={() => runAction(detail.id, 'approve')}>Approve</button>
               <button type="button" className="btn btn-danger btn-sm" disabled={busyId === detail.id} onClick={() => runAction(detail.id, 'reject')}>Reject</button>
               <button type="button" className="btn btn-ghost btn-sm" disabled={busyId === detail.id} onClick={() => runAction(detail.id, 'start')}>Start Project</button>
@@ -232,7 +274,10 @@ const AdminWebsiteDev = () => {
             <div style={{ marginTop: 12 }}>
               <label className="label">Update project stage</label>
               <select className="select" value={detail.project_status} onChange={(e) => adminWebsiteDevProjectStatus(detail.id, e.target.value).then(() => openDetail(detail.id))}>
-                {PROJECT_STAGES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                {CRM_STATUSES.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+                <option value="client_discussion">Client Discussion (legacy)</option>
+                <option value="design_started">Design Started (legacy)</option>
+                <option value="final_review">Final Review (legacy)</option>
               </select>
             </div>
           </div>

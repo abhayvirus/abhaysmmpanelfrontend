@@ -144,11 +144,16 @@
   width: 100%;
 }
 
+.admin-services-filters .filter-section {
+  width: 100%;
+}
+
 .admin-services-filters .input {
   width: 100%;
   min-height: 2.625rem;
 }
 
+/* Legacy row — desktop admin may use filter-group from filterControls.css */
 .admin-services-filter-row {
   display: flex;
   flex-wrap: wrap;
@@ -458,7 +463,7 @@
   .admin-services-filters {
     flex-direction: row;
     flex-wrap: wrap;
-    align-items: center;
+    align-items: flex-start;
   }
 
   .admin-services-filters .input {
@@ -466,14 +471,8 @@
     width: auto;
   }
 
-  .admin-services-filter-row {
-    flex: 1 1 auto;
-    width: auto;
-  }
-
-  .admin-services-filter-row .btn {
-    flex: 0 1 auto;
-    font-size: 0.8125rem;
+  .admin-services-filters .filter-section {
+    flex: 1 1 100%;
   }
 }
 

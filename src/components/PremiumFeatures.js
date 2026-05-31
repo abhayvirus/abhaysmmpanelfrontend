@@ -5,7 +5,7 @@ import { useAuthSession } from '../hooks/useAuthSession';
 import { shouldShowLandingTelegramWidgets } from '../constants/telegramChannel';
 import WhatsAppFloat from './WhatsAppFloat';
 import TelegramFloat from './TelegramFloat';
-import StickyTelegramBanner from './StickyTelegramBanner';
+import TelegramChannelPopup from './TelegramChannelPopup';
 import LiveChatWidget from './LiveChatWidget';
 import NotificationToasts from './NotificationToasts';
 
@@ -20,7 +20,7 @@ const PremiumFeatures = () => {
 
   return (
     <>
-      {showLandingTelegram && <StickyTelegramBanner />}
+      <TelegramChannelPopup />
       {showUserWidgets ? (
         <>
           <WhatsAppFloat />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import UserLayout from '../components/UserLayout';
-import { getNotifications, markRead, markAllRead } from '../api';
+import { getNotifications, markRead, markAllRead, clearNotificationHistory } from '../api';
 import '../styles/notificationsPage.css';
 
 const POLL_MS = 15000;
@@ -35,6 +35,10 @@ const Notifications = () => {
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [clearModalOpen, setClearModalOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [successToast, setSuccessToast] = useState('');
+
   const loadPage = useCallback(async (pageNum, append = false, silent = false) => {
     if (!silent && !append) setLoading(true);
     if (append) setLoadingMore(true);
@@ -59,6 +63,12 @@ const Notifications = () => {
     return () => clearInterval(id);
   }, [loadPage]);
 
+  useEffect(() => {
+    if (!successToast) return undefined;
+    const t = setTimeout(() => setSuccessToast(''), 4000);
+    return () => clearTimeout(t);
+  }, [successToast]);
+
   const handleMarkRead = async (id) => {
     try {
       await markRead(id);
@@ -77,6 +87,24 @@ const Notifications = () => {
     } catch (_) { /* ignore */ }
   };
 
+  const handleClearAll = async () => {
+    if (clearing) return;
+    setClearing(true);
+    try {
+      await clearNotificationHistory();
+      setItems([]);
+      setHasMore(false);
+      setPage(1);
+      setClearModalOpen(false);
+      setSuccessToast('✅ Notification history cleared successfully');
+      window.dispatchEvent(new CustomEvent('notifications-updated'));
+    } catch (_) {
+      setClearModalOpen(false);
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const loadMore = () => {
     if (!hasMore || loadingMore) return;
     loadPage(page + 1, true, true);
@@ -84,16 +112,32 @@ const Notifications = () => {
 
   const hasUnread = items.some((n) => !n.is_read);
   const unreadCount = items.filter((n) => !n.is_read).length;
+  const canClear = items.length > 0 && !loading;
 
   return (
     <UserLayout title="Notifications">
       <div className="notifications-page">
+        {successToast && (
+          <div className="notifications-toast alert alert-success" role="status">
+            {successToast}
+          </div>
+        )}
+
         <header className="notifications-page__header">
           <h1 className="notifications-page__title">
             Notifications
             {unreadCount > 0 ? ` (${unreadCount})` : ''}
           </h1>
           <div className="notifications-page__actions">
+            <button
+              type="button"
+              className="notifications-clear-btn"
+              onClick={() => setClearModalOpen(true)}
+              disabled={!canClear || clearing}
+              aria-label="Clear notification history"
+            >
+              🗑 Clear History
+            </button>
             {hasUnread && (
               <button type="button" className="btn btn-ghost btn-sm" onClick={handleMarkAll}>
                 Mark all read
@@ -111,8 +155,7 @@ const Notifications = () => {
             </div>
             <p className="notifications-empty__title">No notifications yet</p>
             <p className="notifications-empty__desc">
-              Order updates, wallet activity, support replies, and security alerts will show up here.
-              You will also receive email for important events.
+              You will see order updates, wallet activity and important announcements here.
             </p>
           </div>
         ) : (
@@ -169,6 +212,46 @@ const Notifications = () => {
           </>
         )}
       </div>
+
+      {clearModalOpen && (
+        <div
+          className="modal-overlay notifications-clear-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="clear-notifications-title"
+          onClick={() => !clearing && setClearModalOpen(false)}
+        >
+          <div
+            className="modal-panel card notifications-clear-modal__panel"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="clear-notifications-title" className="notifications-clear-modal__title">
+              Clear Notification History?
+            </h2>
+            <p className="notifications-clear-modal__message">
+              This action will permanently remove all notifications from your account.
+            </p>
+            <div className="notifications-clear-modal__actions">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setClearModalOpen(false)}
+                disabled={clearing}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn notifications-clear-modal__confirm"
+                onClick={handleClearAll}
+                disabled={clearing}
+              >
+                {clearing ? 'Clearing...' : 'Clear All'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </UserLayout>
   );
 };

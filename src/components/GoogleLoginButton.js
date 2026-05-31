@@ -22,6 +22,14 @@ function finishSession(navigate, data) {
 /**
  * Google sign-in: popup (ID token) + server redirect fallback.
  */
+function getSignupReferralCode() {
+  try {
+    return sessionStorage.getItem('signup_ref') || '';
+  } catch {
+    return '';
+  }
+}
+
 const GoogleLoginButton = ({ className = '', style = {} }) => {
   const navigate = useNavigate();
   const { enabled, clientId, oauthStartUrl, loading: configLoading } = useGoogleAuth();
@@ -52,7 +60,8 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
     setLoading(true);
     setError('');
     try {
-      const { data } = await googleLogin(idToken);
+      const ref = getSignupReferralCode();
+      const { data } = await googleLogin(idToken, ref || undefined);
       finishSession(navigate, data);
     } catch (err) {
       const code = err.response?.data?.code;

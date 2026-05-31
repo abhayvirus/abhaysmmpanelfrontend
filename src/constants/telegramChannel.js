@@ -1,6 +1,9 @@
 /** Official ABHAYSMM Telegram channel — admin can override via settings.telegram_link */
 export const DEFAULT_TELEGRAM_CHANNEL_URL = 'https://t.me/abhayd95';
 
+/** Stable public DOM id for Telegram promo popup */
+export const PUBLIC_TELEGRAM_POPUP_ID = 'public-telegram-popup';
+
 export function normalizePathname(pathname = '/') {
   return String(pathname).replace(/\/$/, '') || '/';
 }

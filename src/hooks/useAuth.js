@@ -41,7 +41,14 @@ export function useAuth() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const idToken = await result.user.getIdToken(true);
-      const { data } = await firebaseLogin(idToken);
+      const ref = (() => {
+        try {
+          return sessionStorage.getItem('signup_ref') || '';
+        } catch {
+          return '';
+        }
+      })();
+      const { data } = await firebaseLogin(idToken, ref || undefined);
       persistSession(data);
       return data;
     } catch (err) {

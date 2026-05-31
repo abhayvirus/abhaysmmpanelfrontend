@@ -47,9 +47,10 @@ export const signup = (data) => API.post('/auth/signup', data);
 export const sendSignupOtp = (data) => API.post('/auth/signup/send-otp', data);
 export const verifySignupOtp = (data) => API.post('/auth/signup/verify-otp', data);
 /** Google Sign-In: send ID token from @react-oauth/google */
-export const googleLogin = (idToken) => API.post('/auth/google', { idToken });
-/** Legacy Firebase route */
-export const firebaseLogin = (idToken) => API.post('/auth/firebase', { idToken });
+export const googleLogin = (idToken, referralCode) =>
+  API.post('/auth/google', { idToken, referral_code: referralCode || undefined });
+export const firebaseLogin = (idToken, referralCode) =>
+  API.post('/auth/firebase', { idToken, referral_code: referralCode || undefined });
 export const getMe = () => API.get('/auth/me');
 export const updateProfile = (data) => API.put('/auth/profile', data);
 export const changePassword = (data) => API.put('/auth/change-password', data);
@@ -144,6 +145,7 @@ export const getNotifications = (params = {}) =>
 export const getUnreadCount = () => API.get('/notifications/unread-count');
 export const markRead = (id) => API.put(`/notifications/${id}/read`);
 export const markAllRead = () => API.put('/notifications/read-all');
+export const clearNotificationHistory = () => API.delete('/notifications/clear-history');
 export const getAnnouncements = () => API.get('/settings/announcements');
 
 // Categories
@@ -219,6 +221,7 @@ export const adminGetWebsiteDevOrders = () => API.get('/website-dev/admin/all');
 export const adminGetWebsiteDevOrder = (id) => API.get(`/website-dev/admin/${id}`);
 export const adminWebsiteDevAction = (id, data) => API.put(`/website-dev/admin/${id}/action`, data);
 export const adminWebsiteDevProjectStatus = (id, project_status) => API.put(`/website-dev/admin/${id}/project-status`, { project_status });
+export const adminWebsiteDevAssign = (id, assigned_developer) => API.put(`/website-dev/admin/${id}/assign`, { assigned_developer });
 export const adminWebsiteDevQuote = (id, data) => API.post(`/website-dev/admin/${id}/quote`, data);
 export const adminRefundWebsiteDevFee = (id) => API.post(`/website-dev/admin/${id}/refund`);
 export const openWebsiteDevQuotePrint = async (id, admin = false) => {

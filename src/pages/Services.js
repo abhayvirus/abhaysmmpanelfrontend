@@ -5,6 +5,7 @@ import ServiceCard from '../components/ServiceCard';
 import { getServices, getPlatforms, getServiceCategories } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import '../styles/servicesPage.css';
+import '../styles/filterControls.css';
 
 const Services = () => {
   const { settings } = useSettings();
@@ -73,30 +74,32 @@ const Services = () => {
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search services"
           />
-          <div className="services-filter-group">
-            <span className="services-filter-label">Platform</span>
-            <div className="services-chip-row" role="group" aria-label="Filter by platform">
+          <div className="filter-section filter-section--platform">
+            <span className="filter-section__label">Platform</span>
+            <div className="filter-group" role="group" aria-label="Filter by platform">
               {platforms.map((p) => (
                 <button
                   key={p}
                   type="button"
-                  className={`btn btn-sm services-chip ${platform === p ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`filter-chip${platform === p ? ' filter-chip--active' : ''}`}
                   onClick={() => setPlatform(p)}
+                  aria-pressed={platform === p}
                 >
                   {p}
                 </button>
               ))}
             </div>
           </div>
-          <div className="services-filter-group">
-            <span className="services-filter-label">Category</span>
-            <div className="services-chip-row" role="group" aria-label="Filter by category">
+          <div className="filter-section filter-section--category">
+            <span className="filter-section__label">Category</span>
+            <div className="filter-group" role="group" aria-label="Filter by category">
               {categories.map((c) => (
                 <button
                   key={c}
                   type="button"
-                  className={`btn btn-sm services-chip ${category === c ? 'btn-primary' : 'btn-ghost'}`}
+                  className={`filter-chip${category === c ? ' filter-chip--active' : ''}`}
                   onClick={() => setCategory(c)}
+                  aria-pressed={category === c}
                 >
                   {c}
                 </button>

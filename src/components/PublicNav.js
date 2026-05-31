@@ -70,6 +70,9 @@ const PublicNav = () => {
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
         </Link>
         <div className="nav-public-actions-desktop">
+          <Link to="/how-to-use" className="btn btn-ghost nav-public-guide-link">
+            How to Use Guide
+          </Link>
           {isLoggedIn ? (
             <Link to="/dashboard" className="btn btn-primary">Dashboard</Link>
           ) : (
@@ -102,6 +105,9 @@ const PublicNav = () => {
               </button>
             </div>
             <nav className="nav-mobile-links">
+              <Link to="/how-to-use" className="btn btn-ghost nav-drawer-btn" onClick={close}>
+                How to Use Guide
+              </Link>
               {isLoggedIn ? (
                 <Link to="/dashboard" className="btn btn-primary nav-drawer-btn" onClick={close}>Dashboard</Link>
               ) : (

@@ -7,6 +7,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import PremiumFeatures from './components/PremiumFeatures';
 import MaintenanceGate from './components/MaintenanceGate';
 import Home from './pages/Home';
+import PublicHowToUseGuide from './pages/PublicHowToUseGuide';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -65,6 +66,7 @@ function AppRoutes() {
           <PremiumFeatures />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/how-to-use" element={<PublicHowToUseGuide />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

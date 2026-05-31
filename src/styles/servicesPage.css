@@ -49,44 +49,6 @@
   min-height: 2.75rem;
 }
 
-.services-filter-group {
-  margin-bottom: 0.75rem;
-}
-
-.services-filter-group:last-child {
-  margin-bottom: 0;
-}
-
-.services-filter-label {
-  display: block;
-  font-size: 0.6875rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.services-chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  width: 100%;
-}
-
-.services-chip {
-  min-height: 2.75rem;
-  padding: 0.5rem 0.875rem;
-  font-size: 0.8125rem;
-  line-height: 1.2;
-  border-radius: 2rem;
-  flex: 0 1 auto;
-  max-width: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 /* —— Category sections —— */
 .services-sections {
   display: flex;

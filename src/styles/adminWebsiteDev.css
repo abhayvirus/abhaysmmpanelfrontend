@@ -1,5 +1,16 @@
 /* Admin Website Orders */
 
+.admin-website-consult-note {
+  margin: -0.5rem 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.65rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border));
+  color: var(--text-muted);
+}
+
 .admin-website-dev-page .admin-website-stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);

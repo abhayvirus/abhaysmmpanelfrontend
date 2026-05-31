@@ -25,8 +25,12 @@ const Signup = () => {
   const { enabled: googleEnabled } = useGoogleAuth();
 
   useEffect(() => {
-    if (isAuthenticated()) navigate(getPostLoginPath(), { replace: true });
-  }, [navigate]);
+    if (refCode) {
+      try {
+        sessionStorage.setItem('signup_ref', refCode.trim().toUpperCase());
+      } catch (_) { /* ignore */ }
+    }
+  }, [refCode]);
 
   useEffect(() => {
     // Ensure auth pages never inherit fixed body from a previously opened mobile menu

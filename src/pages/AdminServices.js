@@ -11,6 +11,7 @@ import {
 } from '../api';
 import SocialIconPicker from '../components/SocialIconPicker';
 import '../styles/adminServices.css';
+import '../styles/filterControls.css';
 
 function formatSyncTime(iso) {
   if (!iso) return 'Never';
@@ -595,30 +596,38 @@ const AdminServices = () => {
             onChange={(e) => setSearch(e.target.value)}
             aria-label="Search services"
           />
-          <div className="admin-services-filter-row" role="group" aria-label="Platform filter">
-            {platforms.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPlatform(p)}
-                className={`btn btn-sm ${platform === p ? 'btn-primary' : 'btn-ghost'}`}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
-          {categories.length > 1 && (
-            <div className="admin-services-filter-row" role="group" aria-label="Category filter">
-              {categories.map((c) => (
+          <div className="filter-section filter-section--platform">
+            <span className="filter-section__label">Platform</span>
+            <div className="filter-group" role="group" aria-label="Platform filter">
+              {platforms.map((p) => (
                 <button
-                  key={c}
+                  key={p}
                   type="button"
-                  onClick={() => setCategoryFilter(c)}
-                  className={`btn btn-sm ${categoryFilter === c ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setPlatform(p)}
+                  className={`filter-chip${platform === p ? ' filter-chip--active' : ''}`}
+                  aria-pressed={platform === p}
                 >
-                  {c}
+                  {p}
                 </button>
               ))}
+            </div>
+          </div>
+          {categories.length > 1 && (
+            <div className="filter-section filter-section--category">
+              <span className="filter-section__label">Category</span>
+              <div className="filter-group" role="group" aria-label="Category filter">
+                {categories.map((c) => (
+                  <button
+                    key={c}
+                    type="button"
+                    onClick={() => setCategoryFilter(c)}
+                    className={`filter-chip${categoryFilter === c ? ' filter-chip--active' : ''}`}
+                    aria-pressed={categoryFilter === c}
+                  >
+                    {c}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>

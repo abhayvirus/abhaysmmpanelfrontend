@@ -1,19 +1,35 @@
-/** Website development — frontend display data */
+/** Website development — categories, estimator, CRM statuses */
 
 export const CONSULTATION_FEE = 99;
 
+export const TRUST_STATS = [
+  { icon: '⭐', label: '500+ Websites Delivered' },
+  { icon: '⭐', label: '100+ Business Clients' },
+  { icon: '⭐', label: '99% Client Satisfaction' },
+  { icon: '⭐', label: 'PAN India Service' },
+];
+
+export const PROJECT_SUCCESS_RATE = 98;
+
 export const WEBSITE_DEV_CATEGORIES = [
-  { id: 'landing-page', name: 'Landing Page Website', icon: '🚀', priceMin: 5000, priceMax: 15000, deliveryTime: '5–10 days', description: 'High-converting single-page site for campaigns and lead capture.', domainInfo: 'Custom .com / .in', hostingInfo: 'Basic shared hosting', features: ['Responsive design', 'Contact form', 'WhatsApp', 'Basic SEO'] },
-  { id: 'portfolio', name: 'Portfolio Website', icon: '🎨', priceMin: 10000, priceMax: 30000, deliveryTime: '7–14 days', description: 'Showcase your work and personal brand.', domainInfo: 'Personal domain', hostingInfo: 'Shared / VPS', features: ['Gallery', 'About page', 'Social links', 'Blog optional'] },
-  { id: 'blog', name: 'Blog Website', icon: '✍️', priceMin: 10000, priceMax: 50000, deliveryTime: '10–15 days', description: 'Content site with CMS for articles.', domainInfo: 'Blog domain + SSL', hostingInfo: 'WordPress / CMS', features: ['Blog CMS', 'Categories', 'Newsletter', 'SEO URLs'] },
-  { id: 'business', name: 'Business Website', icon: '🏢', priceMin: 15000, priceMax: 75000, deliveryTime: '10–25 days', description: 'Corporate multi-page site for services and team.', domainInfo: 'Business domain', hostingInfo: 'Cloud hosting', features: ['Multi-page', 'Services', 'Maps', 'Analytics'] },
-  { id: 'school', name: 'School Website', icon: '🎓', priceMin: 20000, priceMax: 100000, deliveryTime: '15–30 days', description: 'Institution portal for admissions and notices.', domainInfo: '.edu.in / .ac.in', hostingInfo: 'Secure cloud', features: ['Admissions', 'Courses', 'Notice board', 'Gallery'] },
-  { id: 'hospital', name: 'Hospital Website', icon: '🏥', priceMin: 30000, priceMax: 200000, deliveryTime: '20–40 days', description: 'Healthcare portal with doctors and appointments.', domainInfo: 'Healthcare domain', hostingInfo: 'Secure hosting', features: ['Departments', 'Doctors', 'Appointments', 'Emergency info'] },
-  { id: 'real-estate', name: 'Real Estate Website', icon: '🏠', priceMin: 50000, priceMax: 500000, deliveryTime: '25–50 days', description: 'Property listings with search and leads.', domainInfo: 'Brand domain', hostingInfo: 'High-performance cloud', features: ['Listings', 'Filters', 'Agents', 'Maps'] },
-  { id: 'ecommerce', name: 'E-Commerce Website', icon: '🛒', priceMin: 30000, priceMax: 500000, deliveryTime: '20–45 days', description: 'Online store with cart and payments.', domainInfo: 'Store domain', hostingInfo: 'Scalable cloud', features: ['Catalog', 'Cart', 'Payments', 'Orders'] },
-  { id: 'marketplace', name: 'Multi Vendor Marketplace', icon: '🏬', priceMin: 100000, priceMax: 1000000, deliveryTime: '45–90 days', description: 'Multi-seller platform with vendor panels.', domainInfo: 'Marketplace domain', hostingInfo: 'Dedicated cloud', features: ['Vendor panels', 'Commissions', 'Reviews', 'Payouts'] },
-  { id: 'custom-app', name: 'Custom Web Application', icon: '⚙️', priceMin: 100000, priceMax: 2500000, deliveryTime: '60–120 days', description: 'Custom web app with integrations.', domainInfo: 'Custom + API subdomain', hostingInfo: 'AWS / VPS', features: ['Custom UX', 'Dashboards', 'APIs', 'Database'] },
-  { id: 'enterprise', name: 'Enterprise Software', icon: '🏛️', priceMin: 500000, priceMax: 5000000, deliveryTime: '90–180+ days', description: 'Enterprise systems with SLA support.', domainInfo: 'Enterprise + CDN', hostingInfo: 'Enterprise infra', features: ['Multi-language', 'Security', 'Integrations', 'SLA'] },
+  { id: 'landing-page', name: 'Landing Page Website', icon: '🚀', priceMin: 5000, priceMax: 15000, deliveryTime: '5–10 days', description: 'High-converting single-page site for campaigns and lead capture.', features: ['Responsive design', 'Contact form', 'WhatsApp button', 'Basic SEO', 'Mobile optimized'] },
+  { id: 'portfolio', name: 'Portfolio Website', icon: '🎨', priceMin: 10000, priceMax: 30000, deliveryTime: '7–14 days', description: 'Showcase your work, skills, and personal brand professionally.', features: ['Project gallery', 'About page', 'Social links', 'Blog optional', 'Fast loading'] },
+  { id: 'business', name: 'Business Website', icon: '🏢', priceMin: 15000, priceMax: 75000, deliveryTime: '10–25 days', description: 'Multi-page corporate site for services, team, and credibility.', features: ['Multi-page layout', 'Services section', 'Google Maps', 'Analytics', 'Admin optional'] },
+  { id: 'ecommerce', name: 'Ecommerce Website', icon: '🛒', priceMin: 30000, priceMax: 500000, deliveryTime: '20–45 days', description: 'Online store with cart, checkout, and order management.', features: ['Product catalog', 'Cart & checkout', 'Payment gateway', 'Order tracking', 'Inventory'] },
+  { id: 'blog', name: 'Blog Website', icon: '📚', priceMin: 10000, priceMax: 50000, deliveryTime: '10–15 days', description: 'Content-focused site with CMS for articles and newsletters.', features: ['Blog CMS', 'Categories', 'Newsletter', 'Comments', 'SEO URLs'] },
+  { id: 'hospital', name: 'Hospital Website', icon: '🏥', priceMin: 30000, priceMax: 200000, deliveryTime: '20–40 days', description: 'Healthcare portal with departments, doctors, and appointments.', features: ['Departments', 'Doctor profiles', 'Appointments', 'Emergency info', 'Patient resources'] },
+  { id: 'hotel', name: 'Hotel Website', icon: '🏨', priceMin: 25000, priceMax: 150000, deliveryTime: '15–35 days', description: 'Hospitality site with rooms, booking, and gallery.', features: ['Room listings', 'Online booking', 'Gallery', 'Amenities', 'Reviews'] },
+  { id: 'restaurant', name: 'Restaurant Website', icon: '🍽️', priceMin: 15000, priceMax: 80000, deliveryTime: '10–20 days', description: 'Food business site with menu, orders, and reservations.', features: ['Digital menu', 'Table booking', 'Gallery', 'Location map', 'WhatsApp orders'] },
+  { id: 'school', name: 'School Website', icon: '🏫', priceMin: 20000, priceMax: 100000, deliveryTime: '15–30 days', description: 'Institution portal for admissions, notices, and information.', features: ['Admissions', 'Courses', 'Notice board', 'Gallery', 'Parent portal'] },
+  { id: 'corporate', name: 'Corporate Website', icon: '💼', priceMin: 40000, priceMax: 300000, deliveryTime: '20–50 days', description: 'Enterprise-grade corporate presence with investor relations.', features: ['Brand pages', 'Team & leadership', 'Case studies', 'Careers', 'Multi-branch'] },
+  { id: 'mobile-app', name: 'Mobile App', icon: '📱', priceMin: 80000, priceMax: 800000, deliveryTime: '45–90 days', description: 'Native or cross-platform mobile applications.', features: ['Android / iOS', 'Push notifications', 'API backend', 'App store deploy', 'Analytics'] },
+  { id: 'ai-saas', name: 'AI SaaS Platform', icon: '🤖', priceMin: 150000, priceMax: 2500000, deliveryTime: '60–120 days', description: 'AI-powered SaaS with subscriptions and dashboards.', features: ['AI integrations', 'Subscriptions', 'Admin dashboard', 'API layer', 'Scalable cloud'] },
+  { id: 'trading', name: 'Trading Website', icon: '📈', priceMin: 100000, priceMax: 1500000, deliveryTime: '45–90 days', description: 'Trading platforms with charts, wallets, and KYC flows.', features: ['Live charts', 'Wallet system', 'KYC module', 'Admin panel', 'Security hardened'] },
+  { id: 'ott', name: 'OTT Platform', icon: '🎥', priceMin: 200000, priceMax: 3000000, deliveryTime: '90–150 days', description: 'Video streaming platform with subscriptions and DRM.', features: ['Video streaming', 'Subscriptions', 'Content CMS', 'CDN delivery', 'Mobile apps'] },
+  { id: 'logistics', name: 'Logistics Website', icon: '📦', priceMin: 50000, priceMax: 500000, deliveryTime: '30–60 days', description: 'Courier and logistics tracking with driver panels.', features: ['Shipment tracking', 'Driver panel', 'Invoicing', 'API integrations', 'Notifications'] },
+  { id: 'payment-gateway', name: 'Payment Gateway Website', icon: '💳', priceMin: 150000, priceMax: 2000000, deliveryTime: '60–120 days', description: 'Fintech payment solutions with compliance-ready flows.', features: ['Payment APIs', 'Merchant dashboard', 'Settlement reports', 'PCI awareness', 'Multi-gateway'] },
+  { id: 'admin-dashboard', name: 'Admin Dashboard', icon: '📊', priceMin: 40000, priceMax: 600000, deliveryTime: '25–60 days', description: 'Custom admin panels and internal business tools.', features: ['Role-based access', 'Reports & charts', 'CRUD modules', 'Export data', 'API ready'] },
+  { id: 'digital-marketing', name: 'Digital Marketing Website', icon: '📢', priceMin: 12000, priceMax: 120000, deliveryTime: '10–25 days', description: 'Agency or marketing service showcase with lead funnels.', features: ['Service pages', 'Case studies', 'Lead forms', 'Blog', 'SEO optimized'] },
 ];
 
 export const DOMAIN_EXTENSIONS = [
@@ -27,45 +43,57 @@ export const DOMAIN_EXTENSIONS = [
 ];
 
 export const HOSTING_PLANS = [
-  { id: 'basic', name: 'Basic Hosting', priceYear: 2999, storage: '10 GB SSD', bandwidth: '100 GB/mo', ssl: true, backup: 'Weekly', emailAccounts: 5 },
-  { id: 'business', name: 'Business Hosting', priceYear: 5999, storage: '50 GB SSD', bandwidth: '500 GB/mo', ssl: true, backup: 'Daily', emailAccounts: 25 },
-  { id: 'premium', name: 'Premium Hosting', priceYear: 9999, storage: '100 GB NVMe', bandwidth: 'Unlimited', ssl: true, backup: 'Daily + offsite', emailAccounts: 50 },
-  { id: 'cloud', name: 'Cloud Hosting', priceYear: 14999, storage: 'Scalable', bandwidth: 'Unlimited', ssl: true, backup: 'Real-time', emailAccounts: 'Unlimited' },
+  { id: 'basic', name: 'Basic Hosting', priceYear: 2999 },
+  { id: 'business', name: 'Business Hosting', priceYear: 5999 },
+  { id: 'premium', name: 'Premium Hosting', priceYear: 9999 },
+  { id: 'cloud', name: 'Cloud Hosting', priceYear: 14999 },
+];
+
+export const MAINTENANCE_PLANS = [
+  { id: 'none', name: 'No Maintenance', priceYear: 0 },
+  { id: 'basic', name: 'Basic Maintenance', priceYear: 5000 },
+  { id: 'standard', name: 'Standard Maintenance', priceYear: 12000 },
+  { id: 'premium', name: 'Premium Maintenance', priceYear: 25000 },
 ];
 
 export const FEATURE_OPTIONS = [
+  { id: 'custom_design', label: 'Custom Design', cost: 25000, estimatorOnly: true },
   { id: 'admin_panel', label: 'Admin Panel', cost: 15000 },
-  { id: 'user_login', label: 'User Login System', cost: 12000 },
   { id: 'payment_gateway', label: 'Payment Gateway', cost: 18000 },
   { id: 'whatsapp', label: 'WhatsApp Integration', cost: 3000 },
-  { id: 'contact_forms', label: 'Contact Forms', cost: 2000 },
-  { id: 'blog_system', label: 'Blog System', cost: 8000 },
-  { id: 'seo_setup', label: 'SEO Setup', cost: 5000 },
-  { id: 'multi_language', label: 'Multi Language', cost: 20000 },
+  { id: 'google_login', label: 'Google Login', cost: 8000 },
   { id: 'otp_login', label: 'OTP Login', cost: 10000 },
+  { id: 'multi_language', label: 'Multi Language', cost: 20000 },
   { id: 'android_app', label: 'Android App', cost: 80000 },
   { id: 'ios_app', label: 'iOS App', cost: 120000 },
+  { id: 'seo_setup', label: 'SEO Setup', cost: 5000 },
   { id: 'api_integration', label: 'API Integration', cost: 25000 },
-  { id: 'sms_integration', label: 'SMS Integration', cost: 8000 },
-  { id: 'crm', label: 'CRM System', cost: 35000 },
-  { id: 'inventory', label: 'Inventory Management', cost: 30000 },
-  { id: 'membership', label: 'Membership System', cost: 22000 },
 ];
 
-export const PROJECT_STAGES = [
-  { key: 'request_submitted', label: 'Request Submitted', step: 1 },
-  { key: 'requirement_review', label: 'Requirement Review', step: 2 },
-  { key: 'client_discussion', label: 'Client Discussion', step: 3 },
-  { key: 'quotation_sent', label: 'Quotation Sent', step: 4 },
-  { key: 'approved', label: 'Approved', step: 5 },
-  { key: 'design_started', label: 'Design Started', step: 6 },
-  { key: 'development_started', label: 'Development Started', step: 7 },
-  { key: 'testing', label: 'Testing', step: 8 },
-  { key: 'final_review', label: 'Final Review', step: 9 },
-  { key: 'completed', label: 'Completed', step: 10 },
+export const CRM_STATUSES = [
+  { key: 'request_submitted', label: 'Pending' },
+  { key: 'requirement_review', label: 'Reviewing' },
+  { key: 'quotation_sent', label: 'Quotation Sent' },
+  { key: 'approved', label: 'Payment Received' },
+  { key: 'development_started', label: 'Development Started' },
+  { key: 'testing', label: 'Testing' },
+  { key: 'completed', label: 'Completed' },
+  { key: 'delivered', label: 'Delivered' },
 ];
+
+/** Legacy stages for progress tracking */
+export const PROJECT_STAGES = CRM_STATUSES.map((s, i) => ({ ...s, step: i + 1 }));
 
 export const PRICE_FACTORS = ['Domain', 'Hosting', 'Design', 'Development', 'Features', 'API Integration', 'Mobile App', 'Security', 'Maintenance'];
+
+export function getCrmStatusLabel(projectStatus, status) {
+  const key = projectStatus || status || 'request_submitted';
+  const found = CRM_STATUSES.find((s) => s.key === key);
+  if (found) return found.label;
+  if (status === 'quoted') return 'Quotation Sent';
+  if (status === 'pending') return 'Pending';
+  return String(key).replace(/_/g, ' ');
+}
 
 export function formatInr(n, sym = '₹') {
   if (n >= 10000000) return `${sym}${(n / 10000000).toFixed(1)} Cr`;
@@ -78,23 +106,50 @@ export function formatInrRange(min, max, sym = '₹') {
   return `${formatInr(min, sym)} – ${formatInr(max, sym)}`;
 }
 
-export function estimateCostLocal({ categoryId, featureIds = [], domainExt, hostingId }) {
+export function estimateCostLocal({
+  categoryId,
+  featureIds = [],
+  domainExt,
+  hostingId,
+  pageCount = 5,
+  customDesign = false,
+  maintenanceId = 'none',
+}) {
   const cat = WEBSITE_DEV_CATEGORIES.find((c) => c.id === categoryId);
-  if (!cat) return { min: 5000, max: 50000 };
+  if (!cat) return { min: 5000, max: 50000, estimated: 25000, developmentTime: '2–4 weeks', recommendedPlan: 'Starter' };
   let min = cat.priceMin;
   let max = cat.priceMax;
+  const pages = Math.max(1, Number(pageCount) || 5);
+  const pageAddon = (pages - 5) * 2500;
+  if (pageAddon > 0) { min += pageAddon * 0.8; max += pageAddon; }
+  if (customDesign) { min += 20000; max += 50000; }
   featureIds.forEach((fid) => {
     const f = FEATURE_OPTIONS.find((x) => x.id === fid);
-    if (f) { min += Math.round(f.cost * 0.8); max += f.cost; }
+    if (f) { min += Math.round(f.cost * 0.85); max += f.cost; }
   });
   const domain = DOMAIN_EXTENSIONS.find((d) => d.ext === domainExt);
   if (domain) { min += domain.priceYear; max += domain.priceYear * 2; }
   const hosting = HOSTING_PLANS.find((h) => h.id === hostingId);
-  if (hosting) { min += hosting.priceYear; max += hosting.priceYear * 3; }
-  return { min, max };
+  if (hosting) { min += hosting.priceYear; max += hosting.priceYear * 2; }
+  const maint = MAINTENANCE_PLANS.find((m) => m.id === maintenanceId);
+  if (maint?.priceYear) { min += maint.priceYear; max += maint.priceYear; }
+  const estimated = Math.round((min + max) / 2);
+  const developmentTime = cat.deliveryTime;
+  let recommendedPlan = 'Starter';
+  if (estimated >= 500000) recommendedPlan = 'Enterprise';
+  else if (estimated >= 150000) recommendedPlan = 'Business Pro';
+  else if (estimated >= 50000) recommendedPlan = 'Business';
+  else if (estimated >= 20000) recommendedPlan = 'Growth';
+  return { min, max, estimated, developmentTime, recommendedPlan };
 }
 
 export function projectProgress(projectStatus) {
-  const idx = PROJECT_STAGES.findIndex((s) => s.key === projectStatus);
-  return idx >= 0 ? ((idx + 1) / PROJECT_STAGES.length) * 100 : 10;
+  const idx = CRM_STATUSES.findIndex((s) => s.key === projectStatus);
+  return idx >= 0 ? ((idx + 1) / CRM_STATUSES.length) * 100 : 10;
+}
+
+export function requestAmount(row, sym = '₹') {
+  if (row?.quotation?.final_price) return formatInr(row.quotation.final_price, sym);
+  if (row?.quote_amount) return formatInr(row.quote_amount, sym);
+  return '—';
 }
