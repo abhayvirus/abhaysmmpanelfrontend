@@ -48,10 +48,7 @@
     height: 2.75rem;
   }
 
-  .telegram-float {
-    left: 4rem !important;
-    right: auto !important;
-    bottom: calc(var(--mobile-bottom-nav-h, 4.25rem) + env(safe-area-inset-bottom, 0px) + 0.5rem) !important;
+  .telegram-float--draggable {
     width: 2.75rem;
     height: 2.75rem;
     font-size: 1.125rem;
