@@ -8,10 +8,10 @@
 }
 
 .website-dev-page--premium {
-  --wd-blue: #0f2d5c;
-  --wd-blue-light: #1a4a8a;
-  --wd-glass: rgba(15, 45, 92, 0.45);
-  --wd-glass-border: rgba(100, 160, 255, 0.22);
+  --wd-blue: color-mix(in srgb, var(--primary) 70%, #020617);
+  --wd-blue-light: color-mix(in srgb, var(--accent) 55%, #020617);
+  --wd-glass: color-mix(in srgb, var(--primary) 35%, transparent);
+  --wd-glass-border: var(--border-color);
 }
 
 .website-dev-hero {

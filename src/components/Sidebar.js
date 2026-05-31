@@ -90,7 +90,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
           <button type="button" className="sidebar-close-mobile" onClick={onClose} aria-label="Close">✕</button>
         </div>
 
-        <div className="sidebar-content">
+        <div className="sidebar-menu-scroll">
           <nav className="sidebar-nav" aria-label="Main navigation">
             {links.map((l) => (
               <Link
@@ -106,26 +106,28 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
             ))}
           </nav>
 
-          {(settings.telegram_link || settings.whatsapp_link) && (
-            <div className="sidebar-social">
-              {settings.telegram_link && <a href={settings.telegram_link} target="_blank" rel="noreferrer">TG</a>}
-              {settings.whatsapp_link && <a href={settings.whatsapp_link} target="_blank" rel="noreferrer">WA</a>}
+          <div className="sidebar-aux">
+            {(settings.telegram_link || settings.whatsapp_link) && (
+              <div className="sidebar-social">
+                {settings.telegram_link && <a href={settings.telegram_link} target="_blank" rel="noreferrer">TG</a>}
+                {settings.whatsapp_link && <a href={settings.whatsapp_link} target="_blank" rel="noreferrer">WA</a>}
+              </div>
+            )}
+
+            <div className="sidebar-tools">
+              <ThemeToggle />
+              <LanguageSwitcher />
             </div>
-          )}
 
-          <div className="sidebar-tools">
-            <ThemeToggle />
-            <LanguageSwitcher />
+            {user.role === 'admin' && (
+              <Link to="/admin" className="sidebar-link sidebar-admin-link" onClick={onClose}>
+                👑 Admin
+              </Link>
+            )}
           </div>
-
-          {user.role === 'admin' && (
-            <Link to="/admin" className="sidebar-link sidebar-admin-link" onClick={onClose}>
-              👑 Admin
-            </Link>
-          )}
         </div>
 
-        <div className="sidebar-footer">
+        <div className="sidebar-footer sidebar-footer--fixed">
           <Link
             to="/profile"
             className={`sidebar-footer-profile${isNavActive(location.pathname, '/profile') ? ' active' : ''}`}

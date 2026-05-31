@@ -27,7 +27,9 @@ import {
   adminTestConnection,
   API_BASE,
 } from '../api';
-import { useSettings } from '../contexts/SettingsContext';
+import { useSettings, applyThemeToDocument } from '../contexts/SettingsContext';
+import ThemeSettingsPanel from '../components/ThemeSettingsPanel';
+import { DEFAULT_THEME, mergeTheme } from '../theme/themeConfig';
 
 const TABS = [
   { id: 'general', label: 'General', icon: '🏠' },
@@ -75,8 +77,23 @@ const AdminSettings = () => {
   const [telegramTesting, setTelegramTesting] = useState(false);
   const [msg, setMsg] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [themeResetOpen, setThemeResetOpen] = useState(false);
 
   const updateDraft = (key, value) => setDraft((d) => ({ ...d, [key]: value }));
+
+  const applyThemeDraft = (patch) => {
+    setDraft((d) => {
+      const next = { ...d, ...patch };
+      applyThemeToDocument(mergeTheme(next));
+      return next;
+    });
+  };
+
+  const resetThemeToDefault = () => {
+    applyThemeDraft(DEFAULT_THEME);
+    setThemeResetOpen(false);
+    showMsg('✅ Theme reset successfully');
+  };
 
   const load = useCallback(async () => {
     const [s, p, a] = await Promise.all([
@@ -98,6 +115,22 @@ const AdminSettings = () => {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    applyThemeToDocument(mergeTheme(draft));
+  }, [
+    draft.theme_mode,
+    draft.theme_primary,
+    draft.theme_accent,
+    draft.theme_button,
+    draft.theme_bg,
+    draft.theme_card,
+    draft.theme_text,
+    draft.theme_border,
+    draft.theme_success,
+    draft.theme_warning,
+    draft.theme_danger,
+  ]);
 
   const loadTelegramStatus = useCallback(() => {
     adminGetTelegramStatus()
@@ -135,7 +168,11 @@ const AdminSettings = () => {
         payment_methods_enabled: draft.payment_methods_enabled || DEFAULT_PAYMENT_IDS,
       });
       await refreshGlobalSettings();
-      showMsg('Settings saved successfully');
+      applyThemeToDocument(mergeTheme(draft));
+      const themeMsg = tab === 'theme'
+        ? '✅ Theme updated successfully. Changes applied globally.'
+        : 'Settings saved successfully';
+      showMsg(themeMsg);
       updateDraft('settings_version', res.data.settings_version);
     } catch (e) {
       showMsg(e.response?.data?.message || 'Save failed', 'error');
@@ -474,21 +511,12 @@ const AdminSettings = () => {
         );
       case 'theme':
         return (
-          <>
-            <div className="form-group">
-              <label className="label">Theme mode (default for new users)</label>
-              <select className="select" value={draft.theme_mode || 'dark'} onChange={(e) => updateDraft('theme_mode', e.target.value)}>
-                <option value="dark">Dark</option>
-                <option value="light">Light</option>
-              </select>
-            </div>
-            <Field label="Primary color" value={draft.theme_primary} onChange={(v) => updateDraft('theme_primary', v)} type="color" />
-            <Field label="Accent / secondary" value={draft.theme_accent} onChange={(v) => updateDraft('theme_accent', v)} type="color" />
-            <Field label="Button color" value={draft.theme_button} onChange={(v) => updateDraft('theme_button', v)} type="color" />
-            <Field label="Background" value={draft.theme_bg} onChange={(v) => updateDraft('theme_bg', v)} type="color" />
-            <Field label="Card color" value={draft.theme_card} onChange={(v) => updateDraft('theme_card', v)} type="color" />
-            <Field label="Text color" value={draft.theme_text} onChange={(v) => updateDraft('theme_text', v)} type="color" />
-          </>
+          <ThemeSettingsPanel
+            draft={draft}
+            updateDraft={updateDraft}
+            onApplyPreview={(t) => applyThemeToDocument(t)}
+            onRequestReset={() => setThemeResetOpen(true)}
+          />
         );
       case 'announce':
         return (
@@ -638,12 +666,32 @@ const AdminSettings = () => {
               Saves to database · syncs to user panel · v{draft.settings_version || '—'}
             </p>
           </div>
-          <button type="button" className="btn btn-primary admin-settings-save-btn" onClick={saveAll} disabled={saving}>
-            {saving ? 'Saving…' : '💾 Save all settings'}
-          </button>
+          <div className="admin-settings-top-actions">
+            {tab === 'theme' && (
+              <button type="button" className="btn btn-ghost" onClick={() => setThemeResetOpen(true)}>
+                🔄 Reset Theme
+              </button>
+            )}
+            <button type="button" className="btn btn-primary admin-settings-save-btn" onClick={saveAll} disabled={saving}>
+              {saving ? 'Saving…' : '💾 Save All Settings'}
+            </button>
+          </div>
         </div>
 
         {msg && <div className={`alert alert-${msg.type === 'error' ? 'error' : 'success'}`}>{msg.text}</div>}
+
+        {themeResetOpen && (
+          <div className="theme-modal-overlay" role="presentation" onClick={() => setThemeResetOpen(false)}>
+            <div className="theme-modal card" role="dialog" onClick={(e) => e.stopPropagation()}>
+              <h3>Reset all colors to default theme?</h3>
+              <p>This restores ABHAYSMM default colors in the preview. Save settings to apply globally for all users.</p>
+              <div className="theme-modal__actions">
+                <button type="button" className="btn btn-ghost" onClick={() => setThemeResetOpen(false)}>Cancel</button>
+                <button type="button" className="btn btn-danger" onClick={resetThemeToDefault}>Reset</button>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="admin-settings-layout">
           <div className="settings-admin-preview admin-settings-preview-col">

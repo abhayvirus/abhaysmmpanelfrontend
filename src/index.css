@@ -1,10 +1,20 @@
 :root {
   --primary: #2563eb;
+  --primary-color: #2563eb;
   --primary-glow: rgba(37, 99, 235, 0.4);
   --accent: #0ea5e9;
+  --secondary-color: #0ea5e9;
+  --button-color: #2563eb;
+  --background-color: #020617;
+  --card-color: #071226;
+  --text-color: #ffffff;
+  --border-color: rgba(37, 99, 235, 0.25);
   --success: #22c55e;
+  --success-color: #22c55e;
   --warning: #f59e0b;
+  --warning-color: #f59e0b;
   --danger: #ef4444;
+  --danger-color: #ef4444;
   --gradient: linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #0ea5e9 100%);
   --sidebar-w: 260px;
   --radius: 12px;
@@ -66,8 +76,16 @@ a:hover { text-decoration: underline; }
     padding-top: calc(56px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(100px + env(safe-area-inset-bottom, 0px));
   }
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
+  .user-sidebar,
+  .admin-sidebar,
+  .sidebar.user-sidebar {
+    transform: translateX(-100%);
+  }
+  .user-sidebar.open,
+  .admin-sidebar.open,
+  .sidebar.user-sidebar.open {
+    transform: translateX(0);
+  }
 }
 
 /* Cards */
@@ -326,10 +344,12 @@ tr:hover td { background: var(--table-row-hover); }
 }
 .admin-main { margin-left: var(--sidebar-w); min-height: 100vh; padding: 32px 40px; width: calc(100% - var(--sidebar-w)); }
 
-/* Admin sidebar — scrollable nav + fixed logout footer */
+/* Admin sidebar — scrollable nav + fixed footer */
 .admin-sidebar {
   width: var(--sidebar-w);
   height: 100vh;
+  height: 100dvh;
+  max-height: 100dvh;
   background: var(--bg-card);
   border-right: 1px solid var(--border);
   position: fixed;
@@ -339,16 +359,22 @@ tr:hover td { background: var(--table-row-hover); }
   z-index: 200;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 .admin-sidebar-brand {
   flex-shrink: 0;
   padding: 24px 20px;
   border-bottom: 1px solid var(--border);
+  position: relative;
 }
 .admin-sidebar-nav {
-  flex: 1;
+  flex: 1 1 auto;
   min-height: 0;
+  overflow-x: hidden;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 12px;
 }
 .admin-sidebar-link {
@@ -375,11 +401,13 @@ tr:hover td { background: var(--table-row-hover); }
 .admin-sidebar-footer {
   flex-shrink: 0;
   padding: 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid var(--border);
   background: var(--bg-card);
   display: flex;
   flex-direction: column;
   gap: 10px;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
 }
 .admin-sidebar-user-link {
   font-size: 13px;

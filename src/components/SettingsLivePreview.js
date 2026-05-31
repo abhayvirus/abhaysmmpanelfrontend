@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { API_BASE } from '../api';
+import { mergeTheme } from '../theme/themeConfig';
 
 const PREVIEW_MODES = [
   { id: 'mobile', label: 'Mobile' },
@@ -9,15 +10,17 @@ const PREVIEW_MODES = [
 
 const SettingsLivePreview = ({ draft }) => {
   const [mode, setMode] = useState('mobile');
+  const t = mergeTheme(draft);
 
   const logoUrl = draft.site_logo ? `${API_BASE}${draft.site_logo}` : null;
   const isLight = draft.theme_mode === 'light';
-  const primary = draft.theme_primary || '#2563eb';
-  const accent = draft.theme_accent || '#0ea5e9';
-  const bg = draft.theme_bg || (isLight ? '#f8fafc' : '#070b12');
-  const card = draft.theme_card || (isLight ? '#ffffff' : '#0f1623');
-  const text = draft.theme_text || (isLight ? '#0f172a' : '#e8edf5');
-  const muted = isLight ? '#64748b' : '#8b9cb3';
+  const primary = t.theme_primary;
+  const accent = t.theme_accent;
+  const bg = t.theme_bg;
+  const card = t.theme_card;
+  const text = t.theme_text;
+  const muted = isLight ? '#64748b' : '#94a3b8';
+  const border = t.theme_border;
 
   const frameClass = `settings-preview-device settings-preview-device--${mode}`;
 
@@ -52,7 +55,8 @@ const SettingsLivePreview = ({ draft }) => {
             '--preview-card': card,
             '--preview-text': text,
             '--preview-muted': muted,
-            '--preview-gradient': `linear-gradient(135deg, ${primary} 0%, ${accent} 100%)`,
+            '--preview-border': border,
+            '--preview-gradient': `linear-gradient(135deg, ${t.theme_button} 0%, ${accent} 100%)`,
           }}
         >
           <div className="settings-preview-mobile-chrome">
@@ -65,11 +69,7 @@ const SettingsLivePreview = ({ draft }) => {
           <div className="settings-preview-body">
             <aside className="settings-preview-sidebar">
               <div className="settings-preview-sidebar-brand">
-                {logoUrl ? (
-                  <img src={logoUrl} alt="" />
-                ) : (
-                  <span>⚡</span>
-                )}
+                {logoUrl ? <img src={logoUrl} alt="" /> : <span>⚡</span>}
                 <strong>{draft.site_name || 'Panel'}</strong>
               </div>
               <div className="settings-preview-balance">{draft.currency_symbol || '₹'}1,250</div>

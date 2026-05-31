@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
+import SupportLiveChat from '../components/SupportLiveChat';
 import { getTickets, createTicket } from '../api';
 import { ticketStatusClass, formatTicketTime } from '../utils/ticketStatus';
 import '../styles/ticketsPage.css';
@@ -14,6 +15,7 @@ const Tickets = () => {
   const [form, setForm] = useState({ subject: '', message: '', priority: 'medium' });
   const [msg, setMsg] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [section, setSection] = useState('tickets');
 
   const load = useCallback((silent = false) => {
     if (!silent) setLoading(true);
@@ -58,14 +60,38 @@ const Tickets = () => {
       <div className="tickets-page">
         <div className="tickets-sticky-header">
           <h1 className="tickets-page__title">Support</h1>
+          {section === 'tickets' && (
+            <button
+              type="button"
+              className="btn btn-primary btn-new-ticket"
+              onClick={() => (showForm ? setShowForm(false) : openNewTicket())}
+            >
+              {showForm ? 'Close form' : '+ New Ticket'}
+            </button>
+          )}
+        </div>
+
+        <nav className="tickets-tabs" aria-label="Support sections">
           <button
             type="button"
-            className="btn btn-primary btn-new-ticket"
-            onClick={() => (showForm ? setShowForm(false) : openNewTicket())}
+            className={`tickets-tab${section === 'tickets' ? ' is-active' : ''}`}
+            onClick={() => setSection('tickets')}
           >
-            {showForm ? 'Close form' : '+ New Ticket'}
+            🎫 Tickets
           </button>
-        </div>
+          <button
+            type="button"
+            className={`tickets-tab${section === 'chat' ? ' is-active' : ''}`}
+            onClick={() => setSection('chat')}
+          >
+            💬 Live Chat
+          </button>
+        </nav>
+
+        {section === 'chat' && <SupportLiveChat />}
+
+        {section === 'tickets' && (
+        <>
 
         {msg && (
           <div className={`alert ${msg.includes('success') ? 'alert-success' : 'alert-error'} tickets-page__toast`}>
@@ -181,6 +207,8 @@ const Tickets = () => {
               </table>
             </div>
           </>
+        )}
+        </>
         )}
       </div>
     </UserLayout>

@@ -61,8 +61,9 @@ export const resendVerification = (email) => API.post('/auth/resend-verification
 
 // Chat
 export const getChatMessages = () => API.get('/chat/my');
+export const getChatUnreadCount = () => API.get('/chat/my/unread');
 export const sendChatMessage = (message) => API.post('/chat', { message });
-export const adminGetChatConversations = () => API.get('/chat/admin/conversations');
+export const adminGetChatConversations = (params) => API.get('/chat/admin/conversations', { params });
 export const adminGetChatThread = (userId) => API.get(`/chat/admin/user/${userId}`);
 /** @deprecated use adminGetChatThread */
 export const adminGetChatMessages = adminGetChatThread;
@@ -70,6 +71,10 @@ export const adminReplyChat = (userId, message) => API.post(`/chat/admin/user/${
 export const adminDeleteChatMessage = (messageId) => API.delete(`/chat/admin/messages/${messageId}`);
 export const adminResolveChat = (userId) => API.post(`/chat/admin/user/${userId}/resolve`);
 export const adminClearChatConversation = (userId) => API.delete(`/chat/admin/user/${userId}/clear`);
+export const adminUpdateChatMeta = (userId, data) => API.patch(`/chat/admin/user/${userId}/meta`, data);
+export const adminSendSupportEmail = (userId, data) => API.post(`/chat/admin/user/${userId}/email`, data);
+export const adminGetSupportEmailTemplates = () => API.get('/chat/admin/email-templates');
+export const adminBroadcastMessage = (data) => API.post('/chat/admin/broadcast', data);
 
 // Referrals & coupons
 export const getReferrals = () => API.get('/referrals/my');

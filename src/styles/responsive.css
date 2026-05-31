@@ -57,7 +57,6 @@ body.mobile-menu-open {
 /* ——— User sidebar ——— */
 .user-sidebar {
   width: var(--sidebar-w);
-  min-height: 100vh;
   height: 100vh;
   height: 100dvh;
   max-height: 100dvh;
@@ -70,19 +69,23 @@ body.mobile-menu-open {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  padding-top: env(safe-area-inset-top, 0px);
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.sidebar-content {
+/* Only nav links scroll; header + footer stay fixed */
+.sidebar-menu-scroll {
   flex: 1 1 auto;
   min-height: 0;
-  height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  display: flex;
-  flex-direction: column;
+}
+
+.sidebar-aux {
+  flex-shrink: 0;
+  padding-bottom: 0.25rem;
 }
 .sidebar-brand {
   flex-shrink: 0;
@@ -193,21 +196,14 @@ body.mobile-menu-open {
 }
 .sidebar-footer {
   flex-shrink: 0;
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
   padding: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background: #081426;
+  border-top: 1px solid var(--border);
+  background: var(--bg-card);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-}
-
-[data-theme='light'] .sidebar-footer {
-  background: var(--bg-card);
-  border-top-color: var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-footer-profile {
@@ -754,6 +750,55 @@ body.has-public-telegram-banner .nav-public {
   }
   .admin-main {
     padding: 2rem 2.5rem;
+  }
+}
+
+/* ——— Mobile sidebar: fixed footer, scrollable menu ——— */
+@media (max-width: 768px) {
+  .user-sidebar,
+  .admin-sidebar {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    /* Grid pins header + footer; middle row scrolls (iOS-safe) */
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .user-sidebar .sidebar-brand,
+  .admin-sidebar .admin-sidebar-brand {
+    grid-row: 1;
+  }
+
+  .sidebar-menu-scroll,
+  .admin-sidebar-nav {
+    grid-row: 2;
+    flex: none;
+    min-height: 0;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .sidebar-footer--fixed,
+  .admin-sidebar-footer {
+    grid-row: 3;
+    flex-shrink: 0;
+    position: relative;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    z-index: 3;
+    padding: 1rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .sidebar-aux {
+    flex-shrink: 0;
+    padding-bottom: 0.5rem;
   }
 }
 

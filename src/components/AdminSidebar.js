@@ -20,7 +20,7 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
     { to: '/admin/child-panels', label: 'Child Panels', icon: '🌐' },
     { to: '/admin/analytics', label: 'Analytics', icon: '📈' },
     { to: '/admin/coupons', label: 'Coupons', icon: '🏷️' },
-    { to: '/admin/chat', label: 'Live Chat', icon: '💬' },
+    { to: '/admin/chat', label: 'Support Inbox', icon: '💬' },
     { to: '/admin/activity-logs', label: 'Activity Logs', icon: '📜' },
     { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
     { to: '/admin/help', label: 'Help Guide', icon: '📖' },
@@ -75,10 +75,12 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
         </nav>
 
         <div className="admin-sidebar-footer">
-          <Link to="/dashboard" className="admin-sidebar-user-link" onClick={onClose}>
-            ← User Panel
+          <Link to="/dashboard" className="sidebar-footer-profile admin-sidebar-user-link" onClick={onClose}>
+            <span aria-hidden="true">←</span>
+            User Panel
           </Link>
-          <button type="button" className="btn btn-danger btn-sm admin-sidebar-logout" onClick={logout}>
+          <button type="button" className="logout-btn admin-sidebar-logout" onClick={logout}>
+            <span aria-hidden="true">🚪</span>
             Logout
           </button>
         </div>
