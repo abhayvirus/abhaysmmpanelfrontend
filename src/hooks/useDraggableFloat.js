@@ -21,6 +21,8 @@ export function useDraggableFloat({
   margin = 12,
   extraBottomReserve = 0,
   enabled = true,
+  anchor = 'bottom-right',
+  landingMode = false,
 } = {}) {
   const [position, setPosition] = useState(null);
   const dragRef = useRef({
@@ -38,20 +40,27 @@ export function useDraggableFloat({
   );
 
   const getBottomReserve = useCallback(() => {
+    if (landingMode && isMobileViewport()) {
+      return margin;
+    }
     if (!isMobileViewport()) return margin + 8;
     const root = getComputedStyle(document.documentElement);
     const nav =
       parseFloat(root.getPropertyValue('--mobile-bottom-nav-h')) || 68;
     return nav + margin + 72 + (extraBottomReserve || 0);
-  }, [isMobileViewport, margin, extraBottomReserve]);
+  }, [isMobileViewport, margin, extraBottomReserve, landingMode]);
 
   const getTopReserve = useCallback(() => {
     if (!isMobileViewport()) return margin;
+    const root = getComputedStyle(document.documentElement);
+    if (landingMode || document.body.classList.contains('has-public-nav')) {
+      const publicNav = parseFloat(root.getPropertyValue('--public-nav-h'));
+      if (publicNav > 0) return publicNav + margin;
+    }
     const header =
-      parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mobile-header-h')) ||
-      56;
+      parseFloat(root.getPropertyValue('--mobile-header-h')) || 56;
     return header + margin;
-  }, [isMobileViewport, margin]);
+  }, [isMobileViewport, margin, landingMode]);
 
   const clampPosition = useCallback(
     (x, y) => {
@@ -71,8 +80,11 @@ export function useDraggableFloat({
     const w = window.innerWidth;
     const h = window.innerHeight;
     const bottomR = getBottomReserve();
-    return clampPosition(w - size - margin, h - size - bottomR - 20);
-  }, [clampPosition, getBottomReserve, margin, size]);
+    const bottomOffset = landingMode && isMobileViewport() ? margin : 20;
+    const y = h - size - bottomR - bottomOffset;
+    const x = anchor === 'bottom-left' ? margin : w - size - margin;
+    return clampPosition(x, y);
+  }, [clampPosition, getBottomReserve, margin, size, anchor, landingMode, isMobileViewport]);
 
   const persist = useCallback(
     (pos) => {

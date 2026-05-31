@@ -126,10 +126,10 @@ const PublicNav = () => {
       </header>
 
       {open && (
-        <div className="nav-mobile-screen" role="dialog" aria-modal="true" aria-label="Menu">
+        <div className="nav-mobile-screen nav-mobile-screen--open" role="dialog" aria-modal="true" aria-label="Menu">
           <div className="nav-mobile-screen-inner">
             <div className="nav-mobile-top">
-              <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
+              <p className="nav-mobile-menu-label">Menu</p>
               <button type="button" className="nav-drawer-close" onClick={close} aria-label="Close menu">
                 ✕
               </button>

@@ -1,19 +1,23 @@
-/* Landing — live activity trust notifications (bottom-left) */
+/* Landing — live activity notifications (fixed, above footer) */
 
 .landing-live-activity {
   position: fixed;
-  z-index: 10000;
-  left: max(0.75rem, env(safe-area-inset-left, 0px));
-  bottom: max(1rem, env(safe-area-inset-bottom, 0px));
-  width: min(calc(100vw - 1.5rem), 22rem);
+  z-index: 9999;
+  bottom: 20px;
+  right: 20px;
+  left: auto;
+  top: auto;
+  width: min(22rem, calc(100vw - 40px));
+  max-width: 380px;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 .landing-live-activity__card {
   pointer-events: auto;
   padding: 0.875rem 1rem;
   border-radius: 0.875rem;
-  background: rgba(5, 10, 25, 0.88);
+  background: rgba(5, 10, 25, 0.92);
   border: 1px solid rgba(59, 130, 246, 0.4);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -21,6 +25,14 @@
     0 12px 40px rgba(0, 0, 0, 0.45),
     0 0 32px rgba(37, 99, 235, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.landing-live-activity__card--visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .landing-live-activity__header {
@@ -79,23 +91,40 @@
   font-weight: 600;
 }
 
+/* Mobile — above Telegram FAB (bottom-left), inset from edges */
 @media (max-width: 767px) {
   .landing-live-activity {
-    left: max(0.625rem, env(safe-area-inset-left, 0px));
-    bottom: max(5.5rem, calc(env(safe-area-inset-bottom, 0px) + 4.5rem));
-    width: min(calc(100vw - 1.25rem), 20rem);
+    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
+    left: 15px;
+    right: 15px;
+    width: auto;
+    max-width: 380px;
   }
 
   .landing-live-activity__card {
-    padding: 0.75rem 0.875rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.75rem;
+  }
+
+  .landing-live-activity__title {
+    font-size: 0.6875rem;
   }
 
   .landing-live-activity__message {
     font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .landing-live-activity__time {
+    font-size: 0.625rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .landing-live-activity__card {
+    transition: none;
+  }
+
   .landing-live-activity__dot {
     animation: none;
   }

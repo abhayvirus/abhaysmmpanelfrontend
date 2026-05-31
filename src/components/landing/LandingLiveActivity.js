@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import '../../styles/landingLiveActivity.css';
 
 const NAMES = [
@@ -107,28 +106,22 @@ const LandingLiveActivity = () => {
 
   return (
     <div className="landing-live-activity" aria-live="polite" aria-atomic="true">
-      <AnimatePresence mode="wait">
-        {visible && activity && (
-          <motion.div
-            key={activity.id}
-            className="landing-live-activity__card"
-            initial={{ opacity: 0, x: -24, y: 12 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            exit={{ opacity: 0, x: -16, y: 8 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="landing-live-activity__header">
-              <span className="landing-live-activity__dot" aria-hidden="true" />
-              <span className="landing-live-activity__title">🔥 Recent Activity</span>
-            </div>
-            <p className="landing-live-activity__message">
-              <span className="landing-live-activity__indicator" aria-hidden="true">🟢</span>
-              {activity.message}
-            </p>
-            <span className="landing-live-activity__time">{timeLabel}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {visible && activity && (
+        <div
+          key={activity.id}
+          className="landing-live-activity__card landing-live-activity__card--visible"
+        >
+          <div className="landing-live-activity__header">
+            <span className="landing-live-activity__dot" aria-hidden="true" />
+            <span className="landing-live-activity__title">🔥 Recent Activity</span>
+          </div>
+          <p className="landing-live-activity__message">
+            <span className="landing-live-activity__indicator" aria-hidden="true">🟢</span>
+            {activity.message}
+          </p>
+          <span className="landing-live-activity__time">{timeLabel}</span>
+        </div>
+      )}
     </div>
   );
 };

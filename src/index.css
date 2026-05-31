@@ -54,6 +54,11 @@ body.public-nav-open {
 body.has-public-nav {
   padding-top: var(--public-nav-h, 3.75rem);
   transition: padding-top 300ms ease;
+  overflow-x: hidden;
+}
+
+body.has-public-nav.public-nav-open {
+  overflow: hidden;
 }
 
 .home-page {
@@ -652,21 +657,16 @@ tr:hover td { background: var(--table-row-hover); }
   align-items: center;
   gap: 0.75rem;
 }
-.brand-logo-wrap picture {
-  display: block;
-  line-height: 0;
-  flex-shrink: 0;
-}
 .brand-logo-circle {
   border-radius: 50%;
   aspect-ratio: 1 / 1;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center center;
   flex-shrink: 0;
   display: block;
-  border: 2px solid var(--logo-ring);
-  box-shadow: var(--logo-shadow), 0 0 20px var(--primary-glow);
-  background: var(--bg-card);
+  border: none;
+  box-shadow: 0 0 24px var(--primary-glow), 0 4px 16px rgba(0, 0, 0, 0.35);
+  background: transparent;
 }
 .auth-brand-header .brand-logo-circle {
   width: 5.5rem !important;
@@ -694,26 +694,7 @@ tr:hover td { background: var(--table-row-hover); }
   letter-spacing: 0.14em;
 }
 .hero-logo-wrap {
-  margin-bottom: 1.25rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 9.5rem;
-  height: 9.5rem;
-  margin-left: auto;
-  margin-right: auto;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, var(--bg-card) 0%, var(--bg) 72%);
-  box-shadow: 0 0 0 3px rgba(201, 168, 124, 0.35), 0 12px 40px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-}
-.hero-logo-wrap .brand-logo-circle {
-  width: 8.75rem !important;
-  height: 8.75rem !important;
-  border-width: 0;
-  box-shadow: none;
-  mix-blend-mode: normal;
-  background: transparent;
+  margin-bottom: 0;
 }
 .brand-logo-wrap--icon-only {
   gap: 0;

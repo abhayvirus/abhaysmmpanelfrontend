@@ -9,7 +9,7 @@ const SettingsContext = createContext(null);
 const DEFAULTS = {
   site_name: BRAND.name,
   site_tagline: BRAND.tagline,
-  site_logo: '',
+  site_logo: '/logo.png',
   currency_symbol: '₹',
   currency_code: 'INR',
   ...DEFAULT_THEME,

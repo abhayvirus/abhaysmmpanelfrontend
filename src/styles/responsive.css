@@ -524,7 +524,8 @@ body.has-public-telegram-banner .nav-public {
   .nav-public--compact .nav-brand-logo .brand-logo-circle,
   .nav-public--compact .nav-brand-logo img,
   .nav-public--compact .nav-public-actions-desktop .btn,
-  body.has-public-nav {
+  body.has-public-nav,
+  .nav-mobile-screen {
     transition: none;
   }
 }
@@ -564,23 +565,40 @@ body.has-public-telegram-banner .nav-public {
   align-items: center;
   justify-content: center;
 }
-/* Full-screen mobile menu — solid bg, no duplicate header ghost */
+/* Full-screen mobile menu — no duplicate logo (brand stays in fixed header only) */
 .nav-mobile-screen {
   display: none;
   position: fixed;
   inset: 0;
   z-index: 10050;
-  background: var(--bg);
+  background: rgba(2, 6, 23, 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
-  animation: fadeIn 0.22s ease;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(100%);
+  transition:
+    transform 300ms ease,
+    opacity 300ms ease,
+    visibility 300ms ease;
 }
+
+.nav-mobile-screen--open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+}
+
 .nav-mobile-screen-inner {
   display: flex;
   flex-direction: column;
   min-height: 100%;
   max-height: 100dvh;
-  padding: 1rem 1rem 1.5rem;
+  padding: calc(var(--public-nav-h, 3.75rem) + 0.5rem) 1rem 1.5rem;
+  box-sizing: border-box;
 }
+
 .nav-mobile-top {
   display: flex;
   align-items: center;
@@ -588,8 +606,27 @@ body.has-public-telegram-banner .nav-public {
   gap: 0.75rem;
   padding-bottom: 1rem;
   margin-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(59, 130, 246, 0.25);
   flex-shrink: 0;
+}
+
+.nav-mobile-menu-label {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+
+body.public-nav-open .nav-public-brand {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.public-nav-open .nav-public-menu-btn {
+  position: relative;
+  z-index: 10051;
 }
 .nav-mobile-links {
   display: flex;
@@ -898,6 +935,14 @@ body.has-public-telegram-banner .nav-public {
   .nav-mobile-screen {
     display: flex;
     flex-direction: column;
+  }
+
+  .nav-mobile-screen:not(.nav-mobile-screen--open) {
+    pointer-events: none;
+  }
+
+  .landing-page {
+    overflow-x: hidden;
   }
 
   .nav-public {

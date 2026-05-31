@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { API_BASE } from '../api';
 import { mergeTheme } from '../theme/themeConfig';
+import { resolveSiteLogoUrl } from '../utils/resolveSiteLogoUrl';
 
 const PREVIEW_MODES = [
   { id: 'mobile', label: 'Mobile' },
@@ -12,7 +12,7 @@ const SettingsLivePreview = ({ draft }) => {
   const [mode, setMode] = useState('mobile');
   const t = mergeTheme(draft);
 
-  const logoUrl = draft.site_logo ? `${API_BASE}${draft.site_logo}` : null;
+  const logoUrl = resolveSiteLogoUrl(draft.site_logo);
   const isLight = draft.theme_mode === 'light';
   const primary = t.theme_primary;
   const accent = t.theme_accent;
