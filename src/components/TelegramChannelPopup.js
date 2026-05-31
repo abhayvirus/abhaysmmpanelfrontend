@@ -2,28 +2,23 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import TelegramIcon from './TelegramIcon';
-import {
-  resolveTelegramChannelUrl,
-  shouldShowLandingTelegramWidgets,
-  PUBLIC_TELEGRAM_POPUP_ID,
-} from '../constants/telegramChannel';
+import { resolveTelegramChannelUrl, PUBLIC_TELEGRAM_POPUP_ID } from '../constants/telegramChannel';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { AUTH_SESSION_EVENT } from '../utils/authEvents';
 import '../styles/telegramChannelPopup.css';
 
 export { PUBLIC_TELEGRAM_POPUP_ID };
 
-const GUEST_DELAY_MS = 800;
 const LOGIN_DELAY_MS = 5000;
 const AUTO_DISMISS_MS = 12000;
 
+/** Telegram promo popup — logged-in user panel only (not shown on public landing). */
 const TelegramChannelPopup = () => {
   const location = useLocation();
   const { settings } = useSettings();
   const channelUrl = resolveTelegramChannelUrl(settings);
   const isLoggedIn = useAuthSession();
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const isGuestLanding = shouldShowLandingTelegramWidgets(location.pathname, isLoggedIn);
   const isUserPanel = isLoggedIn && !isAdminRoute;
 
   const [open, setOpen] = useState(false);
@@ -57,27 +52,18 @@ const TelegramChannelPopup = () => {
     setOpen(false);
     setVisible(false);
 
-    if (isAdminRoute) return undefined;
+    if (!isUserPanel) return undefined;
 
-    if (isGuestLanding) {
-      timerRef.current = setTimeout(showPopup, GUEST_DELAY_MS);
-      return clearTimers;
-    }
+    const sessionKey = 'abhaysmm_telegram_popup_user';
+    if (sessionStorage.getItem(sessionKey) === '1') return clearTimers;
 
-    if (isUserPanel) {
-      const sessionKey = 'abhaysmm_telegram_popup_user';
-      if (sessionStorage.getItem(sessionKey) === '1') return clearTimers;
-
-      timerRef.current = setTimeout(() => {
-        sessionStorage.setItem(sessionKey, '1');
-        showPopup();
-      }, LOGIN_DELAY_MS);
-
-      return clearTimers;
-    }
+    timerRef.current = setTimeout(() => {
+      sessionStorage.setItem(sessionKey, '1');
+      showPopup();
+    }, LOGIN_DELAY_MS);
 
     return clearTimers;
-  }, [isGuestLanding, isUserPanel, isAdminRoute, location.pathname, clearTimers, showPopup]);
+  }, [isUserPanel, location.pathname, clearTimers, showPopup]);
 
   useEffect(() => {
     const onLogin = () => {
@@ -99,7 +85,7 @@ const TelegramChannelPopup = () => {
 
   useEffect(() => () => clearTimers(), [clearTimers]);
 
-  if (isAdminRoute || (!isGuestLanding && !isUserPanel) || !open) return null;
+  if (!isUserPanel || !open) return null;
 
   return (
     <div

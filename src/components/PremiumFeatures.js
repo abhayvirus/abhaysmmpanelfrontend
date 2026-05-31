@@ -15,12 +15,13 @@ const PremiumFeatures = () => {
   const isLoggedIn = useAuthSession();
   const showLandingTelegram = shouldShowLandingTelegramWidgets(location.pathname, isLoggedIn);
   const showUserWidgets = isLoggedIn && !location.pathname.startsWith('/admin');
+  const showUserTelegramPopup = showUserWidgets;
 
   useIdleLogout(showUserWidgets);
 
   return (
     <>
-      <TelegramChannelPopup />
+      {showUserTelegramPopup && <TelegramChannelPopup />}
       {showUserWidgets ? (
         <>
           <WhatsAppFloat />
