@@ -31,7 +31,6 @@ const SERVICES = [
   'Telegram Members',
 ];
 
-const FUND_AMOUNTS = [500, 1000, 2000, 5000, 10000, 15000];
 const ORDER_QUANTITIES = [500, 1000, 2000, 2500, 5000, 10000, 15000, 20000];
 const TIME_LABELS = ['Just now', '2 sec ago', '5 sec ago', '8 sec ago', '12 sec ago'];
 
@@ -54,18 +53,6 @@ function randomName() {
 function buildActivity() {
   const name = randomName();
   const city = pick(CITIES);
-
-  if (Math.random() < 0.28) {
-    const amount = pick(FUND_AMOUNTS);
-    const fundLine = Math.random() < 0.5
-      ? `added ₹${formatQty(amount)} funds`
-      : `added ₹${formatQty(amount)} wallet balance`;
-    return {
-      id: `${Date.now()}-${Math.random()}`,
-      message: `${name} from ${city} ${fundLine}`,
-    };
-  }
-
   const qty = pick(ORDER_QUANTITIES);
   const service = pick(SERVICES);
   return {
@@ -131,10 +118,10 @@ const LandingLiveActivity = () => {
       <div className="landing-section__container landing-live-activity-section__inner">
         <p className="landing-section__eyebrow">Live on panel</p>
         <h2 id="landing-live-activity-title" className="landing-section__title landing-live-activity-section__title">
-          Abhi kaun order kar raha hai
+          Who&apos;s ordering right now
         </h2>
         <p className="landing-live-activity-section__desc">
-          Real-time style updates — random users placing orders across India.
+          See live-style order updates from users across India — service and quantity change every few seconds.
         </p>
 
         <div className="landing-live-activity" aria-live="polite" aria-atomic="true">
