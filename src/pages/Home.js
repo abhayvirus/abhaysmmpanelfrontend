@@ -73,10 +73,11 @@ const Home = () => {
         <SocialProofSection />
 
         <LandingTelegramSection />
+
+        <LandingLiveActivity />
       </main>
 
       <LandingFooter settings={settings} />
-      <LandingLiveActivity />
     </div>
   );
 };

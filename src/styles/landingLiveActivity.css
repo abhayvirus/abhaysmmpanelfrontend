@@ -1,21 +1,44 @@
-/* Landing — live activity notifications (fixed, above footer) */
+/* Landing — live activity section (above footer, in document flow) */
+
+.landing-live-activity-section {
+  padding-top: clamp(2rem, 5vw, 3rem);
+  padding-bottom: clamp(2rem, 5vw, 3rem);
+  border-top: 1px solid rgba(59, 130, 246, 0.12);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(37, 99, 235, 0.06) 50%,
+    transparent 100%
+  );
+}
+
+.landing-live-activity-section__inner {
+  text-align: center;
+}
+
+.landing-live-activity-section__title {
+  margin-bottom: 0.5rem;
+}
+
+.landing-live-activity-section__desc {
+  margin: 0 auto 1.5rem;
+  max-width: 28rem;
+  font-size: 0.9375rem;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.5;
+}
 
 .landing-live-activity {
-  position: fixed;
-  z-index: 200;
-  bottom: 20px;
-  right: 20px;
-  left: auto;
-  top: auto;
-  width: min(22rem, calc(100vw - 40px));
-  max-width: 380px;
-  pointer-events: none;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 26rem;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
 .landing-live-activity__card {
-  pointer-events: auto;
-  padding: 0.875rem 1rem;
+  padding: 1rem 1.125rem;
   border-radius: 0.875rem;
   background: rgba(5, 10, 25, 0.92);
   border: 1px solid rgba(59, 130, 246, 0.4);
@@ -25,14 +48,16 @@
     0 12px 40px rgba(0, 0, 0, 0.45),
     0 0 32px rgba(37, 99, 235, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0.55;
+  transform: translateY(8px);
+  transition: opacity 0.35s ease, transform 0.35s ease, border-color 0.35s ease;
+  text-align: left;
 }
 
 .landing-live-activity__card--visible {
   opacity: 1;
   transform: translateY(0);
+  border-color: rgba(59, 130, 246, 0.55);
 }
 
 .landing-live-activity__header {
@@ -75,10 +100,16 @@
 
 .landing-live-activity__message {
   margin: 0 0 0.35rem;
-  font-size: 0.8125rem;
-  line-height: 1.45;
+  font-size: 0.875rem;
+  line-height: 1.5;
   font-weight: 500;
   color: var(--text, #f1f5f9);
+  min-height: 2.75rem;
+}
+
+.landing-live-activity__placeholder {
+  color: var(--text-muted, #94a3b8);
+  font-weight: 500;
 }
 
 .landing-live-activity__indicator {
@@ -91,32 +122,18 @@
   font-weight: 600;
 }
 
-/* Mobile — above Telegram FAB (bottom-left), inset from edges */
 @media (max-width: 767px) {
   .landing-live-activity {
-    bottom: calc(90px + env(safe-area-inset-bottom, 0px));
-    left: 15px;
-    right: 15px;
-    width: auto;
-    max-width: 380px;
+    max-width: 100%;
+    padding: 0 0.25rem;
   }
 
   .landing-live-activity__card {
-    padding: 0.65rem 0.75rem;
-    border-radius: 0.75rem;
-  }
-
-  .landing-live-activity__title {
-    font-size: 0.6875rem;
+    padding: 0.875rem 1rem;
   }
 
   .landing-live-activity__message {
-    font-size: 0.75rem;
-    line-height: 1.4;
-  }
-
-  .landing-live-activity__time {
-    font-size: 0.625rem;
+    font-size: 0.8125rem;
   }
 }
 

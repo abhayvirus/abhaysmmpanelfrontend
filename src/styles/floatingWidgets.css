@@ -55,39 +55,10 @@
   }
 }
 
-/* Landing page — fixed Telegram (bottom-left), below activity popup z-index */
-.telegram-float--landing-fixed {
-  position: fixed;
-  z-index: 100;
-  left: 20px;
-  bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-  top: auto;
-  right: auto;
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: #229ed9;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(34, 158, 217, 0.45);
-  text-decoration: none;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
-}
-
-.telegram-float--landing-fixed:hover {
-  background: #1a8bc4;
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 10px 28px rgba(34, 158, 217, 0.55);
-  color: #fff;
-}
-
+/* Landing Telegram FAB — position set by useDraggableFloat (inline left/top) */
 @media (max-width: 767px) {
-  .telegram-float--landing-fixed {
-    left: 20px;
-    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-    width: 44px;
-    height: 44px;
+  .telegram-float--draggable {
+    width: 2.75rem;
+    height: 2.75rem;
   }
 }

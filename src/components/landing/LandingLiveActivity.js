@@ -1,14 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '../../styles/landingLiveActivity.css';
 
-const NAMES = [
+const FIRST_NAMES = [
   'Rahul', 'Aman', 'Rohit', 'Arjun', 'Priya', 'Neha', 'Vishal', 'Ankit',
-  'Aditya', 'Karan', 'Riya', 'Pooja', 'Akash', 'Saurabh',
+  'Aditya', 'Karan', 'Riya', 'Pooja', 'Akash', 'Saurabh', 'Deepak', 'Nikhil',
+  'Varun', 'Harsh', 'Isha', 'Kavya', 'Manish', 'Suresh', 'Divya', 'Tanvi',
+  'Yash', 'Mohit', 'Sneha', 'Ajay', 'Vikram', 'Rakesh', 'Sanjay', 'Meera',
+  'Arun', 'Gaurav', 'Shivam', 'Naveen', 'Pankaj', 'Ritika', 'Anjali', 'Kunal',
+];
+
+const SURNAMES = [
+  'Sharma', 'Verma', 'Patel', 'Singh', 'Khan', 'Gupta', 'Yadav', 'Reddy',
+  'Malhotra', 'Joshi', 'Mehta', 'Chauhan', 'Rao', 'Nair', 'Das', 'Pillai',
 ];
 
 const CITIES = [
   'Delhi', 'Mumbai', 'Pune', 'Jaipur', 'Lucknow', 'Hyderabad', 'Bangalore',
-  'Kolkata', 'Chennai', 'Surat',
+  'Kolkata', 'Chennai', 'Surat', 'Ahmedabad', 'Indore', 'Bhopal', 'Nagpur',
+  'Patna', 'Chandigarh', 'Kochi', 'Visakhapatnam', 'Coimbatore', 'Noida',
 ];
 
 const SERVICES = [
@@ -32,8 +41,18 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const randomBetween = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 const formatQty = (n) => n.toLocaleString('en-IN');
 
+/** Random display name: first only, first + surname, or first + initial */
+function randomName() {
+  const first = pick(FIRST_NAMES);
+  const roll = Math.random();
+  if (roll < 0.4) return first;
+  if (roll < 0.75) return `${first} ${pick(SURNAMES)}`;
+  const initial = String.fromCharCode(65 + Math.floor(Math.random() * 26));
+  return `${first} ${initial}.`;
+}
+
 function buildActivity() {
-  const name = pick(NAMES);
+  const name = randomName();
   const city = pick(CITIES);
 
   if (Math.random() < 0.28) {
@@ -105,24 +124,43 @@ const LandingLiveActivity = () => {
   }, []);
 
   return (
-    <div className="landing-live-activity" aria-live="polite" aria-atomic="true">
-      {visible && activity && (
-        <div
-          key={activity.id}
-          className="landing-live-activity__card landing-live-activity__card--visible"
-        >
-          <div className="landing-live-activity__header">
-            <span className="landing-live-activity__dot" aria-hidden="true" />
-            <span className="landing-live-activity__title">🔥 Recent Activity</span>
+    <section
+      className="landing-section landing-live-activity-section"
+      aria-labelledby="landing-live-activity-title"
+    >
+      <div className="landing-section__container landing-live-activity-section__inner">
+        <p className="landing-section__eyebrow">Live on panel</p>
+        <h2 id="landing-live-activity-title" className="landing-section__title landing-live-activity-section__title">
+          Abhi kaun order kar raha hai
+        </h2>
+        <p className="landing-live-activity-section__desc">
+          Real-time style updates — random users placing orders across India.
+        </p>
+
+        <div className="landing-live-activity" aria-live="polite" aria-atomic="true">
+          <div
+            key={activity?.id || 'idle'}
+            className={`landing-live-activity__card${visible && activity ? ' landing-live-activity__card--visible' : ''}`}
+          >
+            <div className="landing-live-activity__header">
+              <span className="landing-live-activity__dot" aria-hidden="true" />
+              <span className="landing-live-activity__title">🔥 Recent Activity</span>
+            </div>
+            <p className="landing-live-activity__message">
+              {activity ? (
+                <>
+                  <span className="landing-live-activity__indicator" aria-hidden="true">🟢</span>
+                  {activity.message}
+                </>
+              ) : (
+                <span className="landing-live-activity__placeholder">Loading live updates…</span>
+              )}
+            </p>
+            <span className="landing-live-activity__time">{activity ? timeLabel : '—'}</span>
           </div>
-          <p className="landing-live-activity__message">
-            <span className="landing-live-activity__indicator" aria-hidden="true">🟢</span>
-            {activity.message}
-          </p>
-          <span className="landing-live-activity__time">{timeLabel}</span>
         </div>
-      )}
-    </div>
+      </div>
+    </section>
   );
 };
 

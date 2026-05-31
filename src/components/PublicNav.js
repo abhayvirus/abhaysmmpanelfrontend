@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import BrandLogo from './BrandLogo';
@@ -138,16 +139,8 @@ const PublicNav = () => {
         </button>
       </header>
 
-      {open && (
-        <>
-          <button
-            type="button"
-            className="nav-mobile-close"
-            onClick={close}
-            aria-label="Close menu"
-          >
-            ✕
-          </button>
+      {open
+        && createPortal(
           <div
             id="public-mobile-menu"
             className="nav-mobile-screen nav-mobile-screen--open"
@@ -160,6 +153,14 @@ const PublicNav = () => {
                 <Link to="/" className="nav-mobile-brand" onClick={close}>
                   <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
                 </Link>
+                <button
+                  type="button"
+                  className="nav-mobile-close"
+                  onClick={close}
+                  aria-label="Close menu"
+                >
+                  ✕
+                </button>
               </div>
               <nav className="nav-mobile-links" aria-label="Mobile navigation">
                 <Link to="/how-to-use" className="btn btn-ghost nav-drawer-btn" onClick={close}>
@@ -181,9 +182,9 @@ const PublicNav = () => {
                 )}
               </nav>
             </div>
-          </div>
-        </>
-      )}
+          </div>,
+          document.body,
+        )}
     </>
   );
 };

@@ -8,9 +8,8 @@
   max-width: 100vw;
 }
 
-/* Reserve space so fixed floats never overlap footer content when scrolled to end */
 .landing-page > main {
-  padding-bottom: 120px;
+  padding-bottom: 0;
 }
 
 /* ——— Watermark ——— */
@@ -48,7 +47,7 @@
   opacity: 0.025;
 }
 
-.landing-page > *:not(.landing-watermark):not(.nav-public) {
+.landing-page > *:not(.landing-watermark):not(.nav-public):not(.sticky-announcement):not(.sticky-telegram-banner) {
   position: relative;
   z-index: 1;
 }
