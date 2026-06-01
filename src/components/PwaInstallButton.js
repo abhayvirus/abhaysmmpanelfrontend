@@ -1,48 +1,37 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import { usePwaInstall } from '../hooks/usePwaInstall';
 
 /**
- * Shows "Install web app" when browser supports beforeinstallprompt and PWA is enabled.
+ * One-click PWA install — native browser prompt only.
+ * Hidden when install unavailable; shows "Installed" when already in standalone mode.
  */
-const PwaInstallButton = ({ enabled = true, className = 'btn btn-primary' }) => {
-  const [deferred, setDeferred] = useState(null);
-  const [installed, setInstalled] = useState(false);
+const PwaInstallButton = ({ enabled = true, className = 'btn btn-primary pwa-install-btn' }) => {
+  const { installed, canInstall, visible, promptInstall } = usePwaInstall(enabled);
 
-  useEffect(() => {
-    if (!enabled) return undefined;
-    const onInstall = (e) => {
-      e.preventDefault();
-      setDeferred(e);
-    };
-    const onInstalled = () => {
-      setInstalled(true);
-      setDeferred(null);
-    };
-    if (window.matchMedia('(display-mode: standalone)').matches) {
-      setInstalled(true);
-    }
-    window.addEventListener('beforeinstallprompt', onInstall);
-    window.addEventListener('appinstalled', onInstalled);
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onInstall);
-      window.removeEventListener('appinstalled', onInstalled);
-    };
-  }, [enabled]);
+  if (!visible) return null;
 
-  if (!enabled || installed) return null;
+  if (installed) {
+    return (
+      <span className={`pwa-install-btn pwa-install-btn--installed${className ? ` ${className}` : ''}`} role="status">
+        ✅ Installed
+      </span>
+    );
+  }
 
-  const handleInstall = async () => {
-    if (!deferred) {
-      alert('To install: use your browser menu → "Add to Home Screen" or "Install app".');
-      return;
-    }
-    deferred.prompt();
-    const { outcome } = await deferred.userChoice;
-    if (outcome === 'accepted') setDeferred(null);
+  const handleClick = () => {
+    if (!canInstall) return;
+    promptInstall();
   };
 
   return (
-    <button type="button" className={className} onClick={handleInstall}>
-      📲 Install Web App (PWA)
+    <button
+      type="button"
+      className={className}
+      onClick={handleClick}
+      disabled={!canInstall}
+      aria-label="Install App"
+    >
+      Install App
     </button>
   );
 };

@@ -3,6 +3,7 @@ import UserLayout from '../components/UserLayout';
 import { getMe, updateProfile, changePassword } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { BRAND } from '../config/brand';
+import PwaInstallButton from '../components/PwaInstallButton';
 
 const Profile = () => {
   const { settings } = useSettings();
@@ -110,6 +111,21 @@ const Profile = () => {
               </button>
             </div>
           </section>
+
+          {settings.pwa_enabled !== false && (
+            <section className="card profile-card profile-card--app">
+              <h2 className="profile-card__title">Install App</h2>
+              <p className="profile-card__hint">
+                Add {settings.site_name || BRAND.shortName} to your home screen for quick access.
+              </p>
+              <div className="profile-card__actions profile-card__actions--app">
+                <PwaInstallButton
+                  enabled={settings.pwa_enabled !== false}
+                  className="btn btn-primary profile-btn pwa-install-btn"
+                />
+              </div>
+            </section>
+          )}
 
           <section className="card profile-card profile-card--password">
             <h2 className="profile-card__title">Change password</h2>
