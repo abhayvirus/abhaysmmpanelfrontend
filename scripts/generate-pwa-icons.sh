@@ -61,8 +61,10 @@ cp "$OUT/icon-512.png" "$OUT/android-chrome-512x512.png"
 magick "$OUT/icon-192.png" -resize 180x180 -strip "$OUT/apple-touch-icon.png"
 magick "$OUT/icon-512.png" -resize 32x32 -strip "$ROOT/public/favicon-32.png"
 magick "$OUT/icon-512.png" -resize 16x16 -strip "$ROOT/public/favicon-16.png"
+magick "$ROOT/public/favicon-16.png" "$ROOT/public/favicon-32.png" "$ROOT/public/favicon.ico"
 
-# Update root logo.png with crisp 512 for OG tags
+# Crisp 512 for OG / social previews
 cp "$OUT/icon-512.png" "$ROOT/public/logo-512.png"
+cp "$OUT/icon-512.png" "$ROOT/public/logo.png"
 
 echo "Done → $OUT"
