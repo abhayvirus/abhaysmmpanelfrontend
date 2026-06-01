@@ -124,23 +124,21 @@ const Notifications = () => {
         )}
 
         <header className="notifications-header">
-          <div className="notifications-toolbar">
-            <div className="notifications-toolbar__meta">
-              <h1 className="notifications-page__title">
-                Notifications
-                {unreadCount > 0 ? ` (${unreadCount})` : ''}
-              </h1>
-              {unreadCount > 0 && (
-                <p className="notifications-page__unread-hint" aria-live="polite">
-                  {unreadCount} unread
-                </p>
-              )}
-            </div>
+          <div className="notifications-header__title-wrap">
+            <h1 className="notifications-page__title">
+              Notifications
+              {unreadCount > 0 ? ` (${unreadCount})` : ''}
+            </h1>
+            {unreadCount > 0 && (
+              <p className="notifications-page__unread-hint" aria-live="polite">
+                {unreadCount} unread
+              </p>
+            )}
           </div>
 
           <div
-            className={`notifications-actions-bar${
-              hasUnread && hasItems ? ' notifications-actions-bar--dual' : ''
+            className={`notifications-header__actions${
+              hasUnread ? ' notifications-header__actions--dual' : ''
             }`}
             role="toolbar"
             aria-label="Notification actions"
@@ -156,7 +154,9 @@ const Notifications = () => {
             )}
             <button
               type="button"
-              className={`notifications-clear-btn${!hasItems ? ' notifications-clear-btn--muted' : ''}`}
+              className={`clear-history-btn notifications-clear-btn${
+                !hasItems ? ' notifications-clear-btn--muted' : ''
+              }`}
               onClick={() => setClearModalOpen(true)}
               disabled={loading || clearing}
               aria-label="Clear notification history"
