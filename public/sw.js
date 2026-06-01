@@ -1,4 +1,4 @@
-const CACHE = 'smm-panel-v4';
+const CACHE = 'smm-panel-v5';
 const ASSETS = [
   '/',
   '/index.html',
@@ -14,8 +14,6 @@ const ASSETS = [
   '/icons/icon-maskable-192.png',
   '/icons/icon-maskable-512.png',
   '/icons/apple-touch-icon.png',
-  '/icons/android-chrome-192x192.png',
-  '/icons/android-chrome-512x512.png',
 ];
 
 self.addEventListener('install', (event) => {

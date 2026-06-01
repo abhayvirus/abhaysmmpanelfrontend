@@ -3,7 +3,7 @@ import { BRAND } from '../config/brand';
 import { resolveSiteLogoUrl } from '../utils/resolveSiteLogoUrl';
 
 const LOGO_PNG = `${process.env.PUBLIC_URL}${BRAND.logo}`;
-const LOGO_SVG = `${process.env.PUBLIC_URL}${BRAND.logoSvg}`;
+const LOGO_FALLBACK = `${process.env.PUBLIC_URL}${BRAND.logoFallback}`;
 
 const SIZES = {
   xs: 32,
@@ -36,7 +36,7 @@ const BrandLogo = ({
   const handleError = (e) => {
     const target = e.currentTarget;
     if (target.src.endsWith(LOGO_PNG) || target.src.includes('logo.png')) {
-      if (!target.src.endsWith(LOGO_SVG)) setImgSrc(LOGO_SVG);
+      if (!target.src.endsWith(LOGO_FALLBACK)) setImgSrc(LOGO_FALLBACK);
       return;
     }
     if (!target.src.endsWith(LOGO_PNG)) setImgSrc(LOGO_PNG);
@@ -65,4 +65,4 @@ const BrandLogo = ({
 };
 
 export default BrandLogo;
-export { LOGO_PNG, LOGO_SVG, SIZES };
+export { LOGO_PNG, LOGO_FALLBACK, SIZES };

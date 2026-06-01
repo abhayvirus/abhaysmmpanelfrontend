@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Generate PWA / favicon assets from public/logo-source.png (or logo.png)
+# Generate PWA / favicon assets from scripts/logo-source.png (or public/logo.png)
 # Keeps aspect ratio (no stretch), supersamples small favicons for sharp tabs.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-SRC="${ICON_SOURCE:-$ROOT/public/logo-source.png}"
+SRC="${ICON_SOURCE:-$ROOT/scripts/logo-source.png}"
 if [[ ! -f "$SRC" ]]; then
   SRC="$ROOT/public/logo.png"
 fi
@@ -13,7 +13,6 @@ MASTER=512
 # Logo occupies ~88% of canvas — enough padding so 16px tabs stay readable
 LOGO_ANY=448
 LOGO_MASK=400
-FAVICON_PAD=0.82
 
 mkdir -p "$OUT"
 
@@ -69,15 +68,19 @@ echo "Generating master icons..."
 make_icon "$OUT/icon-512.png" "$LOGO_ANY" "$MASTER"
 make_icon "$OUT/icon-maskable-512.png" "$LOGO_MASK" "$MASTER"
 
-SIZES="72 96 128 144 152 192 384 512"
+SIZES="192 512"
 for s in $SIZES; do
   magick "$OUT/icon-512.png" -filter Lanczos -resize "${s}x${s}!" -strip "$OUT/icon-${s}.png"
   magick "$OUT/icon-maskable-512.png" -filter Lanczos -resize "${s}x${s}!" -strip "$OUT/icon-maskable-${s}.png"
   echo "  icon-${s}.png + maskable"
 done
 
-cp "$OUT/icon-192.png" "$OUT/android-chrome-192x192.png"
-cp "$OUT/icon-512.png" "$OUT/android-chrome-512x512.png"
+# Remove legacy / duplicate icon sizes no longer referenced in manifest
+for s in 72 96 128 144 152 384; do
+  rm -f "$OUT/icon-${s}.png" "$OUT/icon-maskable-${s}.png"
+done
+rm -f "$OUT/android-chrome-192x192.png" "$OUT/android-chrome-512x512.png"
+
 magick "$OUT/icon-192.png" -filter Lanczos -resize 180x180! -strip "$OUT/apple-touch-icon.png"
 
 # Supersample favicons: render large, then Lanczos down (crisp browser tabs)

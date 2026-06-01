@@ -1,0 +1,209 @@
+/* Landing — app screenshot + WhatsApp group */
+
+.landing-app-showcase {
+  position: relative;
+}
+
+.landing-app-showcase__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  align-items: center;
+}
+
+.landing-app-showcase__desc {
+  max-width: 32rem;
+}
+
+.landing-app-showcase__features {
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+}
+
+.landing-app-showcase__features li::before {
+  content: '✓ ';
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.landing-app-showcase__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.landing-app-showcase__actions .landing-btn,
+.landing-app-showcase__actions .hero-download-btn {
+  flex: 1 1 auto;
+  min-width: min(100%, 11rem);
+  justify-content: center;
+}
+
+.landing-app-showcase__visual {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.landing-app-showcase__phone {
+  position: relative;
+  width: min(100%, 280px);
+  padding: 0.65rem 0.65rem 1rem;
+  border-radius: 2rem;
+  background: linear-gradient(165deg, #1e293b 0%, #0f172a 55%, #020617 100%);
+  border: 2px solid color-mix(in srgb, var(--primary) 35%, #334155);
+  box-shadow:
+    0 24px 48px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+}
+
+.landing-app-showcase__phone-notch {
+  width: 36%;
+  height: 0.35rem;
+  margin: 0 auto 0.5rem;
+  border-radius: 999px;
+  background: #0f172a;
+}
+
+.landing-app-showcase__phone-screen {
+  border-radius: 1.25rem;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.landing-app-showcase__screenshot {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: top;
+}
+
+/* WhatsApp group */
+.landing-whatsapp-group__card {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.25rem, 4vw, 2rem);
+  border-radius: 1.25rem;
+  border: 1px solid color-mix(in srgb, #25d366 28%, var(--border));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, #25d366 10%, var(--card-bg, var(--bg-elevated))) 0%,
+    var(--card-bg, var(--bg-elevated)) 45%
+  );
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.landing-whatsapp-group__glow {
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 55%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(37, 211, 102, 0.22) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.landing-whatsapp-group__grid {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.landing-whatsapp-group__copy {
+  min-width: 0;
+}
+
+.landing-whatsapp-group__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.35rem, 3vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+.landing-whatsapp-group__desc {
+  margin: 0 0 1.25rem;
+  max-width: 28rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.landing-whatsapp-group__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #25d366 !important;
+  border: none !important;
+  color: #fff !important;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+}
+
+.landing-whatsapp-group__btn:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.landing-whatsapp-group__qr-wrap {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.landing-whatsapp-group__qr {
+  display: block;
+  width: min(100%, 320px);
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+}
+
+.landing-whatsapp-group__qr-caption {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .landing-app-showcase__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .landing-app-showcase__copy {
+    min-width: 0;
+  }
+
+  .landing-app-showcase__visual {
+    justify-content: flex-end;
+  }
+
+  .landing-whatsapp-group__grid {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 2rem;
+  }
+
+  .landing-whatsapp-group__qr {
+    width: 280px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .landing-app-showcase__phone {
+    width: min(100%, 300px);
+  }
+}

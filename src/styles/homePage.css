@@ -67,8 +67,11 @@
 }
 
 .landing-section__container {
+  width: 100%;
   max-width: 72rem;
   margin: 0 auto;
+  padding-inline: 0;
+  box-sizing: border-box;
 }
 
 .landing-section__header {
@@ -563,6 +566,8 @@
   font-weight: 700;
   margin: 0 0 0.35rem;
   line-height: 1.3;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .landing-service-card__meta {

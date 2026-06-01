@@ -10,12 +10,16 @@ import LandingHero from '../components/landing/LandingHero';
 import LandingTrustBadges from '../components/landing/LandingTrustBadges';
 import LandingWhyChoose from '../components/landing/LandingWhyChoose';
 import LandingServices from '../components/landing/LandingServices';
+import LandingAppShowcase from '../components/landing/LandingAppShowcase';
+import LandingWhatsAppGroup from '../components/landing/LandingWhatsAppGroup';
 import LandingTelegramSection from '../components/landing/LandingTelegramSection';
 import LandingFooter from '../components/landing/LandingFooter';
 import LandingLiveActivity from '../components/landing/LandingLiveActivity';
 import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 import '../styles/homePage.css';
+import '../styles/landingAppCommunity.css';
+import '../styles/landingResponsive.css';
 
 const Home = () => {
   const { settings } = useSettings();
@@ -71,6 +75,10 @@ const Home = () => {
         )}
 
         <SocialProofSection />
+
+        <LandingAppShowcase />
+
+        <LandingWhatsAppGroup />
 
         <LandingTelegramSection />
 
