@@ -1,9 +1,10 @@
-const CACHE = 'smm-panel-v3';
+const CACHE = 'smm-panel-v4';
 const ASSETS = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
+  '/favicon-48.png',
   '/favicon-32.png',
   '/favicon-16.png',
   '/logo.png',
