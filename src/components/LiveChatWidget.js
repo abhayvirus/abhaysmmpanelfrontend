@@ -36,7 +36,7 @@ const LiveChatWidget = () => {
   if (isMobile) {
     if (isTicketsPage && location.pathname !== '/tickets') extraBottomReserve = 120;
     else if (isTicketsPage) extraBottomReserve = 72;
-    else if (isNotificationsPage) extraBottomReserve = 72;
+    else if (isNotificationsPage) extraBottomReserve = 96;
     else if (isProfilePage) extraBottomReserve = 140;
     else if (isServicesPage) extraBottomReserve = 56;
   }

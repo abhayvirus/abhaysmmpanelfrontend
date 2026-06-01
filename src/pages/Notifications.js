@@ -124,16 +124,22 @@ const Notifications = () => {
         )}
 
         <div className="notifications-toolbar">
-          <h1 className="notifications-page__title">
-            Notifications
-            {unreadCount > 0 ? ` (${unreadCount})` : ''}
-          </h1>
-          {unreadCount > 0 && (
-            <p className="notifications-page__unread-hint" aria-live="polite">
-              {unreadCount} unread
-            </p>
-          )}
-          <div className="notifications-page__actions">
+          <div className="notifications-toolbar__meta">
+            <h1 className="notifications-page__title">
+              Notifications
+              {unreadCount > 0 ? ` (${unreadCount})` : ''}
+            </h1>
+            {unreadCount > 0 && (
+              <p className="notifications-page__unread-hint" aria-live="polite">
+                {unreadCount} unread
+              </p>
+            )}
+          </div>
+          <div
+            className={`notifications-page__actions${
+              hasUnread && canClear ? ' notifications-page__actions--dual' : ''
+            }`}
+          >
             {hasUnread && (
               <button
                 type="button"

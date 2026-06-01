@@ -150,18 +150,16 @@
   }
 }
 
-/* Notifications */
-.notifications-page .notification-card {
-  margin-bottom: 0.75rem;
-  padding: 1rem;
-}
+/* Notifications — layout lives in notificationsPage.css */
+@media (max-width: 767px) {
+  .user-panel-scroll .notifications-page {
+    max-width: 100%;
+    overflow-x: clip;
+  }
 
-.notifications-page .notification-card-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.5rem;
-  flex-wrap: wrap;
+  .user-panel-scroll .notifications-page .card {
+    max-width: 100%;
+  }
 }
 
 /* Child panel form */
