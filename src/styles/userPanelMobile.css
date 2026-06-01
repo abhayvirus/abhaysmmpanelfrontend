@@ -150,15 +150,26 @@
   }
 }
 
-/* Notifications — layout lives in notificationsPage.css */
+/* Notifications — prevent action bar clip on mobile */
 @media (max-width: 767px) {
+  .user-panel-scroll:has(.notifications-page) {
+    overflow: visible;
+  }
+
   .user-panel-scroll .notifications-page {
     max-width: 100%;
-    overflow-x: clip;
+    overflow: visible;
   }
 
   .user-panel-scroll .notifications-page .card {
     max-width: 100%;
+  }
+
+  .user-panel-scroll .notifications-actions-bar .notifications-clear-btn {
+    min-height: 3rem !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
   }
 }
 

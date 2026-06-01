@@ -112,7 +112,7 @@ const Notifications = () => {
 
   const hasUnread = items.some((n) => !n.is_read);
   const unreadCount = items.filter((n) => !n.is_read).length;
-  const canClear = items.length > 0 && !loading;
+  const hasItems = items.length > 0;
 
   return (
     <UserLayout title="Notifications">
@@ -123,43 +123,48 @@ const Notifications = () => {
           </div>
         )}
 
-        <div className="notifications-toolbar">
-          <div className="notifications-toolbar__meta">
-            <h1 className="notifications-page__title">
-              Notifications
-              {unreadCount > 0 ? ` (${unreadCount})` : ''}
-            </h1>
-            {unreadCount > 0 && (
-              <p className="notifications-page__unread-hint" aria-live="polite">
-                {unreadCount} unread
-              </p>
-            )}
+        <header className="notifications-header">
+          <div className="notifications-toolbar">
+            <div className="notifications-toolbar__meta">
+              <h1 className="notifications-page__title">
+                Notifications
+                {unreadCount > 0 ? ` (${unreadCount})` : ''}
+              </h1>
+              {unreadCount > 0 && (
+                <p className="notifications-page__unread-hint" aria-live="polite">
+                  {unreadCount} unread
+                </p>
+              )}
+            </div>
           </div>
+
           <div
-            className={`notifications-page__actions${
-              hasUnread && canClear ? ' notifications-page__actions--dual' : ''
+            className={`notifications-actions-bar${
+              hasUnread && hasItems ? ' notifications-actions-bar--dual' : ''
             }`}
+            role="toolbar"
+            aria-label="Notification actions"
           >
-            {hasUnread && (
-              <button
-                type="button"
-                className="btn btn-ghost notifications-mark-all-btn"
-                onClick={handleMarkAll}
-              >
-                Mark all read
-              </button>
-            )}
+          {hasUnread && (
             <button
               type="button"
-              className="notifications-clear-btn"
-              onClick={() => setClearModalOpen(true)}
-              disabled={!canClear || clearing}
-              aria-label="Clear notification history"
+              className="btn btn-ghost notifications-mark-all-btn"
+              onClick={handleMarkAll}
             >
-              Clear History
+              Mark all read
             </button>
+          )}
+          <button
+            type="button"
+            className={`notifications-clear-btn${!hasItems ? ' notifications-clear-btn--muted' : ''}`}
+            onClick={() => setClearModalOpen(true)}
+            disabled={loading || clearing}
+            aria-label="Clear notification history"
+          >
+            Clear History
+          </button>
           </div>
-        </div>
+        </header>
 
         {loading && items.length === 0 ? (
           <p className="notifications-loading">Loading notifications…</p>
