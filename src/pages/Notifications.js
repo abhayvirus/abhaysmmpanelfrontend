@@ -145,24 +145,24 @@ const Notifications = () => {
             role="toolbar"
             aria-label="Notification actions"
           >
-          {hasUnread && (
+            {hasUnread && (
+              <button
+                type="button"
+                className="btn btn-ghost notifications-mark-all-btn"
+                onClick={handleMarkAll}
+              >
+                Mark all read
+              </button>
+            )}
             <button
               type="button"
-              className="btn btn-ghost notifications-mark-all-btn"
-              onClick={handleMarkAll}
+              className={`notifications-clear-btn${!hasItems ? ' notifications-clear-btn--muted' : ''}`}
+              onClick={() => setClearModalOpen(true)}
+              disabled={loading || clearing}
+              aria-label="Clear notification history"
             >
-              Mark all read
+              Clear History
             </button>
-          )}
-          <button
-            type="button"
-            className={`notifications-clear-btn${!hasItems ? ' notifications-clear-btn--muted' : ''}`}
-            onClick={() => setClearModalOpen(true)}
-            disabled={loading || clearing}
-            aria-label="Clear notification history"
-          >
-            Clear History
-          </button>
           </div>
         </header>
 
