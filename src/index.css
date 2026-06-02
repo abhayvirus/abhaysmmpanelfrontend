@@ -403,6 +403,12 @@ tr:hover td { background: var(--table-row-hover); }
   color: var(--text);
   background: var(--bg-hover);
 }
+.admin-sidebar-link__ext {
+  margin-left: auto;
+  font-size: 0.75rem;
+  opacity: 0.65;
+}
+
 .admin-sidebar-link.active {
   color: var(--sidebar-active-text);
   background: var(--primary);

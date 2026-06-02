@@ -1,33 +1,20 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { clearAuthSession } from '../utils/authRedirect';
 import { isNavActive } from '../utils/navActive';
+import { buildAdminNavLinks } from '../utils/adminNav';
 
-const AdminSidebar = ({ mobileOpen = false, onClose }) => {
+const AdminSidebar = ({ mobileOpen = false, onClose, navSettings = null }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const links = [
-    { to: '/admin', label: 'Dashboard', icon: '📊' },
-    { to: '/admin/users', label: 'Users', icon: '👥' },
-    { to: '/admin/services', label: 'Services', icon: '📋' },
-    { to: '/admin/categories', label: 'Categories', icon: '🏷️' },
-    { to: '/admin/orders', label: 'Orders', icon: '📦' },
-    { to: '/admin/website-dev', label: 'Website Orders', icon: '🌐' },
-    { to: '/admin/funds', label: 'Payments', icon: '💰' },
-    { to: '/admin/tickets', label: 'Tickets', icon: '🎫' },
-    { to: '/admin/announcements', label: 'Announcements', icon: '📢' },
-    { to: '/admin/child-panels', label: 'Child Panels', icon: '🌐' },
-    { to: '/admin/analytics', label: 'Analytics', icon: '📈' },
-    { to: '/admin/coupons', label: 'Coupons', icon: '🏷️' },
-    { to: '/admin/chat', label: 'Support Inbox', icon: '💬' },
-    { to: '/admin/activity-logs', label: 'Activity Logs', icon: '📜' },
-    { to: '/admin/settings', label: 'Settings', icon: '⚙️' },
-    { to: '/admin/help', label: 'Help Guide', icon: '📖' },
-  ];
+  const links = useMemo(
+    () => buildAdminNavLinks(navSettings || {}),
+    [navSettings],
+  );
 
   const pathRef = React.useRef(location.pathname);
-  React.useEffect(() => {
+  useEffect(() => {
     if (pathRef.current !== location.pathname) {
       pathRef.current = location.pathname;
       onClose?.();
@@ -47,6 +34,35 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
     navigate('/login', { replace: true });
   };
 
+  const renderLink = (l) => {
+    const isExternal = l.external || /^https?:\/\//i.test(l.to);
+    const className = `admin-sidebar-link${!isExternal && isNavActive(location.pathname, l.to) ? ' active' : ''}`;
+
+    if (isExternal) {
+      return (
+        <a
+          key={l.id || l.to}
+          href={l.to}
+          className={className}
+          target={l.openInNewTab !== false ? '_blank' : undefined}
+          rel="noopener noreferrer"
+          onClick={() => onClose?.()}
+        >
+          <span aria-hidden="true">{l.icon}</span>
+          {l.label}
+          <span className="admin-sidebar-link__ext" aria-hidden="true">↗</span>
+        </a>
+      );
+    }
+
+    return (
+      <Link key={l.id || l.to} to={l.to} className={className} onClick={onClose}>
+        <span aria-hidden="true">{l.icon}</span>
+        {l.label}
+      </Link>
+    );
+  };
+
   return (
     <>
       <button
@@ -62,16 +78,7 @@ const AdminSidebar = ({ mobileOpen = false, onClose }) => {
         </div>
 
         <nav className="admin-sidebar-nav">
-          {links.map((l) => (
-            <Link
-              key={l.to}
-              to={l.to}
-              className={`admin-sidebar-link${isNavActive(location.pathname, l.to) ? ' active' : ''}`}
-            >
-              <span aria-hidden="true">{l.icon}</span>
-              {l.label}
-            </Link>
-          ))}
+          {links.map((l) => renderLink(l))}
         </nav>
 
         <div className="admin-sidebar-footer">

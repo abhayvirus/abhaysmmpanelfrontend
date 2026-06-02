@@ -30,14 +30,18 @@ import {
 import { useSettings, applyThemeToDocument } from '../contexts/SettingsContext';
 import ThemeSettingsPanel from '../components/ThemeSettingsPanel';
 import AdminUserControlPanel from '../components/admin/AdminUserControlPanel';
+import AdminNavManager from '../components/admin/AdminNavManager';
 import { DEFAULT_THEME, mergeTheme } from '../theme/themeConfig';
+import { parseAdminNavJson } from '../utils/adminNav';
 import '../styles/adminUserControl.css';
+import '../styles/adminNavManager.css';
 
 /** Live preview only for tabs that change visible user-panel UI */
 const PREVIEW_TABS = new Set(['general', 'branding', 'mobile', 'theme']);
 
 const TABS = [
   { id: 'general', label: 'General', icon: '🏠' },
+  { id: 'menu', label: 'Admin Menu', icon: '🧭' },
   { id: 'users', label: 'User Control', icon: '👤' },
   { id: 'branding', label: 'Branding', icon: '🎨' },
   { id: 'payments', label: 'Payments', icon: '💳' },
@@ -115,6 +119,8 @@ const AdminSettings = () => {
       app_screenshots: parseScreenshots(s.data.app_screenshots),
       pwa_enabled: s.data.pwa_enabled !== 'false',
       payment_methods_enabled: paymentIds,
+      admin_sidebar_hidden: parseAdminNavJson(s.data.admin_sidebar_hidden),
+      admin_sidebar_custom: parseAdminNavJson(s.data.admin_sidebar_custom),
     });
     setProviders(p.data);
     setAnnouncements(a.data);
@@ -172,9 +178,12 @@ const AdminSettings = () => {
         feature_premium: isFeatureOn(draft, 'feature_premium') ? 'true' : 'false',
         feature_custom_branding: isFeatureOn(draft, 'feature_custom_branding') ? 'true' : 'false',
         payment_methods_enabled: draft.payment_methods_enabled || DEFAULT_PAYMENT_IDS,
+        admin_sidebar_hidden: draft.admin_sidebar_hidden || [],
+        admin_sidebar_custom: draft.admin_sidebar_custom || [],
       });
       await refreshGlobalSettings();
       applyThemeToDocument(mergeTheme(draft));
+      window.dispatchEvent(new Event('admin-nav-updated'));
       const themeMsg = tab === 'theme'
         ? '✅ Theme updated successfully. Changes applied globally.'
         : 'Settings saved successfully';
@@ -522,6 +531,14 @@ const AdminSettings = () => {
             updateDraft={updateDraft}
             onApplyPreview={(t) => applyThemeToDocument(t)}
             onRequestReset={() => setThemeResetOpen(true)}
+          />
+        );
+      case 'menu':
+        return (
+          <AdminNavManager
+            draft={draft}
+            updateDraft={updateDraft}
+            onToast={(text, type = 'success') => showMsg(text, type)}
           />
         );
       case 'users':
