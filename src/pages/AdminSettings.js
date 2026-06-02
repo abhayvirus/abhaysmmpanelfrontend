@@ -33,6 +33,9 @@ import AdminUserControlPanel from '../components/admin/AdminUserControlPanel';
 import { DEFAULT_THEME, mergeTheme } from '../theme/themeConfig';
 import '../styles/adminUserControl.css';
 
+/** Live preview only for tabs that change visible user-panel UI */
+const PREVIEW_TABS = new Set(['general', 'branding', 'mobile', 'theme']);
+
 const TABS = [
   { id: 'general', label: 'General', icon: '🏠' },
   { id: 'users', label: 'User Control', icon: '👤' },
@@ -666,6 +669,9 @@ const AdminSettings = () => {
     }
   };
 
+  const showPreview = PREVIEW_TABS.has(tab);
+  const activeTabMeta = TABS.find((t) => t.id === tab);
+
   return (
     <AdminLayout>
       <div className="admin-settings-page">
@@ -703,20 +709,44 @@ const AdminSettings = () => {
           </div>
         )}
 
-        <div className="admin-settings-layout">
-          <div className="settings-admin-preview admin-settings-preview-col">
-            <SettingsLivePreview draft={draft} />
-          </div>
+        <nav className="admin-settings-tabs" aria-label="Settings sections">
+          {TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              className={`btn btn-sm ${tab === t.id ? 'btn-primary' : 'btn-ghost'}`}
+              onClick={() => setTab(t.id)}
+            >
+              {t.icon} {t.label}
+            </button>
+          ))}
+        </nav>
+
+        <div
+          className={`admin-settings-body${showPreview ? ' admin-settings-body--with-preview' : ' admin-settings-body--full'}`}
+        >
           <div className="admin-settings-main">
-            <nav className="admin-settings-tabs" aria-label="Settings sections">
-              {TABS.map((t) => (
-                <button key={t.id} type="button" className={`btn btn-sm ${tab === t.id ? 'btn-primary' : 'btn-ghost'}`} onClick={() => setTab(t.id)}>
-                  {t.icon} {t.label}
-                </button>
-              ))}
-            </nav>
+            <div className="admin-settings-tab-banner card">
+              <span className="admin-settings-tab-banner__icon" aria-hidden="true">
+                {activeTabMeta?.icon}
+              </span>
+              <div>
+                <h2 className="admin-settings-tab-banner__title">{activeTabMeta?.label}</h2>
+                <p className="admin-settings-tab-banner__desc">
+                  {showPreview
+                    ? 'Edit below — live preview updates on the right.'
+                    : 'Full-width panel — changes apply after Save All Settings.'}
+                </p>
+              </div>
+            </div>
             <div className="card admin-settings-form-card fade-in">{renderTab()}</div>
           </div>
+
+          {showPreview ? (
+            <aside className="settings-admin-preview admin-settings-preview-col" aria-label="Live preview">
+              <SettingsLivePreview draft={draft} />
+            </aside>
+          ) : null}
         </div>
       </div>
     </AdminLayout>

@@ -163,13 +163,31 @@
   }
 }
 
-.admin-settings-layout {
+/* Tabs span full width above content */
+.admin-settings-tabs {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 300px);
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+/* Main content + optional preview (form first = wide) */
+.admin-settings-body {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1.25rem;
   align-items: start;
   width: 100%;
   max-width: 100%;
+}
+
+.admin-settings-body--full {
+  grid-template-columns: 1fr;
+}
+
+.admin-settings-body--with-preview {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .admin-settings-main {
@@ -177,12 +195,33 @@
   width: 100%;
 }
 
-.admin-settings-tabs {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  width: 100%;
+.admin-settings-tab-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.75rem;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(15, 23, 42, 0.4) 100%);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.admin-settings-tab-banner__icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.admin-settings-tab-banner__title {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.admin-settings-tab-banner__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
 .admin-settings-tabs .btn {
@@ -229,7 +268,14 @@
 
 .admin-settings-toggle-grid {
   display: grid;
+  grid-template-columns: 1fr;
   gap: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .admin-settings-toggle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .admin-settings-payment-grid {
@@ -630,15 +676,25 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .admin-settings-body--with-preview {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 380px);
+  }
+
+  .admin-settings-preview-col {
+    position: sticky;
+    top: 1rem;
+  }
+}
+
 @media (max-width: 1023px) {
-  .admin-settings-layout {
-    grid-template-columns: 1fr;
+  .admin-settings-body--with-preview .admin-settings-preview-col {
+    order: -1;
   }
 
   .settings-live-preview {
     position: static;
-    order: -1;
-    margin-bottom: 1rem;
+    margin-bottom: 0;
   }
 }
 
