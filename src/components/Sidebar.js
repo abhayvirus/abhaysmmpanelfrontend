@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getUnreadCount, getTicketUnreadCount } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import ThemeToggle from './ThemeToggle';
 import LanguageSwitcher from './LanguageSwitcher';
 import BrandLogo from './BrandLogo';
 import { clearAuthSession } from '../utils/authRedirect';
@@ -115,7 +114,6 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
             )}
 
             <div className="sidebar-tools">
-              <ThemeToggle />
               <LanguageSwitcher />
             </div>
 

@@ -167,6 +167,10 @@ export const generateApiKey = () => API.post('/v2/generate-key');
 export const adminGetUsers = () => API.get('/admin/users');
 export const adminUpdateUser = (id, data) => API.put(`/admin/users/${id}`, data);
 export const adminDeleteUser = (id) => API.delete(`/admin/users/${id}`);
+export const adminSendPersonalMessage = (userId, data) =>
+  API.post(`/admin/users/${userId}/personal-message`, data);
+export const adminSendPersonalPopup = (userId, data) =>
+  API.post(`/admin/users/${userId}/personal-popup`, data);
 export const adminGetStats = () => API.get('/admin/stats');
 export const adminGetFundRequests = () => API.get('/admin/fund-requests');
 export const adminUpdateFundRequest = (id, data) => API.put(`/admin/fund-requests/${id}`, data);

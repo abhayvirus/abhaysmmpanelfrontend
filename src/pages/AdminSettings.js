@@ -29,10 +29,13 @@ import {
 } from '../api';
 import { useSettings, applyThemeToDocument } from '../contexts/SettingsContext';
 import ThemeSettingsPanel from '../components/ThemeSettingsPanel';
+import AdminUserControlPanel from '../components/admin/AdminUserControlPanel';
 import { DEFAULT_THEME, mergeTheme } from '../theme/themeConfig';
+import '../styles/adminUserControl.css';
 
 const TABS = [
   { id: 'general', label: 'General', icon: '🏠' },
+  { id: 'users', label: 'User Control', icon: '👤' },
   { id: 'branding', label: 'Branding', icon: '🎨' },
   { id: 'payments', label: 'Payments', icon: '💳' },
   { id: 'api', label: 'API & Profit', icon: '🔌' },
@@ -518,9 +521,16 @@ const AdminSettings = () => {
             onRequestReset={() => setThemeResetOpen(true)}
           />
         );
+      case 'users':
+        return (
+          <AdminUserControlPanel onToast={(text, type = 'success') => showMsg(text, type)} />
+        );
       case 'announce':
         return (
           <>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 16 }}>
+              Global popups for all users. For one user only, use the <strong>User Control</strong> tab.
+            </p>
             <Field label="Popup button text" value={draft.popup_button_text} onChange={(v) => updateDraft('popup_button_text', v)} placeholder="Learn more" />
             <Field label="Popup button URL" value={draft.popup_button_url} onChange={(v) => updateDraft('popup_button_url', v)} placeholder="https://..." />
             <Field label="Popup image URL" value={draft.popup_image} onChange={(v) => updateDraft('popup_image', v)} placeholder="/uploads/..." />

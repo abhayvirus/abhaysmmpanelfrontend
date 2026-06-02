@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import AdminLayout from '../components/AdminLayout';
 import { useMedia } from '../hooks/useMedia';
@@ -95,6 +95,22 @@ const AdminChat = () => {
 
   const selectedConvo = conversations.find((c) => c.user_id === selectedId);
 
+  const checkedCount = useMemo(() => checkedIds?.size ?? 0, [checkedIds]);
+
+  const allVisibleSelected = useMemo(() => {
+    const list = Array.isArray(conversations) ? conversations : [];
+    if (!list.length) return false;
+    return list.every((c) => checkedIds.has(c.user_id));
+  }, [conversations, checkedIds]);
+
+  const totalUnread = useMemo(
+    () => (Array.isArray(conversations) ? conversations : []).reduce(
+      (sum, c) => sum + (Number(c?.unread) || 0),
+      0,
+    ),
+    [conversations],
+  );
+
   const showToast = (text, type = 'success') => {
     setToast({ text, type });
     setTimeout(() => setToast(null), 3500);
@@ -102,8 +118,8 @@ const AdminChat = () => {
 
   const loadConvos = useCallback(() => {
     adminGetChatConversations({ filter, search: search.trim() })
-      .then((r) => setConversations(r.data || []))
-      .catch(() => {});
+      .then((r) => setConversations(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setConversations([]));
   }, [filter, search]);
 
   const loadThread = useCallback((userId) => {
@@ -402,7 +418,14 @@ const AdminChat = () => {
     <AdminLayout>
       <div className={pageClass}>
         <header className="admin-chat-page-header">
-          <h1 className="admin-page-title">Support Inbox</h1>
+          <h1 className="admin-page-title">
+            Support Inbox
+            {totalUnread > 0 ? (
+              <span className="admin-chat-header-unread" aria-label={`${totalUnread} unread`}>
+                {totalUnread}
+              </span>
+            ) : null}
+          </h1>
           <div className="admin-chat-header-actions">
             <button
               type="button"
@@ -462,8 +485,9 @@ const AdminChat = () => {
               ))}
             </div>
             <div className="admin-chat-list-scroll">
-              {conversations.map((c) => {
-                const hasChat = Boolean(c.has_chat);
+              {(Array.isArray(conversations) ? conversations : []).map((c) => {
+                const hasChat = Boolean(c?.has_chat);
+                const unread = Number(c?.unread) || 0;
                 return (
                   <div
                     key={c.user_id}
@@ -489,7 +513,7 @@ const AdminChat = () => {
                           </span>
                           <span className="admin-chat-convo-email">{c.email || 'No email'}</span>
                         </div>
-                        {c.unread > 0 && <span className="admin-chat-unread">{c.unread}</span>}
+                        {unread > 0 && <span className="admin-chat-unread">{unread}</span>}
                       </div>
                       <p className="admin-chat-convo-preview">
                         {hasChat
@@ -505,9 +529,11 @@ const AdminChat = () => {
                   </div>
                 );
               })}
-              {!conversations.length && (
+              {!(Array.isArray(conversations) && conversations.length) && (
                 <p className="admin-chat-list-empty">
-                  {search.trim() ? 'No users found — try another name or email' : 'No conversations'}
+                  {search.trim()
+                    ? 'No users found — try another name or email'
+                    : 'No support tickets found'}
                 </p>
               )}
             </div>
