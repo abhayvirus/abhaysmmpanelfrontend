@@ -69,6 +69,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     ...(settings.feature_referrals !== false ? [{ to: '/referrals', label: t('nav.referrals'), icon: '🎁' }] : []),
     { to: '/api-docs', label: 'API Docs', icon: '🔌' },
     ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: 'Child Panel', icon: '🌐' }] : []),
+    { to: '/profile', label: t('nav.profile') || 'Settings', icon: '⚙️' },
     { to: '/help', label: t('nav.help'), icon: '📖' },
   ];
 

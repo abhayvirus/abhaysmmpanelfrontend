@@ -6,6 +6,7 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import PremiumFeatures from './components/PremiumFeatures';
 import MaintenanceGate from './components/MaintenanceGate';
+import SeoHead from './components/SeoHead';
 import Home from './pages/Home';
 import PublicHowToUseGuide from './pages/PublicHowToUseGuide';
 import Login from './pages/Login';
@@ -60,6 +61,7 @@ const AdminRoute = ({ children }) => {
 function AppRoutes() {
   return (
     <SettingsProvider>
+      <SeoHead />
       <LanguageProvider>
       <Router basename={process.env.PUBLIC_URL || '/'}>
         <MaintenanceGate>

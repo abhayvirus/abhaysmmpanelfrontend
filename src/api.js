@@ -190,6 +190,9 @@ export const adminDeleteService = (id) => {
 };
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);
+export const adminGetSettingsAnalytics = () => API.get('/settings/admin/analytics-summary');
+export const adminGetCronStatus = () => API.get('/settings/admin/cron-status');
+export const adminCronHeartbeat = () => API.post('/settings/admin/cron-heartbeat');
 export const adminUploadQR = (formData) => API.post('/settings/admin/qr', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminUploadLogo = (formData) => API.post('/settings/admin/logo', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
 export const adminDeleteQR = () => API.delete('/settings/admin/qr');

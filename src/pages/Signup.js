@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { sendSignupOtp, verifySignupOtp } from '../api';
+import { sendSignupOtp, verifySignupOtp, getAuthConfig } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
@@ -23,6 +23,15 @@ const Signup = () => {
   const [searchParams] = useSearchParams();
   const refCode = searchParams.get('ref') || '';
   const { enabled: googleEnabled } = useGoogleAuth();
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [configLoading, setConfigLoading] = useState(true);
+
+  useEffect(() => {
+    getAuthConfig()
+      .then(({ data }) => setRegistrationOpen(data?.registrationEnabled !== false))
+      .catch(() => setRegistrationOpen(true))
+      .finally(() => setConfigLoading(false));
+  }, []);
 
   useEffect(() => {
     if (refCode) {
@@ -93,6 +102,11 @@ const Signup = () => {
     setSuccess('');
     try {
       const res = await verifySignupOtp({ email: email.trim().toLowerCase(), otp: code });
+      if (res.data?.pending_approval) {
+        setSuccess(res.data.message || 'Account pending admin approval.');
+        setTimeout(() => navigate('/login', { replace: true }), 3500);
+        return;
+      }
       if (res.data?.verify_email) {
         setSuccess('Account created! Please verify your email before logging in.');
         setTimeout(() => navigate('/login', { replace: true }), 3000);
@@ -124,7 +138,14 @@ const Signup = () => {
         {error && <div style={styles.error}>{error}</div>}
         {success && <div style={styles.success}>{success}</div>}
 
-        {step === 'form' && (
+        {!configLoading && !registrationOpen && (
+          <div style={styles.error}>
+            New registrations are currently closed.{' '}
+            <Link to="/login">Sign in</Link> if you already have an account.
+          </div>
+        )}
+
+        {registrationOpen && step === 'form' && (
           <>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Full name</label>
@@ -179,7 +200,7 @@ const Signup = () => {
           </>
         )}
 
-        {step === 'otp' && (
+        {registrationOpen && step === 'otp' && (
           <>
             <p style={{ ...styles.subtitle, marginBottom: 16 }}>
               Enter the 6-digit code sent to <strong>{email}</strong>

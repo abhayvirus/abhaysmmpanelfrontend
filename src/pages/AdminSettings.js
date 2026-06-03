@@ -31,6 +31,17 @@ import { useSettings, applyThemeToDocument } from '../contexts/SettingsContext';
 import ThemeSettingsPanel from '../components/ThemeSettingsPanel';
 import AdminUserControlPanel from '../components/admin/AdminUserControlPanel';
 import AdminNavManager from '../components/admin/AdminNavManager';
+import {
+  UsersSettingsPanel,
+  OrdersSettingsPanel,
+  NotificationsSettingsPanel,
+  SupportSettingsPanel,
+  SeoSettingsPanel,
+  AnalyticsSettingsPanel,
+  AutomationSettingsPanel,
+  BackupSettingsPanel,
+  MaintenanceSettingsPanel,
+} from '../components/admin/settings/SettingsEnterprisePanels';
 import { DEFAULT_THEME, mergeTheme } from '../theme/themeConfig';
 import { parseAdminNavJson } from '../utils/adminNav';
 import '../styles/adminUserControl.css';
@@ -40,20 +51,31 @@ import '../styles/adminNavManager.css';
 const PREVIEW_TABS = new Set(['general', 'branding', 'mobile', 'theme']);
 
 const TABS = [
-  { id: 'general', label: 'General', icon: '🏠' },
-  { id: 'menu', label: 'Admin Menu', icon: '🧭' },
-  { id: 'users', label: 'User Control', icon: '👤' },
-  { id: 'branding', label: 'Branding', icon: '🎨' },
-  { id: 'payments', label: 'Payments', icon: '💳' },
-  { id: 'api', label: 'API & Profit', icon: '🔌' },
-  { id: 'social', label: 'Social', icon: '🔗' },
-  { id: 'mobile', label: 'Mobile App', icon: '📱' },
-  { id: 'theme', label: 'Theme', icon: '🌙' },
-  { id: 'announce', label: 'Popups', icon: '📢' },
-  { id: 'security', label: 'Security', icon: '🔒' },
-  { id: 'telegram', label: 'Telegram', icon: '📲' },
-  { id: 'premium', label: 'Premium', icon: '✨' },
+  { id: 'general', label: 'General', icon: '🏠', group: 'core' },
+  { id: 'branding', label: 'Branding', icon: '🎨', group: 'core' },
+  { id: 'theme', label: 'Theme', icon: '🌙', group: 'core' },
+  { id: 'users', label: 'Users', icon: '👥', group: 'platform' },
+  { id: 'user-control', label: 'User Control', icon: '👤', group: 'platform' },
+  { id: 'orders', label: 'Orders', icon: '📦', group: 'platform' },
+  { id: 'notifications', label: 'Notifications', icon: '🔔', group: 'platform' },
+  { id: 'support', label: 'Support', icon: '🎫', group: 'platform' },
+  { id: 'payments', label: 'Payments', icon: '💳', group: 'commerce' },
+  { id: 'api', label: 'API & Profit', icon: '🔌', group: 'commerce' },
+  { id: 'social', label: 'Social', icon: '🔗', group: 'commerce' },
+  { id: 'mobile', label: 'Mobile App', icon: '📱', group: 'commerce' },
+  { id: 'seo', label: 'SEO', icon: '🔍', group: 'growth' },
+  { id: 'analytics', label: 'Analytics', icon: '📊', group: 'growth' },
+  { id: 'announce', label: 'Popups', icon: '📢', group: 'growth' },
+  { id: 'security', label: 'Security', icon: '🔒', group: 'system' },
+  { id: 'telegram', label: 'Telegram', icon: '📲', group: 'system' },
+  { id: 'premium', label: 'Premium', icon: '✨', group: 'system' },
+  { id: 'automation', label: 'Automation', icon: '⚡', group: 'system' },
+  { id: 'backup', label: 'Backup', icon: '🗄️', group: 'system' },
+  { id: 'maintenance', label: 'Maintenance', icon: '🔧', group: 'system' },
+  { id: 'menu', label: 'Admin Menu', icon: '🧭', group: 'system' },
 ];
+
+const NO_SAVE_TABS = new Set(['analytics', 'backup', 'user-control']);
 
 const DEFAULT_PAYMENT_IDS = PAYMENT_METHODS.map((m) => m.id);
 const TIMEZONES = ['Asia/Kolkata', 'UTC', 'America/New_York', 'Europe/London', 'Asia/Dubai'];
@@ -159,18 +181,46 @@ const AdminSettings = () => {
     setTimeout(() => setMsg(null), 4500);
   };
 
+  const parseJobs = () => {
+    const raw = draft.automation_scheduled_jobs;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === 'string' && raw.trim()) {
+      try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  };
+
   const saveAll = async () => {
+    if (NO_SAVE_TABS.has(tab)) {
+      showMsg('Use actions inside this tab — no global save needed', 'error');
+      return;
+    }
     setSaving(true);
     try {
       const bool = (k) => (isOn(draft, k) ? 'true' : 'false');
+      const boolKeys = [
+        'maintenance_mode', 'maintenance_allow_admin', 'pwa_enabled', 'otp_enabled',
+        'email_verification_required', 'live_chat_enabled', 'enable_2fa',
+        'registration_enabled', 'google_login_enabled',
+        'orders_auto_processing', 'orders_manual_review', 'orders_refill_enabled',
+        'orders_cancellation_enabled', 'orders_drip_feed_enabled', 'orders_bulk_enabled',
+        'notify_new_user_signup', 'notify_new_order', 'notify_payment_success',
+        'notify_payment_failed', 'notify_support_ticket', 'notify_admin_login',
+        'notify_browser_push', 'notify_telegram_master', 'telegram_notify_user_login',
+        'support_inbox_enabled',
+        'automation_auto_service_sync', 'automation_auto_backup', 'automation_auto_settlement_reports',
+      ];
+      const boolPayload = {};
+      boolKeys.forEach((k) => { boolPayload[k] = bool(k); });
+
       const res = await adminUpdateSettings({
         ...draft,
-        maintenance_mode: bool('maintenance_mode'),
-        pwa_enabled: bool('pwa_enabled'),
-        otp_enabled: bool('otp_enabled'),
-        email_verification_required: bool('email_verification_required'),
-        live_chat_enabled: bool('live_chat_enabled'),
-        enable_2fa: bool('enable_2fa'),
+        ...boolPayload,
         feature_referrals: isFeatureOn(draft, 'feature_referrals') ? 'true' : 'false',
         feature_child_panel: isFeatureOn(draft, 'feature_child_panel') ? 'true' : 'false',
         feature_coupons: isFeatureOn(draft, 'feature_coupons') ? 'true' : 'false',
@@ -180,6 +230,13 @@ const AdminSettings = () => {
         payment_methods_enabled: draft.payment_methods_enabled || DEFAULT_PAYMENT_IDS,
         admin_sidebar_hidden: draft.admin_sidebar_hidden || [],
         admin_sidebar_custom: draft.admin_sidebar_custom || [],
+        support_ticket_categories: Array.isArray(draft.support_ticket_categories)
+          ? draft.support_ticket_categories
+          : parseScreenshots(draft.support_ticket_categories),
+        support_ticket_priorities: Array.isArray(draft.support_ticket_priorities)
+          ? draft.support_ticket_priorities
+          : parseScreenshots(draft.support_ticket_priorities),
+        automation_scheduled_jobs: parseJobs(),
       });
       await refreshGlobalSettings();
       applyThemeToDocument(mergeTheme(draft));
@@ -260,7 +317,6 @@ const AdminSettings = () => {
                 {TIMEZONES.map((tz) => <option key={tz} value={tz}>{tz}</option>)}
               </select>
             </div>
-            <Toggle label="Maintenance mode" checked={isOn(draft, 'maintenance_mode')} onChange={(v) => setBool(updateDraft, 'maintenance_mode', v)} />
           </>
         );
       case 'branding':
@@ -542,9 +598,35 @@ const AdminSettings = () => {
           />
         );
       case 'users':
+        return <UsersSettingsPanel draft={draft} updateDraft={updateDraft} isOn={isOn} setBool={setBool} />;
+      case 'user-control':
         return (
           <AdminUserControlPanel onToast={(text, type = 'success') => showMsg(text, type)} />
         );
+      case 'orders':
+        return <OrdersSettingsPanel draft={draft} updateDraft={updateDraft} isOn={isOn} setBool={setBool} />;
+      case 'notifications':
+        return <NotificationsSettingsPanel draft={draft} updateDraft={updateDraft} isOn={isOn} setBool={setBool} />;
+      case 'support':
+        return <SupportSettingsPanel draft={draft} updateDraft={updateDraft} isOn={isOn} setBool={setBool} />;
+      case 'seo':
+        return <SeoSettingsPanel draft={draft} updateDraft={updateDraft} />;
+      case 'analytics':
+        return <AnalyticsSettingsPanel onToast={(text, type = 'success') => showMsg(text, type)} />;
+      case 'automation':
+        return (
+          <AutomationSettingsPanel
+            draft={draft}
+            updateDraft={updateDraft}
+            isOn={isOn}
+            setBool={setBool}
+            onToast={(text, type = 'success') => showMsg(text, type)}
+          />
+        );
+      case 'backup':
+        return <BackupSettingsPanel onToast={(text, type = 'success') => showMsg(text, type)} />;
+      case 'maintenance':
+        return <MaintenanceSettingsPanel draft={draft} updateDraft={updateDraft} isOn={isOn} setBool={setBool} />;
       case 'announce':
         return (
           <>
@@ -705,9 +787,11 @@ const AdminSettings = () => {
                 🔄 Reset Theme
               </button>
             )}
-            <button type="button" className="btn btn-primary admin-settings-save-btn" onClick={saveAll} disabled={saving}>
-              {saving ? 'Saving…' : '💾 Save All Settings'}
-            </button>
+            {!NO_SAVE_TABS.has(tab) && (
+              <button type="button" className="btn btn-primary admin-settings-save-btn" onClick={saveAll} disabled={saving}>
+                {saving ? 'Saving…' : '💾 Save All Settings'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -726,15 +810,16 @@ const AdminSettings = () => {
           </div>
         )}
 
-        <nav className="admin-settings-tabs" aria-label="Settings sections">
+        <nav className="admin-settings-tabs admin-settings-tabs--enterprise" aria-label="Settings sections">
           {TABS.map((t) => (
             <button
               key={t.id}
               type="button"
-              className={`btn btn-sm ${tab === t.id ? 'btn-primary' : 'btn-ghost'}`}
+              className={`admin-settings-tab-btn ${tab === t.id ? 'is-active' : ''}`}
               onClick={() => setTab(t.id)}
             >
-              {t.icon} {t.label}
+              <span className="admin-settings-tab-btn__icon" aria-hidden="true">{t.icon}</span>
+              <span className="admin-settings-tab-btn__label">{t.label}</span>
             </button>
           ))}
         </nav>
