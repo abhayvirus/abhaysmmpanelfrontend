@@ -107,25 +107,18 @@ const Signup = () => {
         setTimeout(() => navigate('/login', { replace: true }), 3500);
         return;
       }
-      if (res.data?.verify_email) {
-        setSuccess('Account created! Please verify your email before logging in.');
-        setTimeout(() => navigate('/login', { replace: true }), 3000);
-        return;
-      }
       if (res.data?.token && res.data?.user) {
         saveAuthSession(res.data.token, res.data.user);
-        setSuccess('Welcome! A welcome email has been sent to your Gmail.');
-        setTimeout(() => {
-          navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
-        }, 1200);
+        navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
         return;
       }
       setSuccess('Account created! Redirecting to login...');
       setTimeout(() => navigate('/login', { replace: true }), 2000);
     } catch (err) {
       setError(getApiErrorMessage(err, 'OTP is invalid or expired'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
