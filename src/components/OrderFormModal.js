@@ -3,6 +3,7 @@ import { placeOrder, getMe } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import InsufficientBalanceAlert from './InsufficientBalanceAlert';
 import '../styles/balanceWarning.css';
+import { getLinkPlaceholder } from '../utils/linkPlaceholder';
 
 const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
   const { settings } = useSettings();
@@ -44,6 +45,8 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
   }, [quantity, insufficientBalance?.need, insufficientBalance?.have]);
 
   const showBalanceWarning = Boolean(insufficientBalance) && !balanceWarningDismissed;
+
+  const linkPlaceholder = getLinkPlaceholder(service?.platform, service?.name);
 
   if (!open || !service) return null;
 
@@ -92,7 +95,7 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
           <div className="form-group">
             <label className="label">Link / Username</label>
             <input className="input" required value={link} onChange={(e) => setLink(e.target.value)}
-              placeholder="https://instagram.com/p/..." />
+              placeholder={linkPlaceholder} />
           </div>
           <div className="form-group">
             <label className="label">Quantity ({service.min_quantity} – {service.max_quantity?.toLocaleString()})</label>

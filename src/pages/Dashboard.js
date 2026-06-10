@@ -5,6 +5,7 @@ import PanelLoading from '../components/PanelLoading';
 import { getServices, getPlatforms, placeOrder, getMe } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import '../styles/balanceWarning.css';
+import { getLinkPlaceholder } from '../utils/linkPlaceholder';
 
 const platformIcons = {
   All: '⚡', Instagram: '📸', TikTok: '🎵', YouTube: '▶️',
@@ -104,6 +105,11 @@ const Dashboard = () => {
   const selectedService = useMemo(
     () => visibleServices.find((s) => String(s.id) === String(selectedServiceId)) || null,
     [visibleServices, selectedServiceId]
+  );
+
+  const linkPlaceholder = useMemo(
+    () => getLinkPlaceholder(selectedService?.platform, selectedService?.name),
+    [selectedService]
   );
 
   const orderCost = useMemo(() => {
@@ -306,7 +312,7 @@ const Dashboard = () => {
                     <label className="label">🔗 Link</label>
                     <input
                       className="input"
-                      placeholder="https://instagram.com/username"
+                      placeholder={linkPlaceholder}
                       value={link}
                       onChange={(e) => setLink(e.target.value)}
                     />

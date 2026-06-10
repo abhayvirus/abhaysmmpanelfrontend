@@ -25,6 +25,17 @@ const AdminUsers = () => {
     }
   };
 
+  const deleteUser = async (user) => {
+    if (!window.confirm(`Delete user "${user.name}"? This cannot be undone.`)) return;
+    try {
+      await adminDeleteUser(user.id);
+      await load();
+      alert('User deleted successfully');
+    } catch (err) {
+      alert(err.response?.data?.message || 'Delete failed');
+    }
+  };
+
   return (
     <AdminLayout>
       <h1 className="admin-page-title">User Management</h1>
@@ -94,7 +105,7 @@ const AdminUsers = () => {
                         <button
                           type="button"
                           className="btn btn-danger btn-sm"
-                          onClick={() => window.confirm('Delete user?') && adminDeleteUser(user.id).then(load)}
+                          onClick={() => deleteUser(user)}
                         >
                           Delete
                         </button>
@@ -164,7 +175,7 @@ const AdminUsers = () => {
                       type="button"
                       className="btn btn-danger btn-sm"
                       style={{ flex: 1 }}
-                      onClick={() => window.confirm('Delete user?') && adminDeleteUser(user.id).then(load)}
+                      onClick={() => deleteUser(user)}
                     >
                       Delete
                     </button>

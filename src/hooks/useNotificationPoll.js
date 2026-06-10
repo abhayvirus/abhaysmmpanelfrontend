@@ -18,6 +18,11 @@ export function useNotificationPoll(enabled = true) {
           setToasts((prev) => {
             const ids = new Set(prev.map((p) => p.id));
             const fresh = data.notifications.filter((n) => !ids.has(n.id));
+            fresh.forEach((n) => {
+              setTimeout(() => {
+                setToasts((t) => t.filter((x) => x.id !== n.id));
+              }, 1000);
+            });
             return [...fresh.map((n) => ({ ...n, ts: Date.now() })), ...prev].slice(0, 5);
           });
           sinceRef.current = data.notifications[0].created_at;
