@@ -104,17 +104,29 @@ const LiveChatWidget = () => {
     );
   }, [isProfilePage, fabSize, getBottomReserve, setPositionSafe, open]);
 
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth <= 767
+  );
+
+  useEffect(() => {
+    const onResize = () => setIsMobileViewport(window.innerWidth <= 767);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
   const panelStyle = useMemo(() => {
     if (typeof window === 'undefined') return {};
-    if (window.innerWidth <= 767) {
-      const bottomNav = 68;
-      const safe = 8;
+    if (isMobileViewport) {
       return {
-        left: '0.75rem',
-        right: '0.75rem',
-        bottom: `calc(${bottomNav}px + env(safe-area-inset-bottom, 0px) + ${safe}px)`,
-        top: 'auto',
-        width: 'auto',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        width: '100%',
+        maxWidth: 'none',
+        maxHeight: 'none',
+        height: '100%',
+        borderRadius: 0,
       };
     }
     if (!position) {
@@ -139,7 +151,16 @@ const LiveChatWidget = () => {
       top: `${Math.max(12, position.y - 8)}px`,
       bottom: 'auto',
     };
-  }, [position, open]);
+  }, [position, open, isMobileViewport]);
+
+  useEffect(() => {
+    if (!open || !isMobileViewport) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open, isMobileViewport]);
 
   const chatOn =
     settings.live_chat_enabled !== false && settings.live_chat_enabled !== 'false';
@@ -200,9 +221,12 @@ const LiveChatWidget = () => {
 
       {open && (
         <div
-          className="live-chat-panel live-chat-panel--floating live-chat-panel--wa card"
+          className={`live-chat-panel live-chat-panel--floating live-chat-panel--wa card${
+            isMobileViewport ? ' live-chat-panel--mobile-full' : ''
+          }`}
           style={panelStyle}
           role="dialog"
+          aria-modal="true"
           aria-label="Live support chat"
         >
           <div className="live-chat-wa-header">
