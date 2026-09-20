@@ -162,11 +162,10 @@
   text-decoration: none;
 }
 
-#whatsapp-group-join-popup .wa-join-popup__cta:hover {
-  transform: translateY(-1px);
-  color: #fff;
-  text-decoration: none;
-  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.45);
+#whatsapp-group-join-popup .wa-join-popup__hint {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
 }
 
 @media (prefers-reduced-motion: reduce) {
