@@ -26,6 +26,13 @@ const LiveChatWidget = () => {
   const [sending, setSending] = useState(false);
   const bottom = useRef(null);
   const token = localStorage.getItem('token');
+  const user = useMemo(() => {
+    try {
+      return JSON.parse(localStorage.getItem('user') || '{}');
+    } catch {
+      return {};
+    }
+  }, [token]);
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
   const isServicesPage = location.pathname.startsWith('/services');
@@ -53,7 +60,7 @@ const LiveChatWidget = () => {
     storageKey: 'abhaysmm_live_chat_fab_pos',
     size: 52,
     extraBottomReserve,
-    enabled: Boolean(settings.live_chat_enabled && token),
+    enabled: Boolean(settings.live_chat_enabled && token && !open),
   });
 
   const load = useCallback(() => {
@@ -64,7 +71,7 @@ const LiveChatWidget = () => {
   useEffect(() => {
     if (!open || !token) return undefined;
     load();
-    const id = setInterval(load, 5000);
+    const id = setInterval(load, 4000);
     return () => clearInterval(id);
   }, [open, token, load]);
 
@@ -73,7 +80,7 @@ const LiveChatWidget = () => {
   }, [msgs, open]);
 
   useEffect(() => {
-    if (!position) return;
+    if (!position || open) return;
     const isCritical = CRITICAL_PATHS.some((p) => location.pathname.startsWith(p));
     if (!isCritical) return;
     const bottomPad = getBottomReserve();
@@ -81,41 +88,54 @@ const LiveChatWidget = () => {
     if (position.y > maxY) {
       setPositionSafe(position.x, maxY);
     }
-  }, [location.pathname, position, fabSize, setPositionSafe, getBottomReserve]);
+  }, [location.pathname, position, fabSize, setPositionSafe, getBottomReserve, open]);
 
   useEffect(() => {
-    if (!isProfilePage || !position || typeof window === 'undefined') return;
+    if (!isProfilePage || !position || open || typeof window === 'undefined') return;
     const margin = 12;
     const bottomR = getBottomReserve();
     setPositionSafe(
       window.innerWidth - fabSize - margin,
       window.innerHeight - fabSize - bottomR - 20
     );
-  }, [isProfilePage, fabSize, getBottomReserve, setPositionSafe]);
+  }, [isProfilePage, fabSize, getBottomReserve, setPositionSafe, open]);
 
   const panelStyle = useMemo(() => {
-    if (!position || typeof window === 'undefined') return {};
-    const panelW = Math.min(340, window.innerWidth - 24);
+    if (typeof window === 'undefined') return {};
+    if (window.innerWidth <= 767) {
+      const bottomNav = 68;
+      const safe = 8;
+      return {
+        left: '0.75rem',
+        right: '0.75rem',
+        bottom: `calc(${bottomNav}px + env(safe-area-inset-bottom, 0px) + ${safe}px)`,
+        top: 'auto',
+        width: 'auto',
+      };
+    }
+    if (!position) {
+      return { right: '1.25rem', bottom: '5.5rem', left: 'auto', top: 'auto' };
+    }
+    const panelW = Math.min(380, window.innerWidth - 24);
     let left = position.x;
     if (left + panelW > window.innerWidth - 12) {
       left = window.innerWidth - panelW - 12;
     }
     left = Math.max(12, left);
-
-    const openAbove = position.y > window.innerHeight * 0.5;
+    const openAbove = position.y > window.innerHeight * 0.45;
     if (openAbove) {
       return {
         left: `${left}px`,
-        bottom: `${window.innerHeight - position.y + 12}px`,
+        bottom: `${window.innerHeight - position.y + 8}px`,
         top: 'auto',
       };
     }
     return {
       left: `${left}px`,
-      top: `${position.y + fabSize + 12}px`,
+      top: `${Math.max(12, position.y - 8)}px`,
       bottom: 'auto',
     };
-  }, [position, fabSize, open]);
+  }, [position, open]);
 
   if (!settings.live_chat_enabled || !token) return null;
 
@@ -134,7 +154,7 @@ const LiveChatWidget = () => {
 
   const handleFabClick = () => {
     if (wasDragged()) return;
-    setOpen((o) => !o);
+    setOpen(true);
   };
 
   const onPointerDown = (e) => {
@@ -147,32 +167,65 @@ const LiveChatWidget = () => {
     setTimeout(() => setDragging(false), 0);
   };
 
+  const displayName = user.name || 'You';
+  const displayEmail = user.email || '';
+
   return (
     <>
-      <button
-        type="button"
-        className={`live-chat-fab live-chat-fab--draggable${dragging ? ' live-chat-fab--dragging' : ''}`}
-        style={fabStyle}
-        onClick={handleFabClick}
-        onPointerDown={onPointerDown}
-        onPointerMove={handlers.onPointerMove}
-        onPointerUp={endPointer}
-        onPointerCancel={endPointer}
-        aria-label="Live chat — drag to move"
-        title="Drag to move · Tap to open chat"
-      >
-        💬
-      </button>
+      {!open && (
+        <button
+          type="button"
+          className={`live-chat-fab live-chat-fab--draggable${dragging ? ' live-chat-fab--dragging' : ''}`}
+          style={fabStyle}
+          onClick={handleFabClick}
+          onPointerDown={onPointerDown}
+          onPointerMove={handlers.onPointerMove}
+          onPointerUp={endPointer}
+          onPointerCancel={endPointer}
+          aria-label="Open live chat"
+          title="Open chat"
+        >
+          💬
+        </button>
+      )}
+
       {open && (
-        <div className="live-chat-panel live-chat-panel--floating card" style={panelStyle}>
-          <div className="live-chat-header">
-            <strong>{t('chat.title')}</strong>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setOpen(false)}>×</button>
+        <div
+          className="live-chat-panel live-chat-panel--floating live-chat-panel--wa card"
+          style={panelStyle}
+          role="dialog"
+          aria-label="Live support chat"
+        >
+          <div className="live-chat-wa-header">
+            <div className="live-chat-wa-avatar" aria-hidden="true">💬</div>
+            <div className="live-chat-wa-title">
+              <strong>{t('chat.title') || 'Live Support'}</strong>
+              <span>online · WhatsApp style</span>
+            </div>
+            <button
+              type="button"
+              className="live-chat-wa-close"
+              onClick={() => setOpen(false)}
+              aria-label="Close chat"
+            >
+              ×
+            </button>
           </div>
-          <div className="live-chat-messages">
+
+          <div className="live-chat-wa-identity">
+            Messaging as <b>{displayName}</b>
+            {displayEmail ? <> · {displayEmail}</> : null}
+          </div>
+
+          <div className="live-chat-messages live-chat-wa-messages">
+            {msgs.length === 0 && (
+              <div className="live-chat-wa-empty">
+                Say hello — your name & email go to admin with every first message.
+              </div>
+            )}
             {msgs.map((m) => (
-              <div key={m.id} className={`chat-bubble chat-${m.sender_role}`}>
-                {m.message}
+              <div key={m.id} className={`chat-bubble chat-${m.sender_role} chat-bubble--wa`}>
+                <div className="chat-bubble-text">{m.message}</div>
                 <span className="chat-time">
                   {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
@@ -180,16 +233,18 @@ const LiveChatWidget = () => {
             ))}
             <div ref={bottom} />
           </div>
-          <div className="live-chat-input">
+
+          <div className="live-chat-input live-chat-wa-input">
             <input
               className="input"
-              placeholder={t('chat.placeholder')}
+              placeholder={t('chat.placeholder') || 'Type a message…'}
               value={text}
               onChange={(e) => setText(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && send()}
+              autoFocus
             />
-            <button type="button" className="btn btn-primary btn-sm" onClick={send} disabled={sending}>
-              {t('chat.send')}
+            <button type="button" className="btn btn-primary btn-sm live-chat-wa-send" onClick={send} disabled={sending}>
+              {sending ? '…' : (t('chat.send') || 'Send')}
             </button>
           </div>
         </div>
