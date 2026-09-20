@@ -9,6 +9,7 @@ import {
   adminTestConnection,
   adminCreateService,
   adminGetProviders,
+  adminDeleteAllServices,
 } from '../api';
 import SocialIconPicker from '../components/SocialIconPicker';
 import '../styles/adminServices.css';
@@ -71,6 +72,7 @@ const AdminServices = () => {
   const [platform, setPlatform] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [deletingId, setDeletingId] = useState(null);
+  const [deletingAll, setDeletingAll] = useState(false);
   const [savingId, setSavingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState('');
@@ -184,16 +186,52 @@ const AdminServices = () => {
     setSyncMsg(null);
     try {
       const res = await adminSyncServices(selectedProviderId || undefined);
-      const margin = res.data.marginPct != null ? ` (${res.data.marginPct}% margin)` : '';
-      const name = res.data.providerName ? ` · ${res.data.providerName}` : '';
-      setSyncMsg({ type: 'success', text: `${res.data.message}${name}${margin}` });
+      const d = res.data || {};
+      const parts = [
+        d.message || 'Sync complete',
+        d.total != null ? `API list: ${d.total}` : null,
+        d.added != null ? `+${d.added} new` : null,
+        d.updated != null ? `${d.updated} updated` : null,
+        d.failed ? `${d.failed} failed` : null,
+      ].filter(Boolean);
+      setSyncMsg({ type: 'success', text: parts.join(' · ') });
       await loadServices();
       await loadProviderStatus(selectedProviderId);
     } catch (err) {
       const d = err.response?.data || {};
-      setSyncMsg({ type: 'error', text: d.message || d.reasonCode || 'Sync failed' });
+      setSyncMsg({ type: 'error', text: d.message || d.reasonCode || err.message || 'Sync failed' });
     }
     setSyncing(false);
+  };
+
+  const handleDeleteAll = async () => {
+    if (!services.length) {
+      setSyncMsg({ type: 'error', text: 'No services to delete' });
+      return;
+    }
+    const ok = window.confirm(
+      `Delete ALL ${services.length} services?\n\nServices with order history will be archived (hidden). Others are removed permanently.\n\nThis cannot be undone.`
+    );
+    if (!ok) return;
+    const ok2 = window.confirm('Type confirmation: really delete ALL services from the panel?');
+    if (!ok2) return;
+
+    setDeletingAll(true);
+    setSyncMsg(null);
+    try {
+      const res = await adminDeleteAllServices();
+      setSyncMsg({
+        type: 'success',
+        text: res.data?.message || 'All services deleted',
+      });
+      await loadServices();
+    } catch (err) {
+      setSyncMsg({
+        type: 'error',
+        text: err.response?.data?.message || 'Failed to delete all services',
+      });
+    }
+    setDeletingAll(false);
   };
 
   const handleSave = async (svc) => {
@@ -521,11 +559,20 @@ const AdminServices = () => {
                 ))}
               </select>
             </label>
-            <button type="button" className="btn btn-ghost" onClick={handleTestConnection} disabled={testing || syncing || !selectedProviderId}>
+            <button type="button" className="btn btn-ghost" onClick={handleTestConnection} disabled={testing || syncing || deletingAll || !selectedProviderId}>
               {testing ? 'Testing…' : 'Test connection'}
             </button>
-            <button type="button" className="btn btn-primary" onClick={handleSync} disabled={syncing || testing || !selectedProviderId}>
-              {syncing ? 'Syncing…' : 'Fetch / Sync services'}
+            <button type="button" className="btn btn-primary" onClick={handleSync} disabled={syncing || testing || deletingAll || !selectedProviderId}>
+              {syncing ? 'Syncing all services…' : 'Sync all services'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={handleDeleteAll}
+              disabled={deletingAll || syncing || testing || !services.length}
+              title="Delete every service from the panel"
+            >
+              {deletingAll ? 'Deleting…' : 'Delete all services'}
             </button>
           </div>
         </div>

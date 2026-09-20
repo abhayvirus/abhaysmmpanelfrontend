@@ -201,7 +201,8 @@ export const adminGetAllOrders = () => API.get('/orders/admin/all');
 export const adminUpdateOrderStatus = (id, status) => API.put(`/admin/orders/${id}/status`, { status });
 export const adminDeleteOrder = (id) => API.delete(`/admin/orders/${id}`);
 export const adminGetServices = () => API.get('/services/admin/all');
-export const adminSyncServices = (provider_id) => API.post('/services/admin/sync', { provider_id });
+export const adminSyncServices = (provider_id) =>
+  API.post('/services/admin/sync', { provider_id }, { timeout: 180000 });
 export const adminProviderStatus = (provider_id) => API.get('/services/admin/provider-status', { params: { provider_id } });
 export const adminTestConnection = (provider_id) => API.post('/services/admin/test-connection', { provider_id });
 export const adminCreateService = (data) => API.post('/services/admin', data);
@@ -211,6 +212,7 @@ export const adminDeleteService = (id) => {
   console.log('Deleting Service ID:', serviceId);
   return API.delete(`/admin/services/${serviceId}`);
 };
+export const adminDeleteAllServices = () => API.delete('/services/admin/all', { timeout: 120000 });
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);
 export const adminGetSettingsAnalytics = () => API.get('/settings/admin/analytics-summary');
