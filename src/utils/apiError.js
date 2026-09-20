@@ -5,7 +5,7 @@ export function getApiErrorMessage(err, fallback = 'Request failed') {
   if (!err.response) {
     if (err.code === 'ECONNABORTED') return 'Request timed out. Check your connection.';
     if (err.message?.includes('Network Error')) {
-      return 'Cannot reach API server. Check CORS on Render or your internet connection.';
+      return 'Cannot reach the API right now. The server may be restarting — please wait a moment and try again.';
     }
     return err.message || fallback;
   }
@@ -14,6 +14,10 @@ export function getApiErrorMessage(err, fallback = 'Request failed') {
   if (typeof data === 'string') return data;
   if (data?.message) return data.message;
   if (Array.isArray(data?.errors) && data.errors[0]) return data.errors[0];
+
+  if (err.response.status === 503) {
+    return data?.message || 'Service temporarily unavailable. Please try again.';
+  }
 
   return fallback;
 }
