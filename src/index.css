@@ -489,39 +489,46 @@ tr:hover td { background: var(--table-row-hover); }
 }
 .auth-brand-header {
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
 }
 .auth-brand-header .auth-brand-logo {
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.auth-brand-header .brand-logo-circle {
+  width: 4.5rem !important;
+  height: 4.5rem !important;
+  object-position: center 42%;
 }
 .auth-brand-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  margin: 0 0 0.25rem;
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin: 0 0 0.2rem;
+  letter-spacing: -0.02em;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: #fff;
 }
 .auth-brand-tagline {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+  font-size: 0.72rem;
+  color: #94a3b8;
   margin: 0;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 .auth-heading {
   text-align: center;
-  font-size: 1.375rem;
+  font-size: 1.3rem;
   font-weight: 700;
-  margin: 0 0 0.35rem;
+  margin: 0.85rem 0 0.3rem;
 }
 .auth-subheading {
   text-align: center;
   color: var(--text-muted);
   font-size: 0.875rem;
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
 }
 
 /* Auth loading spinner (forgot / reset password) */
@@ -681,8 +688,8 @@ tr:hover td { background: var(--table-row-hover); }
   background: transparent;
 }
 .auth-brand-header .brand-logo-circle {
-  width: 5.5rem !important;
-  height: 5.5rem !important;
+  width: 4.5rem !important;
+  height: 4.5rem !important;
   object-position: center 42%;
 }
 .brand-logo-text {
