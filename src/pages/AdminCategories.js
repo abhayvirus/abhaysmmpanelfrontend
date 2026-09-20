@@ -106,6 +106,10 @@ const AdminCategories = () => {
             <strong>{c.sort_order ?? 0}</strong>
           </div>
           <div className="admin-cat-card__cell">
+            <span>Services</span>
+            <strong>{c.service_count ?? 0}</strong>
+          </div>
+          <div className="admin-cat-card__cell">
             <span>Status</span>
             <strong>{isActive ? 'Active' : 'Disabled'}</strong>
           </div>
@@ -129,6 +133,9 @@ const AdminCategories = () => {
     <AdminLayout>
       <div className="admin-categories-page">
         <h1 className="admin-page-title">Categories</h1>
+        <p style={{ color: 'var(--text-muted)', marginTop: -4, marginBottom: 16, fontSize: 14 }}>
+          Provider sync auto-creates categories from API (e.g. Instagram Views). Services land in matching category.
+        </p>
 
         <div className="card admin-categories-form">
           <h3 className="card-title" style={{ marginBottom: 8, fontSize: '1rem' }}>Add category</h3>
@@ -213,7 +220,9 @@ const AdminCategories = () => {
         )}
 
         {!cats.length ? (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>No categories yet</p>
+          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>
+            No categories yet — Sync services from Admin → Services, or add one above.
+          </p>
         ) : (
           <>
             <div className="admin-categories-desktop table-wrap">
@@ -222,6 +231,7 @@ const AdminCategories = () => {
                   <tr>
                     <th>Icon</th>
                     <th>Name</th>
+                    <th>Services</th>
                     <th>Order</th>
                     <th>Active</th>
                     <th>Actions</th>
@@ -234,6 +244,7 @@ const AdminCategories = () => {
                       <tr key={c.id}>
                         <td>{c.icon}</td>
                         <td>{c.name}</td>
+                        <td><strong>{c.service_count ?? 0}</strong></td>
                         <td>{c.sort_order ?? 0}</td>
                         <td>{isActive ? 'Yes' : 'No'}</td>
                         <td>

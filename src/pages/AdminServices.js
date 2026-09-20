@@ -228,6 +228,8 @@ const AdminServices = () => {
         d.total != null ? `API list: ${d.total}` : null,
         d.added != null ? `+${d.added} new` : null,
         d.updated != null ? `${d.updated} updated` : null,
+        d.categoriesCreated != null ? `${d.categoriesCreated} categories created` : null,
+        d.categoriesTotal != null ? `${d.categoriesTotal} categories total` : null,
         d.failed ? `${d.failed} failed` : null,
       ].filter(Boolean);
       setSyncMsg({ type: 'success', text: parts.join(' · ') });
@@ -668,7 +670,7 @@ const AdminServices = () => {
                             const d = res.data || {};
                             setSyncMsg({
                               type: 'success',
-                              text: `${p.name}: Added ${d.added ?? 0}, Updated ${d.updated ?? 0}, Total API ${d.total ?? '—'} (${d.marginPct ?? p.profit_margin}% margin)`,
+                              text: `${p.name}: Added ${d.added ?? 0}, Updated ${d.updated ?? 0}, Categories +${d.categoriesCreated ?? 0} (total ${d.categoriesTotal ?? '—'}), API ${d.total ?? '—'} (${d.marginPct ?? p.profit_margin}% margin)`,
                             });
                             await loadServices();
                             await loadProviders();
