@@ -58,12 +58,16 @@
     line-height: 1.55;
   }
 
-  /* Watermark — soft, no overflow */
+  /* Watermark — readable brand mark on phone */
   .landing-watermark__text {
-    font-size: clamp(3rem, 16vw, 5.5rem);
-    top: 14%;
-    letter-spacing: 0.14em;
-    color: rgba(56, 189, 248, 0.05);
+    font-size: clamp(3.25rem, 18vw, 6rem);
+    top: 12%;
+    letter-spacing: 0.1em;
+    color: rgba(96, 165, 250, 0.13);
+    text-shadow:
+      0 0 28px rgba(37, 99, 235, 0.14),
+      0 1px 0 rgba(148, 163, 184, 0.08);
+    -webkit-text-stroke: 0.5px rgba(147, 197, 253, 0.1);
   }
 
   .landing-hero__brand {
