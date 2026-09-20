@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import { adminGetUsers, adminUpdateUser, adminDeleteUser } from '../api';
+import '../styles/adminUsers.css';
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -68,29 +69,32 @@ const AdminUsers = () => {
     return s === 'BANNED' || s === 'SUSPENDED' || user.blocked === 1 || user.blocked === true;
   };
 
-  const renderActions = (user) => {
+  const renderActions = (user, mobile = false) => {
     const busy = busyId === user.id;
+    const wrapClass = mobile ? 'admin-user-actions admin-user-actions--mobile' : 'admin-user-actions';
+
     if (editing === user.id) {
       return (
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <button type="button" className="btn btn-primary btn-sm" disabled={busy} onClick={() => saveEdit(user.id)}>
+        <div className={wrapClass}>
+          <button type="button" className="btn btn-primary btn-sm admin-user-btn" disabled={busy} onClick={() => saveEdit(user.id)}>
             {busy ? '…' : 'Save'}
           </button>
-          <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => setEditing(null)}>
+          <button type="button" className="btn btn-ghost btn-sm admin-user-btn" disabled={busy} onClick={() => setEditing(null)}>
             Cancel
           </button>
         </div>
       );
     }
+
     return (
-      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-        <button type="button" className="btn btn-ghost btn-sm" disabled={busy} onClick={() => startEdit(user)}>
+      <div className={wrapClass}>
+        <button type="button" className="btn btn-ghost btn-sm admin-user-btn" disabled={busy} onClick={() => startEdit(user)}>
           Edit
         </button>
         {isSuspended(user) ? (
           <button
             type="button"
-            className="btn btn-primary btn-sm"
+            className="btn btn-primary btn-sm admin-user-btn"
             disabled={busy}
             onClick={() => setStatus(user, 'ACTIVE')}
           >
@@ -99,15 +103,19 @@ const AdminUsers = () => {
         ) : (
           <button
             type="button"
-            className="btn btn-ghost btn-sm"
-            style={{ borderColor: 'var(--warning, #f59e0b)', color: 'var(--warning, #f59e0b)' }}
+            className="btn btn-sm admin-user-btn admin-user-btn--suspend"
             disabled={busy}
             onClick={() => setStatus(user, 'BANNED')}
           >
             {busy ? '…' : 'Suspend'}
           </button>
         )}
-        <button type="button" className="btn btn-danger btn-sm" disabled={busy} onClick={() => deleteUser(user)}>
+        <button
+          type="button"
+          className="btn btn-danger btn-sm admin-user-btn"
+          disabled={busy}
+          onClick={() => deleteUser(user)}
+        >
           {busy ? '…' : 'Delete'}
         </button>
       </div>
@@ -116,104 +124,112 @@ const AdminUsers = () => {
 
   return (
     <AdminLayout>
-      <h1 className="admin-page-title">User Management</h1>
-      <p style={{ color: 'var(--text-muted)', marginTop: -8, marginBottom: 16, fontSize: 14 }}>
-        Edit balance · Suspend / Unsuspend · Delete — admin account is hidden
-      </p>
-      <div className="admin-table-wrap table-wrap card">
-        <table className="table">
-          <thead>
-            <tr>
-              {['ID', 'Name', 'Email', 'Balance', 'Deposits', 'Spent', 'Status', 'Joined', 'Actions'].map((h) => (
-                <th key={h}>{h}</th>
+      <div className="admin-users-page">
+        <h1 className="admin-page-title">User Management</h1>
+        <p className="admin-users-lead">
+          Edit balance · Suspend / Unsuspend · Delete — admin account is hidden
+        </p>
+
+        <div className="admin-table-wrap table-wrap card admin-users-table-card">
+          <table className="table admin-users-table">
+            <thead>
+              <tr>
+                {['ID', 'Name', 'Email', 'Balance', 'Deposits', 'Spent', 'Status', 'Joined', 'Actions'].map((h) => (
+                  <th key={h}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>
+                    <strong className="admin-users-id">#{user.serial ?? '—'}</strong>
+                  </td>
+                  <td>{user.name || '—'}</td>
+                  <td className="admin-users-email">{user.email}</td>
+                  <td>
+                    {editing === user.id ? (
+                      <input
+                        type="number"
+                        className="input admin-users-balance-input"
+                        value={editData.balance}
+                        onChange={(e) => setEditData((p) => ({ ...p, balance: e.target.value }))}
+                      />
+                    ) : (
+                      <strong className="admin-users-money">₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
+                    )}
+                  </td>
+                  <td><strong className="admin-users-money admin-users-money--ok">₹{parseFloat(user.total_deposits || 0).toFixed(2)}</strong></td>
+                  <td>₹{parseFloat(user.total_spent || 0).toFixed(2)}</td>
+                  <td>
+                    {editing === user.id ? (
+                      <select
+                        className="select admin-users-status-select"
+                        value={editData.status}
+                        onChange={(e) => setEditData((p) => ({ ...p, status: e.target.value }))}
+                      >
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="BANNED">BANNED</option>
+                      </select>
+                    ) : (
+                      <span className={`badge ${isSuspended(user) ? 'badge-danger' : 'badge-success'}`}>
+                        {isSuspended(user) ? 'SUSPENDED' : (user.status || 'ACTIVE')}
+                      </span>
+                    )}
+                  </td>
+                  <td className="admin-users-joined">
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="admin-users-actions-cell">{renderActions(user, false)}</td>
+                </tr>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>
-                  <strong style={{ color: 'var(--primary)' }}>#{user.serial ?? '—'}</strong>
-                </td>
-                <td>{user.name || '—'}</td>
-                <td>{user.email}</td>
-                <td>
+              {!users.length && (
+                <tr>
+                  <td colSpan={9} className="admin-users-empty">No users</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="admin-mobile-list">
+          {users.map((user) => (
+            <div key={user.id} className="card admin-mobile-card admin-users-mobile-card">
+              <div className="admin-mobile-card-top">
+                <strong>
+                  <span className="admin-users-id">#{user.serial}</span>
+                  {' '}
+                  {displayName(user)}
+                </strong>
+                <span className={`badge ${isSuspended(user) ? 'badge-danger' : 'badge-success'}`}>
+                  {isSuspended(user) ? 'SUSPENDED' : (user.status || 'ACTIVE')}
+                </span>
+              </div>
+              <div className="admin-mobile-row"><span>Email</span><span>{user.email}</span></div>
+              <div className="admin-mobile-row">
+                <span>Balance</span>
+                <span>
                   {editing === user.id ? (
                     <input
                       type="number"
-                      className="input"
-                      style={{ width: 90 }}
+                      className="input admin-users-balance-input"
                       value={editData.balance}
                       onChange={(e) => setEditData((p) => ({ ...p, balance: e.target.value }))}
                     />
                   ) : (
-                    <strong style={{ color: 'var(--primary)' }}>₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
+                    <strong className="admin-users-money">₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
                   )}
-                </td>
-                <td><strong style={{ color: 'var(--success)' }}>₹{parseFloat(user.total_deposits || 0).toFixed(2)}</strong></td>
-                <td>₹{parseFloat(user.total_spent || 0).toFixed(2)}</td>
-                <td>
-                  {editing === user.id ? (
-                    <select className="select" value={editData.status} onChange={(e) => setEditData((p) => ({ ...p, status: e.target.value }))}>
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="BANNED">BANNED (Suspended)</option>
-                    </select>
-                  ) : (
-                    <span className={`badge ${isSuspended(user) ? 'badge-danger' : 'badge-success'}`}>
-                      {isSuspended(user) ? 'SUSPENDED' : (user.status || 'ACTIVE')}
-                    </span>
-                  )}
-                </td>
-                <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
-                </td>
-                <td>{renderActions(user)}</td>
-              </tr>
-            ))}
-            {!users.length && (
-              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No users</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="admin-mobile-list">
-        {users.map((user) => (
-          <div key={user.id} className="card admin-mobile-card">
-            <div className="admin-mobile-card-top">
-              <strong>
-                <span style={{ color: 'var(--primary)', marginRight: 8 }}>#{user.serial}</span>
-                {displayName(user)}
-              </strong>
-              <span className={`badge ${isSuspended(user) ? 'badge-danger' : 'badge-success'}`}>
-                {isSuspended(user) ? 'SUSPENDED' : (user.status || 'ACTIVE')}
-              </span>
+                </span>
+              </div>
+              <div className="admin-mobile-row"><span>Deposits</span><span>₹{parseFloat(user.total_deposits || 0).toFixed(2)}</span></div>
+              <div className="admin-mobile-row"><span>Spent</span><span>₹{parseFloat(user.total_spent || 0).toFixed(2)}</span></div>
+              {renderActions(user, true)}
             </div>
-            <div className="admin-mobile-row"><span>Email</span><span>{user.email}</span></div>
-            <div className="admin-mobile-row">
-              <span>Balance</span>
-              <span>
-                {editing === user.id ? (
-                  <input
-                    type="number"
-                    className="input"
-                    style={{ width: '100%', maxWidth: 120 }}
-                    value={editData.balance}
-                    onChange={(e) => setEditData((p) => ({ ...p, balance: e.target.value }))}
-                  />
-                ) : (
-                  <strong style={{ color: 'var(--primary)' }}>₹{parseFloat(user.balance || 0).toFixed(2)}</strong>
-                )}
-              </span>
-            </div>
-            <div className="admin-mobile-row"><span>Deposits</span><span>₹{parseFloat(user.total_deposits || 0).toFixed(2)}</span></div>
-            <div className="admin-mobile-row"><span>Spent</span><span>₹{parseFloat(user.total_spent || 0).toFixed(2)}</span></div>
-            <div style={{ marginTop: 12 }}>{renderActions(user)}</div>
-          </div>
-        ))}
-        {!users.length && (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 24 }}>No users</p>
-        )}
+          ))}
+          {!users.length && (
+            <p className="admin-users-empty">No users</p>
+          )}
+        </div>
       </div>
     </AdminLayout>
   );
