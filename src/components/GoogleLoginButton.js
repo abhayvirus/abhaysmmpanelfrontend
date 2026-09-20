@@ -4,6 +4,7 @@ import { GoogleLogin } from '@react-oauth/google';
 import { googleLogin } from '../api';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import { getPostLoginPath, saveAuthSession } from '../utils/authRedirect';
+import { getApiErrorMessage } from '../utils/apiError';
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -19,9 +20,6 @@ function finishSession(navigate, data) {
   navigate(getPostLoginPath(data.user), { replace: true });
 }
 
-/**
- * Google sign-in: popup (ID token) + server redirect fallback.
- */
 function getSignupReferralCode() {
   try {
     return sessionStorage.getItem('signup_ref') || '';
@@ -32,7 +30,7 @@ function getSignupReferralCode() {
 
 const GoogleLoginButton = ({ className = '', style = {} }) => {
   const navigate = useNavigate();
-  const { enabled, clientId, oauthStartUrl, loading: configLoading } = useGoogleAuth();
+  const { enabled, loading: configLoading } = useGoogleAuth();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const wrapRef = useRef(null);
@@ -65,13 +63,10 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
       finishSession(navigate, data);
     } catch (err) {
       const code = err.response?.data?.code;
-      const msg = err.response?.data?.message || err.message || 'Google sign-in failed';
       if (code === 'GOOGLE_NOT_CONFIGURED') {
-        setError('Google login is not configured on the server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET on Render.');
-      } else if (code === 'DB_UNAVAILABLE' || err.response?.status === 503) {
-        setError('Server or database unavailable. Try again or use redirect sign-in below.');
+        setError('Google login is not configured on the server. Please try email login or contact support.');
       } else {
-        setError(msg);
+        setError(getApiErrorMessage(err, 'Google sign-in failed'));
       }
     } finally {
       setLoading(false);
@@ -80,7 +75,11 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
 
   return (
     <div ref={wrapRef} className={`google-signin-root ${className}`} style={style}>
-      {error && <div className="alert alert-error" style={{ marginBottom: 12 }}>{error}</div>}
+      {error && (
+        <div className="alert alert-error" style={{ marginBottom: 12 }}>
+          {error}
+        </div>
+      )}
 
       <div className="google-signin-custom">
         <button
@@ -90,7 +89,9 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
           tabIndex={-1}
           aria-hidden="true"
         >
-          <span className="btn-google-icon"><GoogleIcon /></span>
+          <span className="btn-google-icon">
+            <GoogleIcon />
+          </span>
           <span>{loading ? 'Signing in with Google...' : 'Continue with Google'}</span>
         </button>
 

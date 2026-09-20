@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { sendSignupOtp, verifySignupOtp, getAuthConfig } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
+import { wakeApi } from '../utils/apiWake';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
@@ -47,6 +48,11 @@ const Signup = () => {
   }, []);
 
   useEffect(() => {
+    // Wake Hostinger Node app before user submits (avoids first-click 503 / Network Error)
+    wakeApi();
+  }, []);
+
+  useEffect(() => {
     if (resendSec <= 0) return undefined;
     const t = setInterval(() => setResendSec((s) => Math.max(0, s - 1)), 1000);
     return () => clearInterval(t);
@@ -59,6 +65,7 @@ const Signup = () => {
     setError('');
     setSuccess('');
     try {
+      await wakeApi(5000);
       await sendSignupOtp({
         name,
         email,

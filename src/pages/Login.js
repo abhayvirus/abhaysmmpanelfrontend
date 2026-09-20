@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { login } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
+import { wakeApi } from '../utils/apiWake';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
@@ -30,6 +31,11 @@ const Login = () => {
   }, []);
 
   useEffect(() => {
+    // Wake Hostinger Node app before user submits (avoids first-click 503 / Network Error)
+    wakeApi();
+  }, []);
+
+  useEffect(() => {
     if (isAuthenticated()) {
       navigate(getPostLoginPath(), { replace: true });
     }
@@ -40,6 +46,7 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
+      await wakeApi(5000);
       const res = await login({ email, password, otp: otp || undefined });
       if (res.data.otp_required) {
         setOtpRequired(true);

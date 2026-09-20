@@ -11,6 +11,17 @@ const API = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+function sleep(ms) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+function shouldRetryAuth(err, config) {
+  if (!config || config.__authRetry) return false;
+  if (!isAuthPublicRequest(config)) return false;
+  if (!err.response) return true; // Network / CORS (often Hostinger 503 without ACAO)
+  return err.response.status === 503 || err.response.status === 502;
+}
+
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -22,7 +33,16 @@ API.interceptors.request.use((config) => {
 
 API.interceptors.response.use(
   (res) => res,
-  (err) => {
+  async (err) => {
+    const config = err.config;
+
+    // One retry after short wait — covers Hostinger cold-start 503 / Network Error on login
+    if (shouldRetryAuth(err, config)) {
+      config.__authRetry = true;
+      await sleep(1500);
+      return API.request(config);
+    }
+
     // Network/CORS errors have no response — never redirect away from signup/login
     if (!err.response) {
       return Promise.reject(err);

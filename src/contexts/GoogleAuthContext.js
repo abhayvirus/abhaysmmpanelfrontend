@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import { GOOGLE_CLIENT_ID, isGoogleConfigured as isBuildGoogleConfigured } from '../config/google';
 import { API_BASE, getAuthConfig } from '../api';
@@ -16,14 +16,17 @@ export function useGoogleAuth() {
 
 /**
  * Loads Google OAuth config from build env or API (/auth/config).
- * Wraps children in GoogleOAuthProvider when client ID is available.
+ * Keeps a stable clientId so GSI initialize() is not called repeatedly.
  */
 export function GoogleAuthProvider({ children }) {
+  const stableClientIdRef = useRef(
+    isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID : ''
+  );
   const [state, setState] = useState(() => ({
     enabled: false,
-    clientId: isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID : '',
+    clientId: stableClientIdRef.current,
     oauthStartUrl: `${API_BASE}/api/auth/google`,
-    loading: !isBuildGoogleConfigured(),
+    loading: !stableClientIdRef.current,
   }));
 
   useEffect(() => {
@@ -31,10 +34,21 @@ export function GoogleAuthProvider({ children }) {
     getAuthConfig()
       .then(({ data }) => {
         if (cancelled) return;
-        const clientId = data?.googleClientId || state.clientId || GOOGLE_CLIENT_ID;
-        const enabled = Boolean(data?.googleEnabled && clientId?.includes('.apps.googleusercontent.com'));
+        const fromApi = data?.googleClientId || '';
+        const nextId =
+          (fromApi.includes('.apps.googleusercontent.com') && fromApi) ||
+          stableClientIdRef.current ||
+          GOOGLE_CLIENT_ID ||
+          '';
+        if (nextId && !stableClientIdRef.current) {
+          stableClientIdRef.current = nextId;
+        }
+        const clientId = stableClientIdRef.current || nextId;
+        const enabled = Boolean(
+          data?.googleEnabled !== false && clientId?.includes('.apps.googleusercontent.com')
+        );
         setState({
-          enabled,
+          enabled: enabled && Boolean(clientId),
           clientId: enabled ? clientId : '',
           oauthStartUrl: data?.googleAuthUrl || `${API_BASE}/api/auth/google`,
           loading: false,
@@ -42,16 +56,19 @@ export function GoogleAuthProvider({ children }) {
       })
       .catch(() => {
         if (!cancelled) {
+          const clientId =
+            stableClientIdRef.current || (isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID : '');
           setState((prev) => ({
             ...prev,
-            enabled: isBuildGoogleConfigured(),
-            clientId: isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID : '',
+            enabled: Boolean(clientId),
+            clientId,
             loading: false,
           }));
         }
       });
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const value = useMemo(
@@ -65,20 +82,15 @@ export function GoogleAuthProvider({ children }) {
   );
 
   const inner = (
-    <GoogleAuthContext.Provider value={value}>
-      {children}
-    </GoogleAuthContext.Provider>
+    <GoogleAuthContext.Provider value={value}>{children}</GoogleAuthContext.Provider>
   );
 
-  if (!state.clientId || !state.clientId.includes('.apps.googleusercontent.com')) {
+  const providerId = stableClientIdRef.current || state.clientId;
+  if (!providerId || !providerId.includes('.apps.googleusercontent.com')) {
     return inner;
   }
 
-  return (
-    <GoogleOAuthProvider clientId={state.clientId}>
-      {inner}
-    </GoogleOAuthProvider>
-  );
+  return <GoogleOAuthProvider clientId={providerId}>{inner}</GoogleOAuthProvider>;
 }
 
 export default GoogleAuthContext;
