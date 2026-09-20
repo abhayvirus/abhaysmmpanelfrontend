@@ -1,49 +1,55 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import PublicNav from '../components/PublicNav';
-import GuidePage from '../components/GuidePage';
-import {
-  PUBLIC_HOW_TO_USE_META,
-  PUBLIC_HOW_TO_USE_SECTIONS,
-  PUBLIC_FUND_WORKFLOW_STEPS,
-  PUBLIC_HOW_TO_USE_QUICK_NAV,
-  PUBLIC_HOW_TO_USE_FEATURES,
-} from '../content/publicHowToUseGuide';
+import PublicPageShell from '../components/PublicPageShell';
+import { useSettings } from '../contexts/SettingsContext';
 import { BRAND } from '../config/brand';
+import { resolveTelegramChannelUrl } from '../constants/telegramChannel';
+import { PUBLIC_HOW_TO_USE_META, GUIDE_TOPICS } from '../content/publicHowToUseGuide';
 import '../styles/publicGuidePage.css';
 
-const PublicHowToUseGuide = () => (
-  <div className="public-guide-page">
-    <PublicNav />
-    <main className="public-guide-page__main container">
-      <GuidePage
-        meta={PUBLIC_HOW_TO_USE_META}
-        sections={PUBLIC_HOW_TO_USE_SECTIONS}
-        workflowSteps={PUBLIC_FUND_WORKFLOW_STEPS}
-        quickNav={PUBLIC_HOW_TO_USE_QUICK_NAV}
-        uiFeatures={PUBLIC_HOW_TO_USE_FEATURES}
-        backLink="/"
-        backLabel="Back to Home"
-        panelLabel="Quick links"
-      />
-      <section className="card public-guide-cta">
-        <h2 className="public-guide-cta__title">Ready to add funds?</h2>
-        <p className="public-guide-cta__text">
-          Sign in to {BRAND.name}, open Add Funds, and recharge your wallet in under a minute.
-        </p>
-        <div className="public-guide-cta__actions">
-          <Link to="/signup" className="btn btn-primary">Create Free Account</Link>
-          <Link to="/login" className="btn btn-ghost">Login</Link>
+const PublicHowToUseGuide = () => {
+  const { settings } = useSettings();
+  const telegramUrl = resolveTelegramChannelUrl(settings);
+
+  useEffect(() => {
+    document.title = `How to Use — ${BRAND.name}`;
+  }, []);
+
+  return (
+    <PublicPageShell className="public-guide-page public-guide-page--simple">
+      <header className="guide-simple-hero">
+        <h1>{PUBLIC_HOW_TO_USE_META.title}</h1>
+        <p>{PUBLIC_HOW_TO_USE_META.subtitle}</p>
+      </header>
+
+      <div className="guide-simple-list">
+        {GUIDE_TOPICS.map((topic) => (
+          <section key={topic.id} id={topic.id} className="guide-simple-block">
+            <h2>{topic.title}</h2>
+            {topic.body.map((line) => (
+              <p key={line}>{line}</p>
+            ))}
+          </section>
+        ))}
+      </div>
+
+      <section className="guide-simple-cta" aria-label="Get started">
+        <h2>Ready to start?</h2>
+        <p>Create a free account, add funds, and place your first order.</p>
+        <div className="guide-simple-cta__actions">
+          <Link to="/signup" className="btn btn-primary">
+            Create Free Account
+          </Link>
+          <Link to="/login" className="btn btn-ghost">
+            Login
+          </Link>
+          <a href={telegramUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+            Telegram
+          </a>
         </div>
       </section>
-    </main>
-    <footer className="public-guide-page__footer">
-      <p>
-        © {new Date().getFullYear()} {BRAND.name} ·{' '}
-        <a href={BRAND.domain}>{BRAND.domain.replace('https://', '')}</a>
-      </p>
-    </footer>
-  </div>
-);
+    </PublicPageShell>
+  );
+};
 
 export default PublicHowToUseGuide;

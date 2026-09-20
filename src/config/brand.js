@@ -2,6 +2,7 @@
 export const BRAND = {
   name: 'ABHAYSMM PANEL',
   shortName: 'ABHAYSMM',
+  panelLabel: 'PANEL',
   domain: 'https://abhaysmmpanel.in',
   tagline: 'India\'s Premium Social Media Marketing Panel — Fast, Secure & Affordable',
   supportEmail: 'support@abhaysmmpanel.in',
@@ -11,6 +12,10 @@ export const BRAND = {
   appScreenshot: '/appscreenshot.jpeg',
   whatsappQr: '/whatsapgroupqr.jpeg',
   whatsappGroupUrl: 'https://chat.whatsapp.com/LqjQV2tmqlt2PUoTxDMho2?s=qt&p=a&mlu=4',
+  company: {
+    name: 'Subhay Web Solutions',
+    url: 'https://subhay.site',
+  },
   theme: {
     primary: '#2563eb',
     accent: '#0ea5e9',

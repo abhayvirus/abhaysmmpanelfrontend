@@ -9,6 +9,11 @@ import MaintenanceGate from './components/MaintenanceGate';
 import SeoHead from './components/SeoHead';
 import Home from './pages/Home';
 import PublicHowToUseGuide from './pages/PublicHowToUseGuide';
+import PublicLegalPage from './pages/PublicLegalPage';
+import PublicPricing from './pages/PublicPricing';
+import PublicBlog from './pages/PublicBlog';
+import PublicSupport from './pages/PublicSupport';
+import { LEGAL_PAGES } from './content/legalPages';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
@@ -69,6 +74,15 @@ function AppRoutes() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/how-to-use" element={<PublicHowToUseGuide />} />
+            <Route path="/pricing" element={<PublicPricing />} />
+            <Route path="/blog" element={<PublicBlog />} />
+            <Route path="/support" element={<PublicSupport />} />
+            <Route path="/contact" element={<PublicSupport />} />
+            <Route path="/terms" element={<PublicLegalPage doc={LEGAL_PAGES.terms} />} />
+            <Route path="/terms-and-conditions" element={<PublicLegalPage doc={LEGAL_PAGES.terms} />} />
+            <Route path="/privacy" element={<PublicLegalPage doc={LEGAL_PAGES.privacy} />} />
+            <Route path="/refund-policy" element={<PublicLegalPage doc={LEGAL_PAGES.refund} />} />
+            <Route path="/disclaimer" element={<PublicLegalPage doc={LEGAL_PAGES.disclaimer} />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

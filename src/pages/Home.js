@@ -5,17 +5,16 @@ import { useSettings } from '../contexts/SettingsContext';
 import PublicNav from '../components/PublicNav';
 import StickyAnnouncementBar from '../components/StickyAnnouncementBar';
 import SocialProofSection from '../components/SocialProofSection';
-import LandingWatermark from '../components/landing/LandingWatermark';
 import LandingHero from '../components/landing/LandingHero';
 import LandingTrustBadges from '../components/landing/LandingTrustBadges';
 import LandingWhyChoose from '../components/landing/LandingWhyChoose';
 import LandingServices from '../components/landing/LandingServices';
 import LandingAppShowcase from '../components/landing/LandingAppShowcase';
 import LandingWhatsAppGroup from '../components/landing/LandingWhatsAppGroup';
-import LandingTelegramSection from '../components/landing/LandingTelegramSection';
 import LandingFooter from '../components/landing/LandingFooter';
 import LandingLiveActivity from '../components/landing/LandingLiveActivity';
-import { getPostLoginPath, isAuthenticated } from '../utils/authRedirect';
+import LandingWatermark from '../components/landing/LandingWatermark';
+import { getPostLoginPath } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 import '../styles/homePage.css';
 import '../styles/landingAppCommunity.css';
@@ -42,6 +41,17 @@ const Home = () => {
       window.removeEventListener('storage', syncAuth);
       window.removeEventListener('focus', syncAuth);
     };
+  }, []);
+
+  useEffect(() => {
+    if (window.location.hash === '#services') {
+      const el = document.getElementById('services');
+      if (el) {
+        const t = setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+        return () => clearTimeout(t);
+      }
+    }
+    return undefined;
   }, []);
 
   useEffect(() => {
@@ -79,8 +89,6 @@ const Home = () => {
         <LandingAppShowcase />
 
         <LandingWhatsAppGroup />
-
-        <LandingTelegramSection />
 
         <LandingLiveActivity />
       </main>

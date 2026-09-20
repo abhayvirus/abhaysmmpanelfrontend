@@ -1,10 +1,10 @@
 import React from 'react';
 
-/** Site-wide low-opacity ABHAY watermark — decorative only */
+/** Decorative ABHAY brand watermark — visible but non-interactive */
 const LandingWatermark = () => (
   <div className="landing-watermark" aria-hidden="true">
-    <span className="landing-watermark__text">ABHAY</span>
-    <span className="landing-watermark__text landing-watermark__text--offset">ABHAY</span>
+    <span className="landing-watermark__text landing-watermark__text--primary">ABHAY</span>
+    <span className="landing-watermark__text landing-watermark__text--secondary">ABHAY</span>
   </div>
 );
 

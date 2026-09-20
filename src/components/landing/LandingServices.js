@@ -8,7 +8,7 @@ const LandingServices = ({ services, sym }) => {
   const list = services.slice(0, 6);
 
   return (
-    <section className="landing-section landing-services" ref={ref} aria-labelledby="landing-services-title">
+    <section id="services" className="landing-section landing-services" ref={ref} aria-labelledby="landing-services-title">
       <div className="landing-section__container">
         <motion.header
           className="landing-section__header"

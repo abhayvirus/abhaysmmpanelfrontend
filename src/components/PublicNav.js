@@ -1,8 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import BrandLogo from './BrandLogo';
+
+const NAV_LINKS = [
+  { to: '/', label: 'Home', end: true },
+  { to: '/#services', label: 'Services', hash: 'services' },
+  { to: '/how-to-use', label: 'How to Use' },
+  { to: '/pricing', label: 'Pricing' },
+  { to: '/blog', label: 'Blog' },
+  { to: '/support', label: 'Support' },
+];
 
 const PublicNav = () => {
   const [open, setOpen] = useState(false);
@@ -12,6 +21,7 @@ const PublicNav = () => {
   const navRef = useRef(null);
   const lastScrollY = useRef(0);
   const { settings } = useSettings();
+  const location = useLocation();
   const close = () => setOpen(false);
 
   useEffect(() => {
@@ -103,6 +113,37 @@ const PublicNav = () => {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open]);
 
+  useEffect(() => {
+    close();
+  }, [location.pathname, location.hash]);
+
+  const renderNavLink = (item, className, onClick) => {
+    if (item.hash) {
+      const active = location.pathname === '/' && location.hash === `#${item.hash}`;
+      return (
+        <Link
+          key={item.to}
+          to={item.to}
+          className={`${className}${active ? ' is-active' : ''}`}
+          onClick={onClick}
+        >
+          {item.label}
+        </Link>
+      );
+    }
+    return (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        end={item.end}
+        className={({ isActive }) => `${className}${isActive ? ' is-active' : ''}`}
+        onClick={onClick}
+      >
+        {item.label}
+      </NavLink>
+    );
+  };
+
   return (
     <>
       <header
@@ -112,16 +153,18 @@ const PublicNav = () => {
         <Link to="/" className="nav-public-brand" onClick={close}>
           <BrandLogo size="sm" showSubtitle siteLogo={settings.site_logo} className="nav-brand-logo" />
         </Link>
+
+        <nav className="nav-public-links" aria-label="Primary">
+          {NAV_LINKS.map((item) => renderNavLink(item, 'nav-public-link', undefined))}
+        </nav>
+
         <div className="nav-public-actions-desktop">
-          <Link to="/how-to-use" className="btn btn-ghost nav-public-guide-link">
-            How to Use Guide
-          </Link>
           {isLoggedIn ? (
             <Link to="/dashboard" className="btn btn-primary">Dashboard</Link>
           ) : (
             <>
               <Link to="/login" className="btn btn-ghost">Login</Link>
-              <Link to="/signup" className="btn btn-primary">Get Started</Link>
+              <Link to="/signup" className="btn btn-primary">Get Started →</Link>
             </>
           )}
         </div>
@@ -163,9 +206,8 @@ const PublicNav = () => {
                 </button>
               </div>
               <nav className="nav-mobile-links" aria-label="Mobile navigation">
-                <Link to="/how-to-use" className="btn btn-ghost nav-drawer-btn" onClick={close}>
-                  How to Use Guide
-                </Link>
+                {NAV_LINKS.map((item) =>
+                  renderNavLink(item, 'btn btn-ghost nav-drawer-btn', close))}
                 {isLoggedIn ? (
                   <Link to="/dashboard" className="btn btn-primary nav-drawer-btn" onClick={close}>
                     Dashboard
@@ -176,7 +218,7 @@ const PublicNav = () => {
                       Login
                     </Link>
                     <Link to="/signup" className="btn btn-primary nav-drawer-btn" onClick={close}>
-                      Get Started
+                      Get Started →
                     </Link>
                   </>
                 )}
@@ -190,3 +232,4 @@ const PublicNav = () => {
 };
 
 export default PublicNav;
+export { NAV_LINKS };

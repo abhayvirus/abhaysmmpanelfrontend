@@ -8,10 +8,11 @@ import LandingStats from './LandingStats';
 import { BRAND } from '../../config/brand';
 
 const LandingHero = ({ settings, stats }) => (
-  <section className="landing-hero" aria-labelledby="landing-hero-title">
+  <section className="landing-hero" aria-labelledby="landing-hero-brand">
     <div className="landing-hero__bg" aria-hidden="true">
       <div className="landing-hero__gradient-orb landing-hero__gradient-orb--1" />
       <div className="landing-hero__gradient-orb landing-hero__gradient-orb--2" />
+      <p className="landing-hero__brand-backdrop">ABHAY</p>
       <LandingParticles />
     </div>
 
@@ -30,35 +31,45 @@ const LandingHero = ({ settings, stats }) => (
         className="landing-hero__badge"
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15, duration: 0.45 }}
+        transition={{ delay: 0.12, duration: 0.45 }}
       >
-        {BRAND.shortName} · {BRAND.domain.replace('https://', '')}
+        {BRAND.domain.replace('https://', '')}
       </motion.p>
 
       <motion.h1
-        id="landing-hero-title"
-        className="landing-hero__title"
-        initial={{ opacity: 0, y: 20 }}
+        id="landing-hero-brand"
+        className="landing-hero__brand"
+        initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.25, duration: 0.55 }}
+        transition={{ delay: 0.2, duration: 0.55 }}
       >
-        India&apos;s <span>Premium</span> SMM Panel
+        {BRAND.shortName}
+        <span className="landing-hero__brand-panel"> {BRAND.panelLabel}</span>
       </motion.h1>
 
       <motion.p
-        className="landing-hero__subtitle"
+        className="landing-hero__title"
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.35, duration: 0.5 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        India&apos;s <span>Premium</span> SMM Panel
+      </motion.p>
+
+      <motion.p
+        className="landing-hero__subtitle"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.38, duration: 0.5 }}
       >
         {settings.site_tagline || BRAND.tagline}
       </motion.p>
 
       <motion.div
         className="landing-hero__cta"
-        initial={{ opacity: 0, y: 16 }}
+        initial={{ opacity: 0, y: 14 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.45, duration: 0.5 }}
+        transition={{ delay: 0.46, duration: 0.5 }}
       >
         <Link to="/signup" className="landing-btn landing-btn--primary landing-btn--lg">
           Create Free Account

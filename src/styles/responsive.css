@@ -513,6 +513,39 @@ body.has-public-telegram-banner .nav-public {
   flex-shrink: 0;
 }
 
+.nav-public-links {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex: 1;
+  justify-content: center;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.nav-public-link {
+  padding: 0.4rem 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+}
+
+.nav-public-link:hover,
+.nav-public-link:focus-visible {
+  color: #fff;
+  background: rgba(37, 99, 235, 0.12);
+  outline: none;
+}
+
+.nav-public-link.is-active {
+  color: #fff;
+  background: rgba(37, 99, 235, 0.2);
+}
+
 .nav-public .nav-brand-logo .brand-logo-circle,
 .nav-public .nav-brand-logo img {
   transition: transform 300ms ease;
@@ -931,6 +964,16 @@ body.public-nav-open .whatsapp-float {
   }
 }
 
+
+@media (max-width: 1024px) {
+  .nav-public-links {
+    display: none;
+  }
+  .nav-public-menu-btn {
+    display: flex;
+  }
+}
+
 /* ——— Mobile: max 767px ——— */
 @media (max-width: 767px) {
   :root {
@@ -953,6 +996,9 @@ body.public-nav-open .whatsapp-float {
     display: flex;
   }
   .nav-public-actions-desktop {
+    display: none;
+  }
+  .nav-public-links {
     display: none;
   }
   .landing-page {
