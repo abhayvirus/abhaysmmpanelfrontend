@@ -81,7 +81,7 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
         </div>
       )}
 
-      <div className="google-signin-custom">
+      <div className="google-signin-custom" aria-busy={loading}>
         <button
           type="button"
           className="btn-google"
@@ -95,19 +95,23 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
           <span>{loading ? 'Signing in with Google...' : 'Continue with Google'}</span>
         </button>
 
-        {!loading && (
-          <div className="google-signin-overlay" aria-label="Continue with Google">
-            <GoogleLogin
-              onSuccess={handleSuccess}
-              onError={() => setError('Google sign-in was cancelled or failed')}
-              theme="outline"
-              size="large"
-              text="continue_with"
-              shape="rectangular"
-              width={btnWidth}
-            />
-          </div>
-        )}
+        {/* Keep GoogleLogin mounted — unmounting re-calls google.accounts.id.initialize() */}
+        <div
+          className="google-signin-overlay"
+          aria-label="Continue with Google"
+          style={loading ? { pointerEvents: 'none', opacity: 0.01 } : undefined}
+        >
+          <GoogleLogin
+            onSuccess={handleSuccess}
+            onError={() => setError('Google sign-in was cancelled or failed')}
+            theme="outline"
+            size="large"
+            text="continue_with"
+            shape="rectangular"
+            width={btnWidth}
+            useOneTap={false}
+          />
+        </div>
       </div>
     </div>
   );

@@ -85,7 +85,8 @@ export function GoogleAuthProvider({ children }) {
     <GoogleAuthContext.Provider value={value}>{children}</GoogleAuthContext.Provider>
   );
 
-  const providerId = stableClientIdRef.current || state.clientId;
+  // Freeze provider clientId after first valid id so GSI initialize() runs once
+  const providerId = stableClientIdRef.current;
   if (!providerId || !providerId.includes('.apps.googleusercontent.com')) {
     return inner;
   }
