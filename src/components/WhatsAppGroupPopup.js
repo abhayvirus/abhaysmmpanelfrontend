@@ -11,7 +11,7 @@ const DISMISS_MS = 24 * 60 * 60 * 1000;
 const SHOW_DELAY_MS = 900;
 const POPUP_ID = 'whatsapp-group-join-popup';
 /** Bump when QR asset changes so browsers skip stale cache. */
-const QR_CACHE_BUST = 'v3';
+const QR_CACHE_BUST = 'v4';
 
 function wasDismissedRecently() {
   try {
@@ -167,8 +167,8 @@ const WhatsAppGroupPopup = () => {
             src={qrSrc}
             alt="WhatsApp group QR code"
             className="wa-join-popup__qr"
-            width={776}
-            height={855}
+            width={792}
+            height={911}
             loading="eager"
             decoding="async"
           />
