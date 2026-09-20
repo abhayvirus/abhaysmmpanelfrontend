@@ -7,17 +7,17 @@ const AdminUsers = () => {
   const [editing, setEditing] = useState(null);
   const [editData, setEditData] = useState({});
 
-  const load = () => adminGetUsers().then((r) => setUsers(r.data)).catch(console.error);
+  const load = () => adminGetUsers().then((r) => setUsers(r.data || [])).catch(console.error);
   useEffect(() => { load(); }, []);
 
   const startEdit = (user) => {
     setEditing(user.id);
-    setEditData({ balance: user.balance, status: user.status || 'ACTIVE', role: user.role || 'user' });
+    setEditData({ balance: user.balance, status: user.status || 'ACTIVE' });
   };
 
   const saveEdit = async (id) => {
     try {
-      await adminUpdateUser(id, editData);
+      await adminUpdateUser(id, { ...editData, role: 'user' });
       setEditing(null);
       load();
     } catch (err) {
@@ -26,7 +26,7 @@ const AdminUsers = () => {
   };
 
   const deleteUser = async (user) => {
-    if (!window.confirm(`Delete user "${user.name}"? This cannot be undone.`)) return;
+    if (!window.confirm(`Delete user "${user.name || user.email}"? This cannot be undone.`)) return;
     try {
       await adminDeleteUser(user.id);
       await load();
@@ -39,11 +39,14 @@ const AdminUsers = () => {
   return (
     <AdminLayout>
       <h1 className="admin-page-title">User Management</h1>
+      <p style={{ color: 'var(--text-muted)', marginTop: -8, marginBottom: 16, fontSize: 14 }}>
+        Regular users only · serial ID by join order · admin account is hidden
+      </p>
       <div className="admin-table-wrap table-wrap card">
         <table className="table">
           <thead>
             <tr>
-              {['ID', 'Name', 'Email', 'Balance', 'Deposits', 'Spent', 'Status', 'Role', 'Joined', 'Actions'].map((h) => (
+              {['ID', 'Name', 'Email', 'Balance', 'Deposits', 'Spent', 'Status', 'Joined', 'Actions'].map((h) => (
                 <th key={h}>{h}</th>
               ))}
             </tr>
@@ -51,8 +54,10 @@ const AdminUsers = () => {
           <tbody>
             {users.map((user) => (
               <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.name}</td>
+                <td>
+                  <strong style={{ color: 'var(--primary)' }}>#{user.serial ?? '—'}</strong>
+                </td>
+                <td>{user.name || '—'}</td>
                 <td>{user.email}</td>
                 <td>
                   {editing === user.id ? (
@@ -79,16 +84,6 @@ const AdminUsers = () => {
                     <span className={`badge ${user.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>{user.status}</span>
                   )}
                 </td>
-                <td>
-                  {editing === user.id ? (
-                    <select className="select" value={editData.role} onChange={(e) => setEditData((p) => ({ ...p, role: e.target.value }))}>
-                      <option value="user">user</option>
-                      <option value="admin">admin</option>
-                    </select>
-                  ) : (
-                    user.role
-                  )}
-                </td>
                 <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                   {user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}
                 </td>
@@ -101,22 +96,20 @@ const AdminUsers = () => {
                   ) : (
                     <div style={{ display: 'flex', gap: 6 }}>
                       <button type="button" className="btn btn-ghost btn-sm" onClick={() => startEdit(user)}>Edit</button>
-                      {user.role !== 'admin' && (
-                        <button
-                          type="button"
-                          className="btn btn-danger btn-sm"
-                          onClick={() => deleteUser(user)}
-                        >
-                          Delete
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        className="btn btn-danger btn-sm"
+                        onClick={() => deleteUser(user)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   )}
                 </td>
               </tr>
             ))}
             {!users.length && (
-              <tr><td colSpan={10} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No users</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No users</td></tr>
             )}
           </tbody>
         </table>
@@ -126,7 +119,10 @@ const AdminUsers = () => {
         {users.map((user) => (
           <div key={user.id} className="card admin-mobile-card">
             <div className="admin-mobile-card-top">
-              <strong>{user.name}</strong>
+              <strong>
+                <span style={{ color: 'var(--primary)', marginRight: 8 }}>#{user.serial}</span>
+                {user.name || '—'}
+              </strong>
               <span className={`badge ${user.status === 'ACTIVE' ? 'badge-success' : 'badge-danger'}`}>{user.status}</span>
             </div>
             <div className="admin-mobile-row"><span>Email</span><span>{user.email}</span></div>
@@ -148,19 +144,6 @@ const AdminUsers = () => {
             </div>
             <div className="admin-mobile-row"><span>Deposits</span><span>₹{parseFloat(user.total_deposits || 0).toFixed(2)}</span></div>
             <div className="admin-mobile-row"><span>Spent</span><span>₹{parseFloat(user.total_spent || 0).toFixed(2)}</span></div>
-            <div className="admin-mobile-row">
-              <span>Role</span>
-              <span>
-                {editing === user.id ? (
-                  <select className="select" value={editData.role} onChange={(e) => setEditData((p) => ({ ...p, role: e.target.value }))}>
-                    <option value="user">user</option>
-                    <option value="admin">admin</option>
-                  </select>
-                ) : (
-                  user.role
-                )}
-              </span>
-            </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
               {editing === user.id ? (
                 <>
@@ -170,16 +153,14 @@ const AdminUsers = () => {
               ) : (
                 <>
                   <button type="button" className="btn btn-ghost btn-sm" style={{ flex: 1 }} onClick={() => startEdit(user)}>Edit</button>
-                  {user.role !== 'admin' && (
-                    <button
-                      type="button"
-                      className="btn btn-danger btn-sm"
-                      style={{ flex: 1 }}
-                      onClick={() => deleteUser(user)}
-                    >
-                      Delete
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm"
+                    style={{ flex: 1 }}
+                    onClick={() => deleteUser(user)}
+                  >
+                    Delete
+                  </button>
                 </>
               )}
             </div>
