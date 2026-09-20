@@ -42,19 +42,23 @@ const Dashboard = () => {
     let cancelled = false;
     setPageReady(false);
     setLoadError('');
-    Promise.all([
+    Promise.allSettled([
       getMe().then((res) => {
         if (!cancelled) {
           setUser(res.data);
           localStorage.setItem('user', JSON.stringify(res.data));
         }
+        return res;
       }),
       getPlatforms().then((res) => {
-        if (!cancelled) setPlatforms(['All', ...res.data]);
+        if (!cancelled) setPlatforms(['All', ...(Array.isArray(res.data) ? res.data : [])]);
+        return res;
       }),
     ])
-      .catch(() => {
-        if (!cancelled) setLoadError('Could not load dashboard. Please refresh.');
+      .then((results) => {
+        if (cancelled) return;
+        const meFailed = results[0].status === 'rejected';
+        if (meFailed) setLoadError('Could not load dashboard. Please refresh.');
       })
       .finally(() => {
         if (!cancelled) setPageReady(true);
