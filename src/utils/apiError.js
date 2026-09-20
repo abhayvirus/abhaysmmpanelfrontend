@@ -3,9 +3,11 @@ export function getApiErrorMessage(err, fallback = 'Request failed') {
   if (!err) return fallback;
 
   if (!err.response) {
-    if (err.code === 'ECONNABORTED') return 'Request timed out. Check your connection.';
     if (err.message?.includes('Network Error')) {
       return 'Cannot reach the API right now. The server may be restarting — please wait a moment and try again.';
+    }
+    if (err.code === 'ECONNABORTED') {
+      return 'API is taking too long (server may be waking up). Wait 10 seconds and try again.';
     }
     return err.message || fallback;
   }

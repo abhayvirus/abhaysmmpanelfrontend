@@ -65,7 +65,7 @@ const Signup = () => {
     setError('');
     setSuccess('');
     try {
-      await wakeApi(5000);
+      void wakeApi(4000);
       await sendSignupOtp({
         name,
         email,

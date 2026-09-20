@@ -46,7 +46,8 @@ const Login = () => {
     setLoading(true);
     setError('');
     try {
-      await wakeApi(5000);
+      // Do not block login on wake — fire in parallel so a slow health ping cannot cause timeout
+      void wakeApi(4000);
       const res = await login({ email, password, otp: otp || undefined });
       if (res.data.otp_required) {
         setOtpRequired(true);

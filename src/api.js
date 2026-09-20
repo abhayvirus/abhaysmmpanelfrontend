@@ -7,7 +7,7 @@ export { API_BASE, API_URL };
 
 const API = axios.create({
   baseURL: API_URL,
-  timeout: 25000,
+  timeout: 45000,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -18,7 +18,10 @@ function sleep(ms) {
 function shouldRetryAuth(err, config) {
   if (!config || config.__authRetry) return false;
   if (!isAuthPublicRequest(config)) return false;
-  if (!err.response) return true; // Network / CORS (often Hostinger 503 without ACAO)
+  if (!err.response) {
+    // Network / CORS / timeout (Hostinger cold start)
+    return true;
+  }
   return err.response.status === 503 || err.response.status === 502;
 }
 
@@ -39,7 +42,7 @@ API.interceptors.response.use(
     // One retry after short wait — covers Hostinger cold-start 503 / Network Error on login
     if (shouldRetryAuth(err, config)) {
       config.__authRetry = true;
-      await sleep(1500);
+      await sleep(2000);
       return API.request(config);
     }
 
