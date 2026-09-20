@@ -3,7 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { getUnreadCount, getTicketUnreadCount } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
-import LanguageSwitcher from './LanguageSwitcher';
 import BrandLogo from './BrandLogo';
 import { clearAuthSession } from '../utils/authRedirect';
 import { isNavActive } from '../utils/navActive';
@@ -69,7 +68,6 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     ...(settings.feature_referrals !== false ? [{ to: '/referrals', label: t('nav.referrals'), icon: '🎁' }] : []),
     { to: '/api-docs', label: t('nav.apiDocs') || 'API Docs', icon: '🔌' },
     ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: t('nav.childPanel') || 'Child Panel', icon: '🌐' }] : []),
-    { to: '/profile', label: t('nav.profile') || 'Profile', icon: '⚙️' },
     { to: '/help', label: t('nav.help') || 'Help Guide', icon: '📖' },
   ];
 
@@ -113,10 +111,6 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
                 {settings.whatsapp_link && <a href={settings.whatsapp_link} target="_blank" rel="noreferrer">WA</a>}
               </div>
             )}
-
-            <div className="sidebar-tools">
-              <LanguageSwitcher />
-            </div>
 
             {user.role === 'admin' && (
               <Link to="/admin" className="sidebar-link sidebar-admin-link" onClick={onClose}>

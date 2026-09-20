@@ -213,7 +213,24 @@
 }
 
 /* ——— Phone / small tablet ——— */
+/* Language switcher removed from user panel UI */
+.user-sidebar .sidebar-tools,
+.user-sidebar .lang-select {
+  display: none !important;
+}
+
 @media (max-width: 767px) {
+  .layout.fade-in {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  .main.has-mobile-chrome {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    padding-top: 0.75rem !important;
+  }
+
   .user-panel-scroll {
     padding-left: clamp(0.75rem, 3vw, 1rem);
     padding-right: clamp(0.75rem, 3vw, 1rem);

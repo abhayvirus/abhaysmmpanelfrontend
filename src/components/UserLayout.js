@@ -40,7 +40,7 @@ const UserLayout = ({ children, title }) => {
       <main className={`main page-main${isMobile ? ' has-mobile-chrome' : ''}`}>
         <div className="user-panel-scroll">{children}</div>
       </main>
-      {isMobile && <MobileBottomNav onMoreClick={() => setMenuOpen(true)} />}
+      {isMobile && <MobileBottomNav />}
       <AnnouncementPopup />
     </div>
   );

@@ -3,7 +3,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '../contexts/LanguageContext';
 import { isNavActive } from '../utils/navActive';
 
-const MobileBottomNav = ({ onMoreClick }) => {
+/**
+ * Mobile bottom nav — 5 unique destinations (no duplicate menu opener).
+ * Sidebar opens only from the top header hamburger.
+ */
+const MobileBottomNav = () => {
   const location = useLocation();
   const { t } = useLanguage();
 
@@ -12,6 +16,7 @@ const MobileBottomNav = ({ onMoreClick }) => {
     { to: '/services', label: t('nav.services'), icon: '📋' },
     { to: '/add-funds', label: t('nav.funds'), icon: '💳' },
     { to: '/orders', label: t('nav.orders'), icon: '📦' },
+    { to: '/profile', label: t('nav.profile') || 'Profile', icon: '⚙️' },
   ];
 
   return (
@@ -29,10 +34,6 @@ const MobileBottomNav = ({ onMoreClick }) => {
           </Link>
         );
       })}
-      <button type="button" className="mobile-bottom-nav-item" onClick={onMoreClick} aria-label="More menu">
-        <span className="mobile-bottom-nav-icon" aria-hidden="true">☰</span>
-        <span className="mobile-bottom-nav-label">More</span>
-      </button>
     </nav>
   );
 };
