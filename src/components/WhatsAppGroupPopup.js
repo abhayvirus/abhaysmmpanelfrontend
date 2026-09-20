@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useLocation } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
 import { isAuthenticated } from '../utils/authRedirect';
@@ -7,7 +8,7 @@ import '../styles/whatsappGroupPopup.css';
 
 const STORAGE_KEY = 'abhaysmm_wa_join_popup_dismissed_at';
 const DISMISS_MS = 24 * 60 * 60 * 1000;
-const SHOW_DELAY_MS = 1200;
+const SHOW_DELAY_MS = 900;
 const POPUP_ID = 'whatsapp-group-join-popup';
 
 function wasDismissedRecently() {
@@ -43,7 +44,7 @@ const PUBLIC_PATHS = new Set([
   '/contact',
 ]);
 
-/** Centered WhatsApp group join modal for public pages. */
+/** True center-screen WhatsApp join modal (portaled to body). */
 const WhatsAppGroupPopup = () => {
   const location = useLocation();
   const { settings } = useSettings();
@@ -52,10 +53,15 @@ const WhatsAppGroupPopup = () => {
 
   const [open, setOpen] = useState(false);
   const [visible, setVisible] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const closePopup = useCallback((persistDismiss = true) => {
     setVisible(false);
-    window.setTimeout(() => setOpen(false), 220);
+    window.setTimeout(() => setOpen(false), 200);
     if (persistDismiss) {
       try {
         localStorage.setItem(STORAGE_KEY, String(Date.now()));
@@ -108,9 +114,9 @@ const WhatsAppGroupPopup = () => {
     };
   }, [open, closePopup]);
 
-  if (!open || !groupUrl) return null;
+  if (!mounted || !open || !groupUrl) return null;
 
-  return (
+  return createPortal(
     <div
       id={POPUP_ID}
       className={`wa-join-popup${visible ? ' wa-join-popup--visible' : ''}`}
@@ -163,7 +169,8 @@ const WhatsAppGroupPopup = () => {
           🚀 Join Now
         </a>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

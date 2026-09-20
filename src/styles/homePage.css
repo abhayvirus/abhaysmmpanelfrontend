@@ -40,7 +40,7 @@
   line-height: 1;
 }
 
-.landing-page > *:not(.landing-watermark):not(.nav-public):not(.sticky-announcement):not(.sticky-telegram-banner) {
+.landing-page > *:not(.landing-watermark):not(.nav-public):not(.sticky-announcement):not(.sticky-telegram-banner):not(#whatsapp-group-join-popup):not(.wa-join-popup) {
   position: relative;
   z-index: 1;
 }

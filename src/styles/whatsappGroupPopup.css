@@ -1,43 +1,55 @@
-/* Centered WhatsApp group join modal */
+/* True viewport-centered WhatsApp join modal (portaled to body) */
 
-.wa-join-popup {
-  position: fixed;
-  inset: 0;
-  z-index: 12000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+#whatsapp-group-join-popup.wa-join-popup {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
   padding: max(1rem, env(safe-area-inset-top, 0px))
     max(1rem, env(safe-area-inset-right, 0px))
     max(1rem, env(safe-area-inset-bottom, 0px))
-    max(1rem, env(safe-area-inset-left, 0px));
-  box-sizing: border-box;
+    max(1rem, env(safe-area-inset-left, 0px)) !important;
+  box-sizing: border-box !important;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 220ms ease;
+  transform: none !important;
+  transition: opacity 180ms ease;
 }
 
-.wa-join-popup--visible {
+#whatsapp-group-join-popup.wa-join-popup--visible {
   opacity: 1;
   pointer-events: auto;
 }
 
-.wa-join-popup__backdrop {
+#whatsapp-group-join-popup .wa-join-popup__backdrop {
   position: absolute;
   inset: 0;
   border: none;
   padding: 0;
   margin: 0;
-  background: rgba(2, 8, 23, 0.72);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(2, 8, 23, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   cursor: pointer;
 }
 
-.wa-join-popup__card {
+#whatsapp-group-join-popup .wa-join-popup__card {
   position: relative;
   z-index: 1;
   width: min(100%, 22.5rem);
+  max-height: min(90dvh, 40rem);
+  overflow: auto;
+  margin: 0 auto;
   padding: 1.35rem 1.25rem 1.25rem;
   border-radius: 1.15rem;
   background: linear-gradient(160deg, #0b1f17 0%, #0f172a 48%, #07111f 100%);
@@ -46,15 +58,18 @@
     0 24px 64px rgba(0, 0, 0, 0.55),
     0 0 40px rgba(37, 211, 102, 0.12);
   text-align: center;
-  transform: translateY(14px) scale(0.96);
-  transition: transform 220ms ease;
+  /* Center pop: scale only — no slide from top */
+  transform: scale(0.92);
+  opacity: 0.85;
+  transition: transform 200ms ease, opacity 200ms ease;
 }
 
-.wa-join-popup--visible .wa-join-popup__card {
-  transform: translateY(0) scale(1);
+#whatsapp-group-join-popup.wa-join-popup--visible .wa-join-popup__card {
+  transform: scale(1);
+  opacity: 1;
 }
 
-.wa-join-popup__close {
+#whatsapp-group-join-popup .wa-join-popup__close {
   position: absolute;
   top: 0.45rem;
   right: 0.45rem;
@@ -72,11 +87,11 @@
   justify-content: center;
 }
 
-.wa-join-popup__close:hover {
+#whatsapp-group-join-popup .wa-join-popup__close:hover {
   background: rgba(255, 255, 255, 0.16);
 }
 
-.wa-join-popup__badge {
+#whatsapp-group-join-popup .wa-join-popup__badge {
   display: inline-block;
   margin-bottom: 0.55rem;
   padding: 0.2rem 0.65rem;
@@ -90,7 +105,7 @@
   border: 1px solid rgba(37, 211, 102, 0.35);
 }
 
-.wa-join-popup__title {
+#whatsapp-group-join-popup .wa-join-popup__title {
   margin: 0 0 0.45rem;
   font-size: clamp(1.15rem, 4vw, 1.35rem);
   font-weight: 800;
@@ -99,14 +114,14 @@
   padding-inline: 1.25rem;
 }
 
-.wa-join-popup__text {
+#whatsapp-group-join-popup .wa-join-popup__text {
   margin: 0 0 1rem;
   font-size: 0.9rem;
   line-height: 1.5;
   color: #94a3b8;
 }
 
-.wa-join-popup__qr {
+#whatsapp-group-join-popup .wa-join-popup__qr {
   display: block;
   width: min(100%, 11.5rem);
   height: auto;
@@ -116,13 +131,13 @@
   background: #fff;
 }
 
-.wa-join-popup__hint {
+#whatsapp-group-join-popup .wa-join-popup__hint {
   margin: 0 0 1rem;
   font-size: 0.75rem;
   color: #64748b;
 }
 
-.wa-join-popup__cta {
+#whatsapp-group-join-popup .wa-join-popup__cta {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -139,7 +154,7 @@
   transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
-.wa-join-popup__cta:hover {
+#whatsapp-group-join-popup .wa-join-popup__cta:hover {
   transform: translateY(-1px);
   color: #fff;
   text-decoration: none;
@@ -147,8 +162,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .wa-join-popup,
-  .wa-join-popup__card {
+  #whatsapp-group-join-popup.wa-join-popup,
+  #whatsapp-group-join-popup .wa-join-popup__card {
     transition: none;
+  }
+
+  #whatsapp-group-join-popup .wa-join-popup__card {
+    transform: none;
+    opacity: 1;
   }
 }
