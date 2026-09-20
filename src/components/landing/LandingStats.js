@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { BRAND } from '../../config/brand';
 import { formatStatCount } from '../../utils/formatStat';
@@ -10,24 +10,6 @@ const STAT_ITEMS = [
   { key: 'totalUsers', label: 'Happy Clients', minimum: BRAND.marketingStats.totalUsers, fallback: '10K+' },
   { key: 'activeServices', label: 'Live Services', minimum: BRAND.marketingStats.activeServices, fallback: '500+' },
 ];
-
-function useAnimatedPercent(active, target = 99.2, duration = 2200) {
-  const [value, setValue] = useState(0);
-  useEffect(() => {
-    if (!active) return undefined;
-    const start = performance.now();
-    let raf;
-    const tick = (now) => {
-      const progress = Math.min(1, (now - start) / duration);
-      const eased = 1 - (1 - progress) ** 3;
-      setValue(Math.round(target * eased * 10) / 10);
-      if (progress < 1) raf = requestAnimationFrame(tick);
-    };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [active, target, duration]);
-  return active ? `${value}%` : '0%';
-}
 
 const StatCard = ({ label, display, delay }) => (
   <motion.div
@@ -54,11 +36,6 @@ const AnimatedStatCard = ({ statKey, label, minimum, fallback, stats, inView, de
   return <StatCard label={label} display={display} delay={delay} />;
 };
 
-const SuccessRateCard = ({ inView, delay }) => {
-  const display = useAnimatedPercent(inView, 99.2);
-  return <StatCard label="Success Rate" display={display} delay={delay} />;
-};
-
 const LandingStats = ({ stats }) => {
   const { ref, inView } = useInViewOnce(0.15);
 
@@ -76,7 +53,6 @@ const LandingStats = ({ stats }) => {
           delay={i * 0.08}
         />
       ))}
-      <SuccessRateCard inView={inView} delay={0.32} />
     </div>
   );
 };

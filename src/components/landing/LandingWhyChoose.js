@@ -8,6 +8,7 @@ const REASONS = [
   { icon: '🔐', title: 'Secure Payments', desc: 'Trusted gateways, encrypted sessions, and safe top-ups.' },
   { icon: '💎', title: 'Affordable Pricing', desc: 'Reseller-friendly rates with transparent per-1k pricing.' },
   { icon: '🛡️', title: 'Premium Support', desc: 'Dedicated help via tickets, chat, and WhatsApp.' },
+  { icon: '🔌', title: 'API Access', desc: 'Full reseller API for agencies and automation.' },
 ];
 
 const LandingWhyChoose = () => {

@@ -8,6 +8,7 @@ const BADGES = [
   { icon: '♻️', title: 'Refill Supported', desc: 'Auto refill on eligible services' },
   { icon: '🔌', title: 'API Access', desc: 'Full reseller API integration' },
   { icon: '🎧', title: '24/7 Support', desc: 'WhatsApp & ticket support' },
+  { icon: '📈', title: 'Real-time Tracking', desc: 'Live order status updates' },
 ];
 
 const LandingTrustBadges = () => {
