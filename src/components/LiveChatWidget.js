@@ -15,6 +15,13 @@ const CRITICAL_PATHS = [
   '/profile',
 ];
 
+const USER_CHAT_LIMIT = 20;
+const SESSION_EXPIRED_MSG = 'Your session expired';
+
+function countUserMessages(list) {
+  return (Array.isArray(list) ? list : []).filter((m) => m.sender_role === 'user').length;
+}
+
 const LiveChatWidget = () => {
   const location = useLocation();
   const { settings } = useSettings();
@@ -24,6 +31,7 @@ const LiveChatWidget = () => {
   const [msgs, setMsgs] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
+  const [sessionNotice, setSessionNotice] = useState('');
   const bottom = useRef(null);
   const token = localStorage.getItem('token');
   const user = useMemo(() => {
@@ -67,9 +75,25 @@ const LiveChatWidget = () => {
       !open,
   });
 
+  const userMsgCount = countUserMessages(msgs);
+  const remaining = Math.max(0, USER_CHAT_LIMIT - userMsgCount);
+  const sessionExpired = userMsgCount >= USER_CHAT_LIMIT;
+
+  const expireSession = useCallback((notice = SESSION_EXPIRED_MSG) => {
+    setSessionNotice(notice);
+    setOpen(false);
+    setText('');
+    window.setTimeout(() => setSessionNotice(''), 4500);
+  }, []);
+
   const load = useCallback(() => {
     if (!token) return;
-    getChatMessages().then((r) => setMsgs(r.data)).catch(() => {});
+    getChatMessages()
+      .then((r) => {
+        const list = Array.isArray(r.data) ? r.data : [];
+        setMsgs(list);
+      })
+      .catch(() => {});
   }, [token]);
 
   useEffect(() => {
@@ -78,6 +102,14 @@ const LiveChatWidget = () => {
     const id = setInterval(load, 4000);
     return () => clearInterval(id);
   }, [open, token, load]);
+
+  // Auto-close once user hits the 20-message session limit
+  useEffect(() => {
+    if (!open) return;
+    if (userMsgCount >= USER_CHAT_LIMIT) {
+      expireSession();
+    }
+  }, [open, userMsgCount, expireSession]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: 'smooth' });
@@ -129,29 +161,16 @@ const LiveChatWidget = () => {
         borderRadius: 0,
       };
     }
-    if (!position) {
-      return { right: '1.25rem', bottom: '5.5rem', left: 'auto', top: 'auto' };
-    }
-    const panelW = Math.min(380, window.innerWidth - 24);
-    let left = position.x;
-    if (left + panelW > window.innerWidth - 12) {
-      left = window.innerWidth - panelW - 12;
-    }
-    left = Math.max(12, left);
-    const openAbove = position.y > window.innerHeight * 0.45;
-    if (openAbove) {
-      return {
-        left: `${left}px`,
-        bottom: `${window.innerHeight - position.y + 8}px`,
-        top: 'auto',
-      };
-    }
+    // Desktop: always dock bottom-right so header never clips off-screen
     return {
-      left: `${left}px`,
-      top: `${Math.max(12, position.y - 8)}px`,
-      bottom: 'auto',
+      right: '1.25rem',
+      bottom: '5.5rem',
+      left: 'auto',
+      top: 'auto',
+      width: 'min(380px, calc(100vw - 1.5rem))',
+      height: 'min(520px, calc(100dvh - 7rem))',
     };
-  }, [position, open, isMobileViewport]);
+  }, [isMobileViewport]);
 
   useEffect(() => {
     if (!open || !isMobileViewport) return undefined;
@@ -167,14 +186,33 @@ const LiveChatWidget = () => {
   if (!chatOn || !token) return null;
 
   const send = async () => {
-    if (!text.trim() || sending) return;
+    if (!text.trim() || sending || sessionExpired) return;
+    if (userMsgCount >= USER_CHAT_LIMIT) {
+      expireSession();
+      return;
+    }
     setSending(true);
     try {
-      await sendChatMessage(text.trim());
+      const res = await sendChatMessage(text.trim());
       setText('');
-      load();
+      const data = res.data || {};
+      await new Promise((resolve) => {
+        getChatMessages()
+          .then((r) => {
+            setMsgs(Array.isArray(r.data) ? r.data : []);
+          })
+          .finally(resolve);
+      });
+      if (data.session_expired || data.code === 'SESSION_EXPIRED') {
+        expireSession(data.message || SESSION_EXPIRED_MSG);
+      }
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to send');
+      const data = e.response?.data || {};
+      if (data.code === 'SESSION_EXPIRED' || e.response?.status === 403) {
+        expireSession(data.message || SESSION_EXPIRED_MSG);
+      } else {
+        alert(data.message || 'Failed to send');
+      }
     }
     setSending(false);
   };
@@ -182,8 +220,22 @@ const LiveChatWidget = () => {
   const handleFabClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    // Ignore only real drag moves; tiny pointer jitter should still open chat
     if (wasDragged()) return;
+    if (sessionExpired || userMsgCount >= USER_CHAT_LIMIT) {
+      // Refresh count then decide
+      getChatMessages()
+        .then((r) => {
+          const list = Array.isArray(r.data) ? r.data : [];
+          setMsgs(list);
+          if (countUserMessages(list) >= USER_CHAT_LIMIT) {
+            expireSession();
+          } else {
+            setOpen(true);
+          }
+        })
+        .catch(() => setOpen(true));
+      return;
+    }
     setOpen(true);
   };
 
@@ -202,6 +254,12 @@ const LiveChatWidget = () => {
 
   return (
     <>
+      {sessionNotice ? (
+        <div className="live-chat-session-toast" role="status">
+          {sessionNotice}
+        </div>
+      ) : null}
+
       {!open && (
         <button
           type="button"
@@ -233,7 +291,11 @@ const LiveChatWidget = () => {
             <div className="live-chat-wa-avatar" aria-hidden="true">💬</div>
             <div className="live-chat-wa-title">
               <strong>{t('chat.title') || 'Live Support'}</strong>
-              <span>online · WhatsApp style</span>
+              <span>
+                {remaining > 0
+                  ? `${remaining} message${remaining === 1 ? '' : 's'} left`
+                  : 'Session limit reached'}
+              </span>
             </div>
             <button
               type="button"
@@ -253,14 +315,19 @@ const LiveChatWidget = () => {
           <div className="live-chat-messages live-chat-wa-messages">
             {msgs.length === 0 && (
               <div className="live-chat-wa-empty">
-                Say hello — your name & email go to admin with every first message.
+                Say hello — max {USER_CHAT_LIMIT} messages per session.
               </div>
             )}
             {msgs.map((m) => (
-              <div key={m.id} className={`chat-bubble chat-${m.sender_role} chat-bubble--wa`}>
+              <div
+                key={m.id}
+                className={`chat-bubble chat-${m.sender_role || 'user'} chat-bubble--wa`}
+              >
                 <div className="chat-bubble-text">{m.message}</div>
                 <span className="chat-time">
-                  {new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {m.created_at
+                    ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                    : ''}
                 </span>
               </div>
             ))}
@@ -270,13 +337,23 @@ const LiveChatWidget = () => {
           <div className="live-chat-input live-chat-wa-input">
             <input
               className="input"
-              placeholder={t('chat.placeholder') || 'Type a message…'}
+              placeholder={
+                sessionExpired
+                  ? SESSION_EXPIRED_MSG
+                  : (t('chat.placeholder') || 'Type a message…')
+              }
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && send()}
-              autoFocus
+              onKeyDown={(e) => e.key === 'Enter' && !sessionExpired && send()}
+              disabled={sending || sessionExpired}
+              autoFocus={!sessionExpired}
             />
-            <button type="button" className="btn btn-primary btn-sm live-chat-wa-send" onClick={send} disabled={sending}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm live-chat-wa-send"
+              onClick={send}
+              disabled={sending || sessionExpired || !text.trim()}
+            >
               {sending ? '…' : (t('chat.send') || 'Send')}
             </button>
           </div>
