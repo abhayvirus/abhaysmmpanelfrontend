@@ -6,6 +6,7 @@ import { getServices, getPlatforms, placeOrder, getMe } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import '../styles/balanceWarning.css';
 import { getLinkPlaceholder } from '../utils/linkPlaceholder';
+import { getServiceUnitPrice } from '../utils/servicePrice';
 
 const platformIcons = {
   All: '⚡', Instagram: '📸', TikTok: '🎵', YouTube: '▶️',
@@ -120,7 +121,8 @@ const Dashboard = () => {
     if (!selectedService || !quantity || Number.isNaN(Number(quantity))) return null;
     const qty = parseInt(quantity, 10);
     if (qty < 1) return null;
-    return (selectedService.price / 1000) * qty;
+    const unit = getServiceUnitPrice(selectedService);
+    return (unit / 1000) * qty;
   }, [selectedService, quantity]);
 
   const walletBalance = parseFloat(user.balance || 0);

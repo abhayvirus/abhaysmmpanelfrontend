@@ -1,18 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
-
-function formatPrice(value) {
-  const n = Number(value);
-  if (!Number.isFinite(n)) return '0.00';
-  return n.toFixed(2);
-}
+import { formatServicePrice, getServiceUnitPrice } from '../utils/servicePrice';
 
 const ServiceCard = ({ service, currencySymbol, onOrder }) => {
   const sym = currencySymbol || '₹';
   const wrapRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const platform = String(service.platform || '').trim();
+  const category = String(service.category || '').trim();
   const minQty = Number(service.min_quantity);
   const maxQty = Number(service.max_quantity);
+  const unitPrice = getServiceUnitPrice(service);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -40,9 +37,10 @@ const ServiceCard = ({ service, currencySymbol, onOrder }) => {
         <article className="card services-card">
           <h3 className="services-card__title">{service.name}</h3>
           <div className="services-card__meta">
-            {platform ? (
+            {(platform || category) ? (
               <div className="services-card__meta-line">
-                <span className="services-card__meta-tag">{platform}</span>
+                {platform ? <span className="services-card__meta-tag">{platform}</span> : null}
+                {category ? <span className="services-card__meta-tag">{category}</span> : null}
               </div>
             ) : null}
             <div className="services-card__meta-line">
@@ -53,13 +51,13 @@ const ServiceCard = ({ service, currencySymbol, onOrder }) => {
           </div>
           <div className="services-card__footer">
             <div className="services-card__price-row">
-              <span className="services-card__price">{sym}{formatPrice(service.price)}</span>
+              <span className="services-card__price">{sym}{formatServicePrice(service)}</span>
               <span className="services-card__price-unit">per 1000</span>
             </div>
             <button
               type="button"
               className="btn btn-primary services-card__order"
-              onClick={() => onOrder(service)}
+              onClick={() => onOrder({ ...service, price: unitPrice })}
             >
               Order
             </button>

@@ -4,6 +4,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import InsufficientBalanceAlert from './InsufficientBalanceAlert';
 import '../styles/balanceWarning.css';
 import { getLinkPlaceholder } from '../utils/linkPlaceholder';
+import { getServiceUnitPrice } from '../utils/servicePrice';
 
 const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
   const { settings } = useSettings();
@@ -25,12 +26,14 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
     }
   }, [open, service]);
 
+  const unitPrice = useMemo(() => getServiceUnitPrice(service), [service]);
+
   const orderCost = useMemo(() => {
     if (!open || !service || !quantity || Number.isNaN(Number(quantity))) return null;
     const qty = parseInt(quantity, 10);
     if (qty < 1) return null;
-    return (parseFloat(service.price) / 1000) * qty;
-  }, [open, service, quantity]);
+    return (unitPrice / 1000) * qty;
+  }, [open, service, quantity, unitPrice]);
 
   const total = orderCost != null ? orderCost.toFixed(2) : null;
 
@@ -109,7 +112,7 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
             }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total charge</div>
               <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)' }}>{sym}{total}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sym}{service.price} per 1000</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sym}{unitPrice.toFixed(2)} per 1000</div>
             </div>
           )}
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || Boolean(insufficientBalance)}>
