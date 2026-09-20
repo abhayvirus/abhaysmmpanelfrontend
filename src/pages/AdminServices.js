@@ -11,6 +11,8 @@ import {
   adminGetProviders,
   adminDeleteAllServices,
   adminUpdateProvider,
+  adminGetCategories,
+  adminApplyServiceMargin,
 } from '../api';
 import SocialIconPicker from '../components/SocialIconPicker';
 import '../styles/adminServices.css';
@@ -32,13 +34,29 @@ function keyStatusLabel(status) {
   return { text: 'Unknown', className: 'badge-danger' };
 }
 
+function money(value, digits = 2) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return (0).toFixed(digits);
+  return n.toFixed(digits);
+}
+
+function sellingFromMargin(original, marginPct) {
+  const o = parseFloat(original);
+  const m = parseFloat(marginPct);
+  if (!Number.isFinite(o) || o < 0) return '';
+  const pct = Number.isFinite(m) ? m : 50;
+  return (o * (1 + pct / 100)).toFixed(4);
+}
+
 function serviceToDraft(svc) {
   return {
     name: svc.name || '',
     platform: svc.platform || '',
-    category: svc.category || '',
-    original_price: svc.original_price ?? '',
-    custom_price: svc.custom_price ?? '',
+    category: svc.category || svc.category_name || '',
+    original_price: svc.original_price != null && svc.original_price !== '' ? String(svc.original_price) : '0',
+    custom_price: svc.custom_price != null && svc.custom_price !== '' ? String(svc.custom_price) : '0',
+    profit_margin: svc.profit_margin != null && svc.profit_margin !== '' ? String(svc.profit_margin) : '50',
+    description: svc.description || '',
     min_quantity: svc.min_quantity ?? '',
     max_quantity: svc.max_quantity ?? '',
     is_active: Boolean(svc.is_active),
@@ -46,12 +64,17 @@ function serviceToDraft(svc) {
 }
 
 function draftToPayload(draft) {
+  const original = parseFloat(draft.original_price);
+  const custom = parseFloat(draft.custom_price);
+  const margin = parseFloat(draft.profit_margin);
   return {
     name: String(draft.name).trim(),
     platform: String(draft.platform).trim(),
     category: String(draft.category).trim(),
-    original_price: parseFloat(draft.original_price),
-    custom_price: parseFloat(draft.custom_price),
+    original_price: Number.isFinite(original) ? original : 0,
+    custom_price: Number.isFinite(custom) ? custom : 0,
+    profit_margin: Number.isFinite(margin) ? margin : 50,
+    description: String(draft.description || '').trim(),
     min_quantity: parseInt(draft.min_quantity, 10),
     max_quantity: parseInt(draft.max_quantity, 10),
     is_active: Boolean(draft.is_active),
@@ -87,6 +110,9 @@ const AdminServices = () => {
     max_quantity: 10000,
     is_active: true,
   });
+  const [categoryOptions, setCategoryOptions] = useState([]);
+  const [marginDrafts, setMarginDrafts] = useState({});
+  const [applyingMarginId, setApplyingMarginId] = useState(null);
 
   const loadProviderStatus = useCallback(async (providerId) => {
     try {
@@ -106,6 +132,13 @@ const AdminServices = () => {
       const r = await adminGetProviders();
       const list = Array.isArray(r.data) ? r.data : [];
       setProviders(list);
+      setMarginDrafts((prev) => {
+        const next = { ...prev };
+        list.forEach((p) => {
+          if (next[p.id] == null) next[p.id] = String(p.profit_margin ?? 50);
+        });
+        return next;
+      });
       setSelectedProviderId((prev) => {
         if (prev && list.some((p) => String(p.id) === String(prev))) return prev;
         const def = list.find((p) => p.is_default) || list[0];
@@ -116,10 +149,21 @@ const AdminServices = () => {
     }
   }, []);
 
+  const loadCategories = useCallback(async () => {
+    try {
+      const r = await adminGetCategories();
+      const list = Array.isArray(r.data) ? r.data : [];
+      setCategoryOptions(list.map((c) => c.name).filter(Boolean));
+    } catch {
+      setCategoryOptions([]);
+    }
+  }, []);
+
   useEffect(() => {
     loadServices();
     loadProviders();
-  }, [loadProviders]);
+    loadCategories();
+  }, [loadProviders, loadCategories]);
 
   useEffect(() => {
     if (selectedProviderId) loadProviderStatus(selectedProviderId);
@@ -137,10 +181,40 @@ const AdminServices = () => {
   };
 
   const updateDraft = (id, field, value) => {
-    setEditDrafts((prev) => ({
-      ...prev,
-      [id]: { ...prev[id], [field]: value },
-    }));
+    setEditDrafts((prev) => {
+      const cur = { ...(prev[id] || {}) };
+      cur[field] = value;
+      if (field === 'original_price' || field === 'profit_margin') {
+        const next = sellingFromMargin(
+          field === 'original_price' ? value : cur.original_price,
+          field === 'profit_margin' ? value : cur.profit_margin
+        );
+        if (next !== '') cur.custom_price = next;
+      }
+      return { ...prev, [id]: cur };
+    });
+  };
+
+  const applyProviderMargin = async (providerId) => {
+    const margin = marginDrafts[providerId] ?? providers.find((p) => p.id === providerId)?.profit_margin ?? 50;
+    setApplyingMarginId(providerId);
+    setSyncMsg(null);
+    try {
+      await adminUpdateProvider(providerId, { profit_margin: margin });
+      const res = await adminApplyServiceMargin(providerId, margin);
+      setSyncMsg({
+        type: 'success',
+        text: res.data?.message || `Margin ${margin}% applied — selling prices updated`,
+      });
+      await loadServices();
+      await loadProviders();
+    } catch (err) {
+      setSyncMsg({
+        type: 'error',
+        text: err.response?.data?.message || 'Failed to apply margin',
+      });
+    }
+    setApplyingMarginId(null);
   };
 
   const startEdit = (svc) => {
@@ -307,8 +381,9 @@ const AdminServices = () => {
 
     const nextActive = !svc.is_active;
     try {
+      const price = parseFloat(svc.custom_price);
       await adminUpdateService(svc.id, {
-        custom_price: parseFloat(svc.custom_price),
+        ...(Number.isFinite(price) ? { custom_price: price } : {}),
         is_active: nextActive,
       });
       setServices((prev) => prev.map((s) => (s.id === svc.id ? { ...s, is_active: nextActive } : s)));
@@ -386,17 +461,26 @@ const AdminServices = () => {
   };
 
   const platforms = ['All', ...new Set(services.map((s) => s.platform).filter(Boolean))];
-  const categories = ['All', ...new Set(services.map((s) => s.category).filter(Boolean))];
+  const categories = [
+    'All',
+    ...new Set(
+      services
+        .map((s) => s.category || s.category_name)
+        .filter(Boolean)
+    ),
+  ];
 
   const filtered = services.filter((s) => {
     const q = search.trim().toLowerCase();
+    const cat = s.category || s.category_name || '';
     if (platform !== 'All' && s.platform !== platform) return false;
-    if (categoryFilter !== 'All' && s.category !== categoryFilter) return false;
+    if (categoryFilter !== 'All' && cat !== categoryFilter) return false;
     if (!q) return true;
     return (
-      s.name.toLowerCase().includes(q)
+      (s.name || '').toLowerCase().includes(q)
       || (s.platform || '').toLowerCase().includes(q)
-      || (s.category || '').toLowerCase().includes(q)
+      || cat.toLowerCase().includes(q)
+      || (s.description || '').toLowerCase().includes(q)
     );
   });
 
@@ -503,7 +587,24 @@ const AdminServices = () => {
                 onChange={(e) => updateDraft(svc.id, 'original_price', e.target.value)}
               />
             ) : (
-              <strong>₹{parseFloat(svc.original_price).toFixed(2)}</strong>
+              <strong>₹{money(svc.original_price, 4)}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Margin %</span>
+            {editing ? (
+              <input
+                type="number"
+                step="1"
+                min="0"
+                max="500"
+                className="input admin-svc-card__field-input"
+                value={draft.profit_margin}
+                onChange={(e) => updateDraft(svc.id, 'profit_margin', e.target.value)}
+                title="Selling price auto-updates from provider price × margin"
+              />
+            ) : (
+              <strong>{money(svc.profit_margin ?? 50, 0)}%</strong>
             )}
           </div>
           <div className="admin-svc-card__cell">
@@ -517,7 +618,7 @@ const AdminServices = () => {
                 onChange={(e) => updateDraft(svc.id, 'custom_price', e.target.value)}
               />
             ) : (
-              <strong>₹{parseFloat(svc.custom_price).toFixed(2)}</strong>
+              <strong>₹{money(svc.custom_price, 2)}</strong>
             )}
           </div>
           <div className="admin-svc-card__cell">
@@ -530,7 +631,7 @@ const AdminServices = () => {
                 onChange={(e) => updateDraft(svc.id, 'min_quantity', e.target.value)}
               />
             ) : (
-              <strong>{svc.min_quantity}</strong>
+              <strong>{svc.min_quantity ?? '—'}</strong>
             )}
           </div>
           <div className="admin-svc-card__cell">
@@ -543,20 +644,42 @@ const AdminServices = () => {
                 onChange={(e) => updateDraft(svc.id, 'max_quantity', e.target.value)}
               />
             ) : (
-              <strong>{svc.max_quantity?.toLocaleString()}</strong>
+              <strong>{svc.max_quantity != null ? Number(svc.max_quantity).toLocaleString() : '—'}</strong>
             )}
           </div>
           <div className="admin-svc-card__cell admin-svc-card__cell--full">
             <span>Category</span>
             {editing ? (
-              <input
+              <>
+                <input
+                  className="input admin-svc-card__field-input"
+                  list={`cat-list-${svc.id}`}
+                  value={draft.category}
+                  onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
+                  placeholder="Category"
+                />
+                <datalist id={`cat-list-${svc.id}`}>
+                  {categoryOptions.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+              </>
+            ) : (
+              <strong>{svc.category || svc.category_name || '—'}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell admin-svc-card__cell--full">
+            <span>Description</span>
+            {editing ? (
+              <textarea
                 className="input admin-svc-card__field-input"
-                value={draft.category}
-                onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
-                placeholder="Category (optional)"
+                rows={2}
+                value={draft.description}
+                onChange={(e) => updateDraft(svc.id, 'description', e.target.value)}
+                placeholder="Service description from provider"
               />
             ) : (
-              <strong>{svc.category || '—'}</strong>
+              <strong className="admin-svc-card__desc">{svc.description || '—'}</strong>
             )}
           </div>
         </div>
@@ -638,7 +761,34 @@ const AdminServices = () => {
                       </span>
                     </div>
                     <div className="admin-provider-card__url">{p.api_url || '—'}</div>
-                    <div className="admin-provider-card__meta">Margin: {p.profit_margin ?? 50}%</div>
+                    <div className="admin-provider-card__meta admin-provider-card__margin-row">
+                      <label htmlFor={`prov-margin-${p.id}`}>Margin %</label>
+                      <input
+                        id={`prov-margin-${p.id}`}
+                        type="number"
+                        min={0}
+                        max={500}
+                        className="input admin-provider-card__margin-input"
+                        value={marginDrafts[p.id] ?? String(p.profit_margin ?? 50)}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          e.stopPropagation();
+                          setMarginDrafts((prev) => ({ ...prev, [p.id]: e.target.value }));
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        disabled={applyingMarginId === p.id || syncing}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          applyProviderMargin(p.id);
+                        }}
+                        title="Save margin and recalculate all selling prices"
+                      >
+                        {applyingMarginId === p.id ? '…' : 'Apply → prices'}
+                      </button>
+                    </div>
                     <div className="admin-provider-card__actions">
                       {!isDefault && (
                         <button
@@ -840,7 +990,9 @@ const AdminServices = () => {
           )}
         </div>
 
-        <p className="admin-services-hint">Original = provider price · Your Price = user charge · Click Edit to modify all fields</p>
+        <p className="admin-services-hint">
+          Provider price + margin → selling price auto. Edit any field · Sync fetches category, price &amp; description from API
+        </p>
 
         {!filtered.length ? (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>No services found</p>
@@ -850,7 +1002,7 @@ const AdminServices = () => {
               <table className="table">
                 <thead>
                   <tr>
-                    {['Service', 'Platform', 'Category', 'Provider/1000', 'Selling/1000', 'Min', 'Max', 'Status', 'Actions'].map((h) => (
+                    {['Service', 'Platform', 'Category', 'Provider/1000', 'Margin%', 'Selling/1000', 'Min', 'Max', 'Status', 'Actions'].map((h) => (
                       <th key={h}>{h}</th>
                     ))}
                   </tr>
@@ -861,15 +1013,29 @@ const AdminServices = () => {
                     const editing = isEditing(svc.id);
                     return (
                       <tr key={svc.id} className={editing ? 'admin-svc-row--editing' : ''}>
-                        <td style={{ maxWidth: 180 }}>
+                        <td style={{ maxWidth: 200 }}>
                           {editing ? (
-                            <input
-                              className="input admin-svc-table-input"
-                              value={draft.name}
-                              onChange={(e) => updateDraft(svc.id, 'name', e.target.value)}
-                            />
+                            <div className="admin-svc-table-name-wrap">
+                              <input
+                                className="input admin-svc-table-input"
+                                value={draft.name}
+                                onChange={(e) => updateDraft(svc.id, 'name', e.target.value)}
+                              />
+                              <textarea
+                                className="input admin-svc-table-input"
+                                rows={2}
+                                placeholder="Description"
+                                value={draft.description}
+                                onChange={(e) => updateDraft(svc.id, 'description', e.target.value)}
+                              />
+                            </div>
                           ) : (
-                            svc.name
+                            <div>
+                              <div>{svc.name}</div>
+                              {svc.description ? (
+                                <div className="admin-svc-table-desc">{svc.description}</div>
+                              ) : null}
+                            </div>
                           )}
                         </td>
                         <td>
@@ -881,18 +1047,26 @@ const AdminServices = () => {
                               placeholder="Platform"
                             />
                           ) : (
-                            svc.platform
+                            svc.platform || '—'
                           )}
                         </td>
                         <td>
                           {editing ? (
                             <input
                               className="input admin-svc-table-input"
+                              list={`cat-tbl-${svc.id}`}
                               value={draft.category}
                               onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
                             />
                           ) : (
-                            svc.category || '—'
+                            svc.category || svc.category_name || '—'
+                          )}
+                          {editing && (
+                            <datalist id={`cat-tbl-${svc.id}`}>
+                              {categoryOptions.map((c) => (
+                                <option key={c} value={c} />
+                              ))}
+                            </datalist>
                           )}
                         </td>
                         <td>
@@ -905,7 +1079,21 @@ const AdminServices = () => {
                               onChange={(e) => updateDraft(svc.id, 'original_price', e.target.value)}
                             />
                           ) : (
-                            <span style={{ color: 'var(--text-muted)' }}>₹{parseFloat(svc.original_price).toFixed(4)}</span>
+                            <span style={{ color: 'var(--text-muted)' }}>₹{money(svc.original_price, 4)}</span>
+                          )}
+                        </td>
+                        <td>
+                          {editing ? (
+                            <input
+                              type="number"
+                              step="1"
+                              className="input admin-svc-table-input admin-svc-table-input--num"
+                              value={draft.profit_margin}
+                              onChange={(e) => updateDraft(svc.id, 'profit_margin', e.target.value)}
+                              title="Changes selling price automatically"
+                            />
+                          ) : (
+                            `${money(svc.profit_margin ?? 50, 0)}%`
                           )}
                         </td>
                         <td>
@@ -918,7 +1106,7 @@ const AdminServices = () => {
                               onChange={(e) => updateDraft(svc.id, 'custom_price', e.target.value)}
                             />
                           ) : (
-                            `₹${parseFloat(svc.custom_price).toFixed(2)}`
+                            `₹${money(svc.custom_price, 2)}`
                           )}
                         </td>
                         <td>

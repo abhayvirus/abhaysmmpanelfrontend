@@ -540,10 +540,19 @@ const AdminSettings = () => {
                     onClick={async () => {
                       const el = document.getElementById(`provider-margin-${p.id}`);
                       const margin = el ? el.value : p.profit_margin;
-                      await adminUpdateProvider(p.id, { profit_margin: margin });
-                      if (p.is_default) updateDraft('profit_margin', String(margin));
-                      showMsg(`Margin set to ${margin}%`);
-                      load();
+                      try {
+                        const res = await adminUpdateProvider(p.id, { profit_margin: margin });
+                        if (p.is_default) updateDraft('profit_margin', String(margin));
+                        const n = res.data?.prices_updated;
+                        showMsg(
+                          n
+                            ? `Margin ${margin}% · ${n} service prices updated automatically`
+                            : `Margin set to ${margin}%`
+                        );
+                        load();
+                      } catch (err) {
+                        showMsg(err.response?.data?.message || 'Failed to save margin');
+                      }
                     }}
                   >
                     Save margin
