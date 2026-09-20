@@ -8,6 +8,7 @@ import {
   adminProviderStatus,
   adminTestConnection,
   adminCreateService,
+  adminGetProviders,
 } from '../api';
 import SocialIconPicker from '../components/SocialIconPicker';
 import '../styles/adminServices.css';
@@ -62,6 +63,8 @@ const AdminServices = () => {
   const [adding, setAdding] = useState(false);
   const [syncMsg, setSyncMsg] = useState(null);
   const [providerInfo, setProviderInfo] = useState(null);
+  const [providers, setProviders] = useState([]);
+  const [selectedProviderId, setSelectedProviderId] = useState('');
   const [editDrafts, setEditDrafts] = useState({});
   const [editingIds, setEditingIds] = useState({});
   const [search, setSearch] = useState('');
@@ -81,9 +84,10 @@ const AdminServices = () => {
     is_active: true,
   });
 
-  const loadProviderStatus = useCallback(async () => {
+  const loadProviderStatus = useCallback(async (providerId) => {
     try {
-      const r = await adminProviderStatus();
+      const id = providerId || selectedProviderId || undefined;
+      const r = await adminProviderStatus(id || undefined);
       setProviderInfo(r.data);
     } catch (e) {
       setProviderInfo({
@@ -91,12 +95,31 @@ const AdminServices = () => {
         message: e.response?.data?.message || e.message,
       });
     }
+  }, [selectedProviderId]);
+
+  const loadProviders = useCallback(async () => {
+    try {
+      const r = await adminGetProviders();
+      const list = Array.isArray(r.data) ? r.data : [];
+      setProviders(list);
+      setSelectedProviderId((prev) => {
+        if (prev && list.some((p) => String(p.id) === String(prev))) return prev;
+        const def = list.find((p) => p.is_default) || list[0];
+        return def ? String(def.id) : '';
+      });
+    } catch {
+      setProviders([]);
+    }
   }, []);
 
   useEffect(() => {
     loadServices();
-    loadProviderStatus();
-  }, [loadProviderStatus]);
+    loadProviders();
+  }, [loadProviders]);
+
+  useEffect(() => {
+    if (selectedProviderId) loadProviderStatus(selectedProviderId);
+  }, [selectedProviderId, loadProviderStatus]);
 
   const loadServices = async () => {
     const res = await adminGetServices();
@@ -125,7 +148,7 @@ const AdminServices = () => {
     setTesting(true);
     setSyncMsg(null);
     try {
-      const res = await adminTestConnection();
+      const res = await adminTestConnection(selectedProviderId || undefined);
       const d = res.data;
       setProviderInfo({
         connected: d.connected,
@@ -160,10 +183,12 @@ const AdminServices = () => {
     setSyncing(true);
     setSyncMsg(null);
     try {
-      const res = await adminSyncServices();
-      setSyncMsg({ type: 'success', text: res.data.message });
+      const res = await adminSyncServices(selectedProviderId || undefined);
+      const margin = res.data.marginPct != null ? ` (${res.data.marginPct}% margin)` : '';
+      const name = res.data.providerName ? ` · ${res.data.providerName}` : '';
+      setSyncMsg({ type: 'success', text: `${res.data.message}${name}${margin}` });
       await loadServices();
-      await loadProviderStatus();
+      await loadProviderStatus(selectedProviderId);
     } catch (err) {
       const d = err.response?.data || {};
       setSyncMsg({ type: 'error', text: d.message || d.reasonCode || 'Sync failed' });
@@ -479,11 +504,28 @@ const AdminServices = () => {
             )}
           </div>
           <div className="admin-api-actions">
-            <button type="button" className="btn btn-ghost" onClick={handleTestConnection} disabled={testing || syncing}>
+            <label className="label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ whiteSpace: 'nowrap' }}>Provider</span>
+              <select
+                className="select"
+                value={selectedProviderId}
+                onChange={(e) => setSelectedProviderId(e.target.value)}
+                style={{ minWidth: 180 }}
+                disabled={testing || syncing}
+              >
+                {providers.length === 0 && <option value="">No providers — add in Settings</option>}
+                {providers.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} · {p.profit_margin ?? 50}%{p.is_default ? ' ★' : ''}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="btn btn-ghost" onClick={handleTestConnection} disabled={testing || syncing || !selectedProviderId}>
               {testing ? 'Testing…' : 'Test connection'}
             </button>
-            <button type="button" className="btn btn-primary" onClick={handleSync} disabled={syncing || testing}>
-              {syncing ? 'Syncing…' : 'Sync all services'}
+            <button type="button" className="btn btn-primary" onClick={handleSync} disabled={syncing || testing || !selectedProviderId}>
+              {syncing ? 'Syncing…' : 'Fetch / Sync services'}
             </button>
           </div>
         </div>
