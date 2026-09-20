@@ -2,7 +2,7 @@ import React from 'react';
 import { useSettings } from '../../contexts/SettingsContext';
 import { BRAND } from '../../config/brand';
 
-const whatsappQrSrc = `${process.env.PUBLIC_URL}${BRAND.whatsappQr}`;
+const whatsappQrSrc = `${process.env.PUBLIC_URL}${BRAND.whatsappQr}?v3`;
 
 function resolveWhatsAppGroupUrl(settings) {
   const url =
@@ -65,8 +65,8 @@ const LandingWhatsAppGroup = () => {
                   className="landing-whatsapp-group__qr"
                   loading="lazy"
                   decoding="async"
-                  width={758}
-                  height={798}
+                  width={776}
+                  height={855}
                 />
               </div>
               <figcaption className="landing-whatsapp-group__qr-caption">
