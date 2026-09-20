@@ -149,6 +149,45 @@
   font-weight: 600;
 }
 
+.admin-provider-card__margin-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.admin-provider-card__margin-row label {
+  font-size: 0.75rem;
+  color: var(--text-muted, #8ca0b8);
+}
+
+.admin-provider-card__margin-input {
+  width: 4.5rem;
+  min-width: 0;
+  padding: 0.35rem 0.45rem !important;
+  font-size: 0.8125rem !important;
+}
+
+.admin-svc-card__desc,
+.admin-svc-table-desc {
+  display: block;
+  font-weight: 400;
+  font-size: 0.75rem;
+  color: var(--text-muted, #8ca0b8);
+  margin-top: 0.25rem;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.admin-svc-table-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .admin-provider-card__actions {
   display: flex;
   flex-wrap: wrap;
