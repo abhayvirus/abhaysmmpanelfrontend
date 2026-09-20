@@ -101,6 +101,7 @@ const AdminServices = () => {
   const [savingId, setSavingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState('');
+  const [deleteAllOpen, setDeleteAllOpen] = useState(false);
   const [addForm, setAddForm] = useState({
     name: '',
     platform: '',
@@ -317,31 +318,47 @@ const AdminServices = () => {
     setSyncing(false);
   };
 
-  const handleDeleteAll = async () => {
+  const handleDeleteAll = () => {
     if (!services.length) {
       setSyncMsg({ type: 'error', text: 'No services to delete' });
       return;
     }
+    setDeleteAllOpen(true);
+  };
+
+  const confirmDeleteAllForProvider = async (providerKey) => {
+    const isAll = providerKey === 'all';
+    const provider = isAll ? null : providers.find((p) => String(p.id) === String(providerKey));
+    const label = isAll ? 'ALL providers' : (provider?.name || `provider #${providerKey}`);
+    const count = isAll
+      ? services.length
+      : services.filter((s) => String(s.provider_id) === String(providerKey)).length;
+
+    if (!count) {
+      setSyncMsg({ type: 'error', text: `${label} ke liye koi service nahi mili` });
+      setDeleteAllOpen(false);
+      return;
+    }
+
     const ok = window.confirm(
-      `Delete ALL ${services.length} services?\n\nServices with order history will be archived (hidden). Others are removed permanently.\n\nThis cannot be undone.`
+      `Delete ${count} services from "${label}"?\n\nOrders wali services archive ho jayengi. Baaki permanently delete.\n\nUndo nahi hoga.`
     );
     if (!ok) return;
-    const ok2 = window.confirm('Type confirmation: really delete ALL services from the panel?');
-    if (!ok2) return;
 
     setDeletingAll(true);
     setSyncMsg(null);
+    setDeleteAllOpen(false);
     try {
-      const res = await adminDeleteAllServices();
+      const res = await adminDeleteAllServices(isAll ? 'all' : providerKey);
       setSyncMsg({
         type: 'success',
-        text: res.data?.message || 'All services deleted',
+        text: res.data?.message || `${label} services deleted`,
       });
       await loadServices();
     } catch (err) {
       setSyncMsg({
         type: 'error',
-        text: err.response?.data?.message || 'Failed to delete all services',
+        text: err.response?.data?.message || 'Failed to delete services',
       });
     }
     setDeletingAll(false);
@@ -717,7 +734,7 @@ const AdminServices = () => {
               className="btn btn-danger"
               onClick={handleDeleteAll}
               disabled={deletingAll || syncing || testing || !services.length}
-              title="Delete every service from the panel"
+              title="Pehle choose karo — kis provider ki services delete karni hain"
             >
               {deletingAll ? 'Deleting…' : 'Delete all services'}
             </button>
@@ -1163,6 +1180,60 @@ const AdminServices = () => {
           </>
         )}
       </div>
+
+      {deleteAllOpen && (
+        <div className="modal-overlay" onClick={() => !deletingAll && setDeleteAllOpen(false)} role="presentation">
+          <div
+            className="card fade-in modal-panel admin-svc-delete-modal"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-labelledby="admin-svc-delete-all-title"
+          >
+            <h3 id="admin-svc-delete-all-title" className="admin-svc-delete-modal__title">
+              Kis provider ki services delete karni hain?
+            </h3>
+            <p className="admin-svc-delete-modal__text">
+              Pehle choose karo — sirf usi provider ki list hategi.
+            </p>
+            <div className="admin-delete-provider-list">
+              {providers.map((p) => {
+                const count = services.filter((s) => String(s.provider_id) === String(p.id)).length;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    className="btn btn-ghost admin-delete-provider-btn"
+                    disabled={deletingAll || count === 0}
+                    onClick={() => confirmDeleteAllForProvider(p.id)}
+                  >
+                    <strong>{p.name}</strong>
+                    <span>{count} services</span>
+                  </button>
+                );
+              })}
+              <button
+                type="button"
+                className="btn btn-danger admin-delete-provider-btn"
+                disabled={deletingAll || !services.length}
+                onClick={() => confirmDeleteAllForProvider('all')}
+              >
+                <strong>Sab providers (ALL)</strong>
+                <span>{services.length} services</span>
+              </button>
+            </div>
+            <div className="admin-svc-delete-modal__actions" style={{ marginTop: 12 }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => setDeleteAllOpen(false)}
+                disabled={Boolean(deletingAll)}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {deleteTarget && (
         <div className="modal-overlay" onClick={() => !deletingId && setDeleteTarget(null)} role="presentation">

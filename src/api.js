@@ -214,7 +214,12 @@ export const adminDeleteService = (id) => {
   console.log('Deleting Service ID:', serviceId);
   return API.delete(`/admin/services/${serviceId}`);
 };
-export const adminDeleteAllServices = () => API.delete('/services/admin/all', { timeout: 120000 });
+export const adminDeleteAllServices = (provider_id = 'all') =>
+  API.delete('/services/admin/all', {
+    timeout: 120000,
+    params: { provider_id },
+    data: { provider_id },
+  });
 export const adminGetSettings = () => API.get('/settings/admin');
 export const adminUpdateSettings = (data) => API.put('/settings/admin', data);
 export const adminGetSettingsAnalytics = () => API.get('/settings/admin/analytics-summary');
