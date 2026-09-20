@@ -231,8 +231,19 @@
     display: none;
   }
 
+  /* Mobile header already shows "Profile" — avoid clipped duplicate title/URL */
   .profile-page__header {
-    margin-bottom: 0.875rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .profile-page__title {
+    font-size: 1.15rem;
+  }
+
+  .profile-page__subtitle {
+    font-size: 0.8125rem;
+    overflow: visible;
+    word-break: break-all;
   }
 
   .profile-page__grid {

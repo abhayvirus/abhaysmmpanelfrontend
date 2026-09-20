@@ -228,7 +228,8 @@
   .main.has-mobile-chrome {
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
-    padding-top: 0.75rem !important;
+    /* Keep space for fixed mobile header — do NOT collapse to 0.75rem */
+    padding-top: calc(var(--mobile-header-h, 3.5rem) + env(safe-area-inset-top, 0px) + 0.5rem) !important;
   }
 
   .user-panel-scroll {
