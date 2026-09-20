@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import { getPublicStats, getServicesPreview } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import PublicNav from '../components/PublicNav';
-import StickyAnnouncementBar from '../components/StickyAnnouncementBar';
+import WhatsAppGroupPopup from '../components/WhatsAppGroupPopup';
 import SocialProofSection from '../components/SocialProofSection';
 import LandingHero from '../components/landing/LandingHero';
 import LandingTrustBadges from '../components/landing/LandingTrustBadges';
@@ -74,7 +74,7 @@ const Home = () => {
     <div className="home-page landing-page">
       <LandingWatermark />
       <PublicNav />
-      <StickyAnnouncementBar />
+      <WhatsAppGroupPopup />
 
       <main className="landing-main">
         <LandingHero settings={settings} stats={stats} />

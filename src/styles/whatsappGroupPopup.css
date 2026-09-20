@@ -1,0 +1,154 @@
+/* Centered WhatsApp group join modal */
+
+.wa-join-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: max(1rem, env(safe-area-inset-top, 0px))
+    max(1rem, env(safe-area-inset-right, 0px))
+    max(1rem, env(safe-area-inset-bottom, 0px))
+    max(1rem, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.wa-join-popup--visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.wa-join-popup__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(2, 8, 23, 0.72);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  cursor: pointer;
+}
+
+.wa-join-popup__card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 22.5rem);
+  padding: 1.35rem 1.25rem 1.25rem;
+  border-radius: 1.15rem;
+  background: linear-gradient(160deg, #0b1f17 0%, #0f172a 48%, #07111f 100%);
+  border: 1px solid rgba(37, 211, 102, 0.35);
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.55),
+    0 0 40px rgba(37, 211, 102, 0.12);
+  text-align: center;
+  transform: translateY(14px) scale(0.96);
+  transition: transform 220ms ease;
+}
+
+.wa-join-popup--visible .wa-join-popup__card {
+  transform: translateY(0) scale(1);
+}
+
+.wa-join-popup__close {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wa-join-popup__close:hover {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.wa-join-popup__badge {
+  display: inline-block;
+  margin-bottom: 0.55rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #dcfce7;
+  background: rgba(37, 211, 102, 0.18);
+  border: 1px solid rgba(37, 211, 102, 0.35);
+}
+
+.wa-join-popup__title {
+  margin: 0 0 0.45rem;
+  font-size: clamp(1.15rem, 4vw, 1.35rem);
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.25;
+  padding-inline: 1.25rem;
+}
+
+.wa-join-popup__text {
+  margin: 0 0 1rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #94a3b8;
+}
+
+.wa-join-popup__qr {
+  display: block;
+  width: min(100%, 11.5rem);
+  height: auto;
+  margin: 0 auto 0.65rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: #fff;
+}
+
+.wa-join-popup__hint {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.wa-join-popup__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 2.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.85rem;
+  background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-decoration: none;
+  box-shadow: 0 8px 24px rgba(37, 211, 102, 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.wa-join-popup__cta:hover {
+  transform: translateY(-1px);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(37, 211, 102, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-join-popup,
+  .wa-join-popup__card {
+    transition: none;
+  }
+}

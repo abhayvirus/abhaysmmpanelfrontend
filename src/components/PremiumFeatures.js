@@ -4,6 +4,7 @@ import { useIdleLogout } from '../hooks/useIdleLogout';
 import { useAuthSession } from '../hooks/useAuthSession';
 import { shouldShowLandingTelegramWidgets } from '../constants/telegramChannel';
 import WhatsAppFloat from './WhatsAppFloat';
+import WhatsAppGroupPopup from './WhatsAppGroupPopup';
 import TelegramFloat from './TelegramFloat';
 import TelegramChannelPopup from './TelegramChannelPopup';
 import LiveChatWidget from './LiveChatWidget';
@@ -16,11 +17,13 @@ const PremiumFeatures = () => {
   const showLandingTelegram = shouldShowLandingTelegramWidgets(location.pathname, isLoggedIn);
   const showUserWidgets = isLoggedIn && !location.pathname.startsWith('/admin');
   const showUserTelegramPopup = showUserWidgets;
+  const showPublicWaPopup = !isLoggedIn && location.pathname !== '/';
 
   useIdleLogout(showUserWidgets);
 
   return (
     <>
+      {showPublicWaPopup && <WhatsAppGroupPopup />}
       {showUserTelegramPopup && <TelegramChannelPopup />}
       {showUserWidgets ? (
         <>
