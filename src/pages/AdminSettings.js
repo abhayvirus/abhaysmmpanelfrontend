@@ -18,6 +18,7 @@ import {
   adminChangeEmail,
   adminGetProviders,
   adminAddProvider,
+  adminUpdateProvider,
   adminDeleteProvider,
   adminGetAnnouncements,
   adminCreateAnnouncement,
@@ -105,6 +106,8 @@ const AdminSettings = () => {
   const [newProvider, setNewProvider] = useState({ name: '', api_url: '', api_key: '', profit_margin: 50, is_default: true });
   const [annForm, setAnnForm] = useState({ title: '', content: '', is_active: true, show_on_login: true });
   const [apiStatus, setApiStatus] = useState(null);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [showProviderKeys, setShowProviderKeys] = useState({});
   const [telegramStatus, setTelegramStatus] = useState(null);
   const [telegramTesting, setTelegramTesting] = useState(false);
   const [msg, setMsg] = useState(null);
@@ -388,24 +391,221 @@ const AdminSettings = () => {
             <button type="button" className="btn btn-ghost btn-sm" style={{ marginBottom: 16 }} onClick={testApi}>
               Test API connection
             </button>
-            <Field label="Global profit margin (%)" value={draft.profit_margin} onChange={(v) => updateDraft('profit_margin', v)} type="number" />
-            <Field label="Provider API URL" value={draft.smm_api_url} onChange={(v) => updateDraft('smm_api_url', v)} placeholder="https://provider.com/api/v2" />
-            <Field label="Provider API Key" value={draft.smm_api_key} onChange={(v) => updateDraft('smm_api_key', v)} type="password" />
-            <p style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 16 }}>
-              Sync services from Admin → Services. Leave key blank when saving to keep the current key.
+
+            <h3 className="admin-settings-section-title">Profit margin (%)</h3>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 10 }}>
+              Manual % on provider cost — e.g. <strong>50</strong> = +50%, <strong>70</strong> = +70%. Applies on next service sync.
             </p>
+            <div className="form-group">
+              <label className="label">Global profit margin (%)</label>
+              <input
+                className="input"
+                type="number"
+                min={0}
+                max={500}
+                step={1}
+                value={draft.profit_margin ?? ''}
+                onChange={(e) => updateDraft('profit_margin', e.target.value)}
+                placeholder="50"
+              />
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+              {[30, 40, 50, 60, 70, 80, 100].map((pct) => (
+                <button
+                  key={pct}
+                  type="button"
+                  className={`btn btn-sm ${String(draft.profit_margin) === String(pct) ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => updateDraft('profit_margin', String(pct))}
+                >
+                  {pct}%
+                </button>
+              ))}
+            </div>
+
+            <h3 className="admin-settings-section-title">Default provider API</h3>
+            <Field
+              label="Provider API URL"
+              value={draft.smm_api_url}
+              onChange={(v) => updateDraft('smm_api_url', v)}
+              placeholder="https://provider.com/api/v2"
+            />
+            <div className="form-group">
+              <label className="label">Provider API Key</label>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'stretch' }}>
+                <input
+                  className="input"
+                  type={showApiKey ? 'text' : 'password'}
+                  value={draft.smm_api_key ?? ''}
+                  onChange={(e) => updateDraft('smm_api_key', e.target.value)}
+                  placeholder="Paste your provider API key"
+                  style={{ flex: 1, fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13 }}
+                  autoComplete="off"
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setShowApiKey((v) => !v)}
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {showApiKey ? 'Hide' : 'Show'}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  disabled={!draft.smm_api_key}
+                  onClick={() => {
+                    if (draft.smm_api_key) {
+                      navigator.clipboard?.writeText(String(draft.smm_api_key)).then(() => {
+                        showMsg('API key copied');
+                      }).catch(() => {});
+                    }
+                  }}
+                >
+                  Copy
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 6 }}>
+                Saved key is visible here for admin. Sync services from Admin → Services after Save.
+              </p>
+            </div>
+
             <h3 className="admin-settings-section-title">API providers</h3>
+            {providers.length === 0 && (
+              <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>No providers yet — add one below.</p>
+            )}
             {providers.map((p) => (
-              <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid var(--border)', gap: 8, flexWrap: 'wrap' }}>
-                <span>{p.name} {p.is_default ? '★' : ''} — {p.profit_margin}%</span>
-                <button type="button" className="btn btn-danger btn-sm" onClick={() => adminDeleteProvider(p.id).then(load)}>Delete</button>
+              <div
+                key={p.id}
+                className="card"
+                style={{ padding: 14, marginBottom: 12, border: '1px solid var(--border)' }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
+                  <strong>
+                    {p.name} {p.is_default ? '★ default' : ''}
+                  </strong>
+                  <button
+                    type="button"
+                    className="btn btn-danger btn-sm"
+                    onClick={() => adminDeleteProvider(p.id).then(load)}
+                  >
+                    Delete
+                  </button>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--text-muted)', wordBreak: 'break-all', marginBottom: 6 }}>
+                  URL: {p.api_url || '—'}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 10 }}>
+                  <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>API Key:</span>
+                  <code style={{ fontSize: 12, wordBreak: 'break-all', flex: 1, minWidth: 0 }}>
+                    {showProviderKeys[p.id] ? (p.api_key || '—') : (p.api_key ? '••••••••••••' : '—')}
+                  </code>
+                  {p.api_key && (
+                    <>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => setShowProviderKeys((s) => ({ ...s, [p.id]: !s[p.id] }))}
+                      >
+                        {showProviderKeys[p.id] ? 'Hide' : 'Show'}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => {
+                          navigator.clipboard?.writeText(String(p.api_key)).then(() => {
+                            showMsg('Provider API key copied');
+                          }).catch(() => {});
+                        }}
+                      >
+                        Copy
+                      </button>
+                    </>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                  <label className="label" style={{ margin: 0 }}>Margin %</label>
+                  <input
+                    className="input"
+                    type="number"
+                    min={0}
+                    max={500}
+                    style={{ width: 100 }}
+                    defaultValue={p.profit_margin ?? 50}
+                    key={`margin-${p.id}-${p.profit_margin}`}
+                    id={`provider-margin-${p.id}`}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={async () => {
+                      const el = document.getElementById(`provider-margin-${p.id}`);
+                      const margin = el ? el.value : p.profit_margin;
+                      await adminUpdateProvider(p.id, { profit_margin: margin });
+                      if (p.is_default) updateDraft('profit_margin', String(margin));
+                      showMsg(`Margin set to ${margin}%`);
+                      load();
+                    }}
+                  >
+                    Save margin
+                  </button>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    Current: {p.profit_margin ?? 50}%
+                  </span>
+                </div>
               </div>
             ))}
-            <div style={{ marginTop: 16, display: 'grid', gap: 8 }}>
+
+            <div className="card" style={{ marginTop: 16, padding: 14, display: 'grid', gap: 8 }}>
+              <h3 className="admin-settings-section-title" style={{ marginTop: 0 }}>Add provider</h3>
               <input className="input" placeholder="Provider name" value={newProvider.name} onChange={(e) => setNewProvider({ ...newProvider, name: e.target.value })} />
               <input className="input" placeholder="API URL" value={newProvider.api_url} onChange={(e) => setNewProvider({ ...newProvider, api_url: e.target.value })} />
-              <input className="input" placeholder="API Key" value={newProvider.api_key} onChange={(e) => setNewProvider({ ...newProvider, api_key: e.target.value })} />
-              <button type="button" className="btn btn-ghost" onClick={() => adminAddProvider(newProvider).then(load)}>+ Add provider</button>
+              <input className="input" placeholder="API Key (will be visible after save)" value={newProvider.api_key} onChange={(e) => setNewProvider({ ...newProvider, api_key: e.target.value })} autoComplete="off" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                <label className="label" style={{ margin: 0 }}>Profit margin %</label>
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  max={500}
+                  style={{ width: 120 }}
+                  value={newProvider.profit_margin}
+                  onChange={(e) => setNewProvider({ ...newProvider, profit_margin: e.target.value })}
+                  placeholder="50"
+                />
+                {[50, 70].map((pct) => (
+                  <button
+                    key={pct}
+                    type="button"
+                    className="btn btn-ghost btn-sm"
+                    onClick={() => setNewProvider({ ...newProvider, profit_margin: pct })}
+                  >
+                    {pct}%
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={async () => {
+                  try {
+                    await adminAddProvider({
+                      ...newProvider,
+                      profit_margin: newProvider.profit_margin || 50,
+                      is_default: true,
+                    });
+                    setNewProvider({ name: '', api_url: '', api_key: '', profit_margin: 50, is_default: true });
+                    updateDraft('profit_margin', String(newProvider.profit_margin || 50));
+                    updateDraft('smm_api_url', newProvider.api_url);
+                    updateDraft('smm_api_key', newProvider.api_key);
+                    showMsg('Provider added — API key & margin saved');
+                    load();
+                  } catch (err) {
+                    showMsg(err.response?.data?.message || 'Could not add provider', 'error');
+                  }
+                }}
+              >
+                + Add provider
+              </button>
             </div>
           </>
         );
