@@ -688,22 +688,25 @@ tr:hover td { background: var(--table-row-hover); }
 .brand-logo-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  justify-content: center;
+  gap: 0.1rem;
+  line-height: 1.05;
   min-width: 0;
 }
 .brand-logo-title {
-  font-size: 1.125rem;
+  font-size: 1.05rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: none;
+  -webkit-text-fill-color: #fff;
 }
 .brand-logo-sub {
-  font-size: 0.6875rem;
-  color: var(--text-muted);
-  font-weight: 600;
-  letter-spacing: 0.14em;
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
 }
 .hero-logo-wrap {
   margin-bottom: 0;
@@ -711,13 +714,21 @@ tr:hover td { background: var(--table-row-hover); }
 .brand-logo-wrap--icon-only {
   gap: 0;
 }
+.nav-brand-logo {
+  gap: 0.65rem;
+}
 .nav-brand-logo .brand-logo-circle {
   width: 2.5rem !important;
   height: 2.5rem !important;
   object-position: center 40%;
 }
 .nav-brand-logo .brand-logo-title {
-  font-size: 1rem;
+  font-size: 0.98rem;
+  letter-spacing: -0.015em;
+}
+.nav-brand-logo .brand-logo-sub {
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
 }
 .home-stats .stat-value {
   font-variant-numeric: tabular-nums;

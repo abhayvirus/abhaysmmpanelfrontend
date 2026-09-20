@@ -23,30 +23,17 @@
 
 .landing-watermark__text {
   position: absolute;
-  font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  font-size: clamp(6.5rem, 20vw, 13rem);
+  top: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: clamp(4.5rem, 14vw, 9rem);
   font-weight: 900;
-  letter-spacing: 0.12em;
-  color: #38bdf8;
+  letter-spacing: 0.18em;
+  color: rgba(56, 189, 248, 0.055);
   white-space: nowrap;
   user-select: none;
   line-height: 1;
-  text-shadow: 0 0 40px rgba(37, 99, 235, 0.25);
-}
-
-.landing-watermark__text--primary {
-  top: 12%;
-  left: 50%;
-  transform: translateX(-50%) rotate(-10deg);
-  opacity: 0.1;
-}
-
-.landing-watermark__text--secondary {
-  bottom: 10%;
-  right: -4%;
-  transform: rotate(8deg);
-  opacity: 0.07;
-  color: #60a5fa;
 }
 
 .landing-page > *:not(.landing-watermark):not(.nav-public):not(.sticky-announcement):not(.sticky-telegram-banner) {
@@ -287,75 +274,62 @@
 
 .landing-hero__badge {
   display: inline-block;
-  padding: 0.4rem 1rem;
+  padding: 0.35rem 0.9rem;
   border-radius: 999px;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.04em;
   background: rgba(37, 99, 235, 0.12);
-  border: 1px solid rgba(37, 99, 235, 0.25);
-  color: var(--accent);
-  margin-bottom: 0.85rem;
-}
-
-.landing-hero__brand-backdrop {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  transform: translate(-50%, -50%);
-  margin: 0;
-  font-size: clamp(5.5rem, 28vw, 14rem);
-  font-weight: 900;
-  letter-spacing: 0.14em;
-  line-height: 1;
-  color: rgba(56, 189, 248, 0.14);
-  text-shadow: 0 0 60px rgba(37, 99, 235, 0.2);
-  white-space: nowrap;
-  pointer-events: none;
-  user-select: none;
-  z-index: 0;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  color: #7dd3fc;
+  margin: 0 0 0.85rem;
 }
 
 .landing-hero__brand {
-  margin: 0 0 0.55rem;
-  font-size: clamp(2.35rem, 7vw, 4.25rem);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem 0.55rem;
+  margin: 0 0 0.75rem;
+  font-size: clamp(2.1rem, 6.5vw, 3.75rem);
   font-weight: 900;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.025em;
   color: #fff;
-  text-shadow: 0 0 40px rgba(37, 99, 235, 0.35);
+}
+
+.landing-hero__brand-name {
+  color: #fff;
 }
 
 .landing-hero__brand-panel {
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  background: linear-gradient(135deg, #38bdf8 0%, #2563eb 55%, #93c5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
 }
 
 .landing-hero__title {
-  font-size: clamp(1.15rem, 3.2vw, 1.65rem);
-  font-weight: 700;
-  line-height: 1.25;
-  margin: 0 0 0.85rem;
+  font-size: clamp(1.05rem, 2.8vw, 1.4rem);
+  font-weight: 650;
+  line-height: 1.3;
+  margin: 0 0 0.65rem;
   letter-spacing: -0.01em;
-  color: #e2e8f0;
+  color: #cbd5e1;
 }
 
 .landing-hero__title span {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 55%, #93c5fd 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #38bdf8;
+  background: none;
+  -webkit-text-fill-color: #38bdf8;
 }
 
 .landing-hero__subtitle {
   color: var(--text-muted);
-  font-size: clamp(0.95rem, 2.4vw, 1.1rem);
-  max-width: 36rem;
+  font-size: clamp(0.92rem, 2.2vw, 1.05rem);
+  max-width: 34rem;
   margin: 0 auto 1.75rem;
-  line-height: 1.65;
+  line-height: 1.6;
 }
 
 .landing-hero__cta {
@@ -838,7 +812,7 @@
 
 @media (max-width: 360px) {
   .landing-hero__brand {
-    font-size: 1.75rem;
+    font-size: 1.65rem;
   }
 
   .landing-stat-card {
