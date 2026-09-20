@@ -13,12 +13,12 @@ import PublicLegalPage from './pages/PublicLegalPage';
 import PublicPricing from './pages/PublicPricing';
 import PublicBlog from './pages/PublicBlog';
 import PublicSupport from './pages/PublicSupport';
+import ServicesGate from './pages/ServicesGate';
 import { LEGAL_PAGES } from './content/legalPages';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import Orders from './pages/Orders';
-import Services from './pages/Services';
 import AddFunds from './pages/AddFunds';
 import Tickets from './pages/Tickets';
 import TicketDetail from './pages/TicketDetail';
@@ -73,6 +73,7 @@ function AppRoutes() {
           <PremiumFeatures />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/services" element={<ServicesGate />} />
             <Route path="/how-to-use" element={<PublicHowToUseGuide />} />
             <Route path="/pricing" element={<PublicPricing />} />
             <Route path="/blog" element={<PublicBlog />} />
@@ -92,7 +93,6 @@ function AppRoutes() {
 
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-            <Route path="/services" element={<ProtectedRoute><Services /></ProtectedRoute>} />
             <Route path="/add-funds" element={<ProtectedRoute><AddFunds /></ProtectedRoute>} />
             <Route path="/tickets" element={<ProtectedRoute><Tickets /></ProtectedRoute>} />
             <Route path="/tickets/:id" element={<ProtectedRoute><TicketDetail /></ProtectedRoute>} />

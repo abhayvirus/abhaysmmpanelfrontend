@@ -4,6 +4,7 @@ import PublicPageShell from '../components/PublicPageShell';
 import { useSettings } from '../contexts/SettingsContext';
 import { BRAND } from '../config/brand';
 import { resolveTelegramChannelUrl } from '../constants/telegramChannel';
+import { PUBLIC_BLOG_POSTS, SUPPORT_WHATSAPP } from '../content/publicPages';
 import '../styles/publicGuidePage.css';
 
 const PublicBlog = () => {
@@ -16,23 +17,40 @@ const PublicBlog = () => {
 
   return (
     <PublicPageShell className="public-simple-page">
-      <article className="public-simple-card">
+      <article className="public-simple-card public-simple-card--wide">
         <p className="legal-doc__eyebrow">Blog</p>
-        <h1>Updates & announcements</h1>
-        <p>
-          Product updates, offers, and service notices for {BRAND.name} are shared through our
-          official channels. We do not publish placeholder blog articles here.
+        <h1>Tips & updates</h1>
+        <p className="public-simple-lead">
+          Helpful guides for using {BRAND.name} — wallet, orders, and support.
         </p>
-        <ul className="public-simple-list">
-          <li>Follow the Telegram channel for timely panel and service updates.</li>
-          <li>Read the How to Use guide for step-by-step wallet and order help.</li>
-          <li>Logged-in users can also receive in-panel notifications and announcements.</li>
-        </ul>
+
+        <div className="public-blog-list">
+          {PUBLIC_BLOG_POSTS.map((post) => (
+            <section key={post.id} id={post.id} className="public-blog-post">
+              <p className="public-blog-post__date">{post.date}</p>
+              <h2>{post.title}</h2>
+              {post.body.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+            </section>
+          ))}
+        </div>
+
         <div className="public-simple-actions">
-          <a href={telegramUrl} className="btn btn-primary" target="_blank" rel="noopener noreferrer">
-            Open Telegram Channel
+          <Link to="/how-to-use" className="btn btn-primary">
+            How to Use Guide
+          </Link>
+          <a href={telegramUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+            Telegram Updates
           </a>
-          <Link to="/how-to-use" className="btn btn-ghost">How to Use Guide</Link>
+          <a
+            href={SUPPORT_WHATSAPP.waUrl}
+            className="btn btn-ghost"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            WhatsApp Support
+          </a>
         </div>
       </article>
     </PublicPageShell>

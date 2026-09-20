@@ -6,7 +6,7 @@ import BrandLogo from './BrandLogo';
 
 const NAV_LINKS = [
   { to: '/', label: 'Home', end: true },
-  { to: '/#services', label: 'Services', hash: 'services' },
+  { to: '/services', label: 'Services' },
   { to: '/how-to-use', label: 'How to Use' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/blog', label: 'Blog' },

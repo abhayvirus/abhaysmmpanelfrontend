@@ -16,6 +16,8 @@ export const BRAND = {
     name: 'Subhay Web Solutions',
     url: 'https://subhay.site',
   },
+  supportWhatsApp: '6307048631',
+  supportWhatsAppUrl: 'https://wa.me/916307048631',
   theme: {
     primary: '#2563eb',
     accent: '#0ea5e9',

@@ -4,10 +4,11 @@ import { BRAND } from '../../config/brand';
 import BrandLogo from '../BrandLogo';
 import TelegramIcon from '../TelegramIcon';
 import { resolveTelegramChannelUrl } from '../../constants/telegramChannel';
+import { SUPPORT_WHATSAPP } from '../../content/publicPages';
 
 const QUICK_LINKS = [
   { to: '/', label: 'Home' },
-  { to: '/#services', label: 'Services' },
+  { to: '/services', label: 'Services' },
   { to: '/how-to-use', label: 'How to Use' },
   { to: '/pricing', label: 'Pricing' },
   { to: '/blog', label: 'Blog' },
@@ -77,15 +78,17 @@ const LandingFooter = ({ settings = {} }) => {
           <h3 className="landing-footer__heading">Support</h3>
           <ul className="landing-footer__links">
             <li>
+              <a href={SUPPORT_WHATSAPP.waUrl} target="_blank" rel="noopener noreferrer">
+                WhatsApp {SUPPORT_WHATSAPP.display}
+              </a>
+            </li>
+            <li>
               <a href={`mailto:${email}`}>{email}</a>
             </li>
             <li>
               <a href={telegramUrl} target="_blank" rel="noopener noreferrer">
                 Telegram Support
               </a>
-            </li>
-            <li>
-              <span className="landing-footer__muted">24/7 Support</span>
             </li>
             <li>
               <Link to="/support">Help Center</Link>

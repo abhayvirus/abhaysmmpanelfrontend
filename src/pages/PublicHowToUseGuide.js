@@ -5,6 +5,7 @@ import { useSettings } from '../contexts/SettingsContext';
 import { BRAND } from '../config/brand';
 import { resolveTelegramChannelUrl } from '../constants/telegramChannel';
 import { PUBLIC_HOW_TO_USE_META, GUIDE_TOPICS } from '../content/publicHowToUseGuide';
+import { SUPPORT_WHATSAPP } from '../content/publicPages';
 import '../styles/publicGuidePage.css';
 
 const PublicHowToUseGuide = () => {
@@ -43,6 +44,9 @@ const PublicHowToUseGuide = () => {
           <Link to="/login" className="btn btn-ghost">
             Login
           </Link>
+          <a href={SUPPORT_WHATSAPP.waUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
+            WhatsApp
+          </a>
           <a href={telegramUrl} className="btn btn-ghost" target="_blank" rel="noopener noreferrer">
             Telegram
           </a>

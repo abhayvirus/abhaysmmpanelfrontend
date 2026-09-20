@@ -72,7 +72,8 @@ export const GUIDE_TOPICS = [
     id: 'help',
     title: 'Need Help?',
     body: [
-      'Open Tickets from the sidebar after login for payment or order issues.',
+      'WhatsApp support: 6307048631 — message us for payments or order help.',
+      'Open Tickets from the sidebar after login for tracked support.',
       'Include your registered email, amount paid, and Razorpay payment ID or screenshot.',
       'You can also join our Telegram channel from the homepage for updates.',
     ],
