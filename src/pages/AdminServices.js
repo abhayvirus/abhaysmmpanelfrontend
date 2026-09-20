@@ -10,6 +10,7 @@ import {
   adminCreateService,
   adminGetProviders,
   adminDeleteAllServices,
+  adminUpdateProvider,
 } from '../api';
 import SocialIconPicker from '../components/SocialIconPicker';
 import '../styles/adminServices.css';
@@ -73,6 +74,7 @@ const AdminServices = () => {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [deletingId, setDeletingId] = useState(null);
   const [deletingAll, setDeletingAll] = useState(false);
+  const [settingDefault, setSettingDefault] = useState(false);
   const [savingId, setSavingId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteError, setDeleteError] = useState('');
@@ -181,14 +183,48 @@ const AdminServices = () => {
     setTesting(false);
   };
 
+  const selectedProvider = providers.find((p) => String(p.id) === String(selectedProviderId));
+
+  const handleUseProvider = async (providerId) => {
+    setSelectedProviderId(String(providerId));
+    setSyncMsg(null);
+    try {
+      setSettingDefault(true);
+      await adminUpdateProvider(providerId, { is_default: true });
+      await loadProviders();
+      setSelectedProviderId(String(providerId));
+      setSyncMsg({
+        type: 'success',
+        text: 'Provider selected as default. Click “Sync all services” to fetch every service from this API.',
+      });
+      await loadProviderStatus(providerId);
+    } catch (err) {
+      setSyncMsg({
+        type: 'error',
+        text: err.response?.data?.message || 'Could not set provider as default',
+      });
+    }
+    setSettingDefault(false);
+  };
+
   const handleSync = async () => {
+    if (!selectedProviderId) {
+      setSyncMsg({ type: 'error', text: 'Pehle provider choose karo (theworldsmm ya topfollower).' });
+      return;
+    }
     setSyncing(true);
     setSyncMsg(null);
     try {
-      const res = await adminSyncServices(selectedProviderId || undefined);
+      // Ensure selected provider is the one we sync against
+      try {
+        await adminUpdateProvider(selectedProviderId, { is_default: true });
+      } catch (_) { /* sync still uses provider_id */ }
+
+      const res = await adminSyncServices(selectedProviderId);
       const d = res.data || {};
+      const pname = d.providerName || selectedProvider?.name || 'provider';
       const parts = [
-        d.message || 'Sync complete',
+        `${pname}: ${d.message || 'Sync complete'}`,
         d.total != null ? `API list: ${d.total}` : null,
         d.added != null ? `+${d.added} new` : null,
         d.updated != null ? `${d.updated} updated` : null,
@@ -196,6 +232,7 @@ const AdminServices = () => {
       ].filter(Boolean);
       setSyncMsg({ type: 'success', text: parts.join(' · ') });
       await loadServices();
+      await loadProviders();
       await loadProviderStatus(selectedProviderId);
     } catch (err) {
       const d = err.response?.data || {};
@@ -542,28 +579,13 @@ const AdminServices = () => {
             )}
           </div>
           <div className="admin-api-actions">
-            <label className="label" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ whiteSpace: 'nowrap' }}>Provider</span>
-              <select
-                className="select"
-                value={selectedProviderId}
-                onChange={(e) => setSelectedProviderId(e.target.value)}
-                style={{ minWidth: 180 }}
-                disabled={testing || syncing}
-              >
-                {providers.length === 0 && <option value="">No providers — add in Settings</option>}
-                {providers.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name} · {p.profit_margin ?? 50}%{p.is_default ? ' ★' : ''}
-                  </option>
-                ))}
-              </select>
-            </label>
             <button type="button" className="btn btn-ghost" onClick={handleTestConnection} disabled={testing || syncing || deletingAll || !selectedProviderId}>
               {testing ? 'Testing…' : 'Test connection'}
             </button>
             <button type="button" className="btn btn-primary" onClick={handleSync} disabled={syncing || testing || deletingAll || !selectedProviderId}>
-              {syncing ? 'Syncing all services…' : 'Sync all services'}
+              {syncing
+                ? `Syncing ${selectedProvider?.name || '…'}…`
+                : `Sync all from ${selectedProvider?.name || 'provider'}`}
             </button>
             <button
               type="button"
@@ -577,9 +599,104 @@ const AdminServices = () => {
           </div>
         </div>
 
+        <div className="card admin-provider-picker">
+          <h3 className="card-title">Kaunsa provider use karna hai?</h3>
+          <p className="admin-provider-picker__hint">
+            Neeche se <strong>theworldsmm</strong> ya <strong>topfollower</strong> choose karo, phir{' '}
+            <strong>Sync all</strong> dabao — us API ki saari services fetch ho jayengi (margin usi provider ki lagegi).
+          </p>
+          {providers.length === 0 ? (
+            <p style={{ color: 'var(--text-muted)', margin: 0 }}>
+              Koi provider nahi mila. Settings → API &amp; Profit mein add karo.
+            </p>
+          ) : (
+            <div className="admin-provider-picker__grid">
+              {providers.map((p) => {
+                const active = String(p.id) === String(selectedProviderId);
+                const isDefault = Boolean(p.is_default);
+                return (
+                  <div
+                    key={p.id}
+                    role="button"
+                    tabIndex={0}
+                    className={`admin-provider-card${active ? ' is-active' : ''}${isDefault ? ' is-default' : ''}`}
+                    onClick={() => setSelectedProviderId(String(p.id))}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setSelectedProviderId(String(p.id));
+                      }
+                    }}
+                  >
+                    <div className="admin-provider-card__top">
+                      <strong>{p.name}</strong>
+                      <span className="admin-provider-card__badges">
+                        {isDefault && <span className="badge badge-success">In use ★</span>}
+                        {active && !isDefault && <span className="badge badge-info">Selected</span>}
+                      </span>
+                    </div>
+                    <div className="admin-provider-card__url">{p.api_url || '—'}</div>
+                    <div className="admin-provider-card__meta">Margin: {p.profit_margin ?? 50}%</div>
+                    <div className="admin-provider-card__actions">
+                      {!isDefault && (
+                        <button
+                          type="button"
+                          className="btn btn-ghost btn-sm"
+                          disabled={settingDefault || syncing}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleUseProvider(p.id);
+                          }}
+                        >
+                          {settingDefault ? '…' : 'Use this provider'}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        disabled={syncing || testing || !p.id}
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          setSelectedProviderId(String(p.id));
+                          setSyncing(true);
+                          setSyncMsg(null);
+                          try {
+                            try {
+                              await adminUpdateProvider(p.id, { is_default: true });
+                            } catch (_) { /* ok */ }
+                            const res = await adminSyncServices(p.id);
+                            const d = res.data || {};
+                            setSyncMsg({
+                              type: 'success',
+                              text: `${p.name}: Added ${d.added ?? 0}, Updated ${d.updated ?? 0}, Total API ${d.total ?? '—'} (${d.marginPct ?? p.profit_margin}% margin)`,
+                            });
+                            await loadServices();
+                            await loadProviders();
+                            setSelectedProviderId(String(p.id));
+                            await loadProviderStatus(p.id);
+                          } catch (err) {
+                            const d = err.response?.data || {};
+                            setSyncMsg({ type: 'error', text: d.message || 'Sync failed' });
+                          }
+                          setSyncing(false);
+                        }}
+                      >
+                        {syncing && String(selectedProviderId) === String(p.id) ? 'Fetching…' : 'Fetch all services'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         {providerInfo && (
           <div className="card admin-api-diagnostics">
-            <h3 className="card-title">Provider diagnostics</h3>
+            <h3 className="card-title">
+              Provider diagnostics
+              {selectedProvider ? ` · ${selectedProvider.name}` : ''}
+            </h3>
             <dl className="admin-api-diagnostics-grid">
               <div><dt>Provider URL</dt><dd>{providerInfo.api_url || '—'}</dd></div>
               <div>
