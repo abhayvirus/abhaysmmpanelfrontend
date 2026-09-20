@@ -1,34 +1,115 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import UserLayout from '../components/UserLayout';
-import { getReferrals, getCashback } from '../api';
+import { getReferrals, getCashback, getMe } from '../api';
 import { useLanguage } from '../contexts/LanguageContext';
+
+function siteOrigin() {
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return window.location.origin.replace(/\/$/, '');
+  }
+  return 'https://abhaysmmpanel.in';
+}
 
 const Referrals = () => {
   const { t } = useLanguage();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [data, setData] = useState({
     referrals: [],
     stats: {},
+    referral_code: '',
     referral_link: '',
     rules: { min_first_deposit: 100, commission_percent: 3 },
   });
   const [cashback, setCashback] = useState({ history: [], total_cashback: 0 });
+  const [copied, setCopied] = useState(false);
+
+  const load = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [refRes, cashRes, meRes] = await Promise.allSettled([
+        getReferrals(),
+        getCashback(),
+        getMe(),
+      ]);
+
+      let next = { ...data };
+      if (refRes.status === 'fulfilled' && refRes.value?.data) {
+        next = { ...next, ...refRes.value.data };
+      } else if (refRes.status === 'rejected') {
+        setError(refRes.reason?.response?.data?.message || 'Could not load referral link. Retrying…');
+      }
+
+      if (cashRes.status === 'fulfilled' && cashRes.value?.data) {
+        setCashback(cashRes.value.data);
+      }
+
+      const meCode =
+        meRes.status === 'fulfilled'
+          ? meRes.value?.data?.referral_code
+          : null;
+      const localUser = (() => {
+        try {
+          return JSON.parse(localStorage.getItem('user') || '{}');
+        } catch {
+          return {};
+        }
+      })();
+
+      const code = String(next.referral_code || meCode || localUser.referral_code || '').trim();
+      if (code) {
+        next.referral_code = code;
+        next.referral_link =
+          next.referral_link || `${siteOrigin()}/signup?ref=${encodeURIComponent(code)}`;
+        try {
+          localStorage.setItem(
+            'user',
+            JSON.stringify({ ...localUser, referral_code: code })
+          );
+        } catch (_) {
+          /* ignore */
+        }
+      }
+
+      setData(next);
+      if (!next.referral_code) {
+        setError((e) => e || 'Referral code not ready yet. Tap Retry.');
+      }
+    } catch (e) {
+      setError(e.message || 'Failed to load referrals');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    getReferrals().then((r) => setData(r.data)).catch(() => {});
-    getCashback().then((r) => setCashback(r.data)).catch(() => {});
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const copy = () => {
-    if (!data.referral_link) return;
-    navigator.clipboard.writeText(data.referral_link);
-    alert('Referral link copied!');
+  const copy = async () => {
+    const link = data.referral_link;
+    if (!link) return;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (_) {
+      window.prompt('Copy referral link:', link);
+    }
   };
 
   const referrals = data.referrals || [];
   const pct = data.rules?.commission_percent ?? 3;
   const minDep = data.rules?.min_first_deposit ?? 100;
-
   const formatMoney = (v) => `₹${parseFloat(v || 0).toFixed(2)}`;
+
+  const linkLabel = useMemo(() => {
+    if (data.referral_link) return data.referral_link;
+    if (loading) return 'Loading…';
+    return '—';
+  }, [data.referral_link, loading]);
 
   return (
     <UserLayout title="Referrals">
@@ -38,6 +119,13 @@ const Referrals = () => {
           Share your link. When a friend signs up and makes their first deposit of {formatMoney(minDep)} or more,
           you earn {pct}% commission once — credited to your wallet automatically.
         </p>
+
+        {error && (
+          <div className="card" style={{ marginBottom: 16, borderColor: 'var(--danger)', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ color: 'var(--danger)', flex: 1 }}>{error}</span>
+            <button type="button" className="btn btn-sm btn-primary" onClick={load}>Retry</button>
+          </div>
+        )}
 
         <div className="stats-grid" style={{ marginBottom: 24 }}>
           <div className="stat-card">
@@ -57,13 +145,13 @@ const Referrals = () => {
         <div className="card" style={{ marginBottom: 24, padding: 20 }}>
           <label className="label">Your referral link</label>
           <div className="referral-code-row">
-            <code>{data.referral_code || '—'}</code>
+            <code>{data.referral_code || (loading ? '…' : '—')}</code>
             <button type="button" className="btn btn-primary" onClick={copy} disabled={!data.referral_link}>
-              {t('referral.copy')}
+              {copied ? 'Copied!' : (t('referral.copy') || 'Copy link')}
             </button>
           </div>
           <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 8, wordBreak: 'break-all' }}>
-            {data.referral_link || 'Loading…'}
+            {linkLabel}
           </p>
           <ul style={{ margin: '16px 0 0', paddingLeft: '1.25rem', fontSize: 13, color: 'var(--text-muted)', lineHeight: 1.6 }}>
             <li>Commission only on the referred user&apos;s <strong>first</strong> successful deposit</li>

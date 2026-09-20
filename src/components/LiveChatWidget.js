@@ -60,7 +60,11 @@ const LiveChatWidget = () => {
     storageKey: 'abhaysmm_live_chat_fab_pos',
     size: 52,
     extraBottomReserve,
-    enabled: Boolean(settings.live_chat_enabled && token && !open),
+    enabled:
+      settings.live_chat_enabled !== false &&
+      settings.live_chat_enabled !== 'false' &&
+      Boolean(token) &&
+      !open,
   });
 
   const load = useCallback(() => {
@@ -137,7 +141,9 @@ const LiveChatWidget = () => {
     };
   }, [position, open]);
 
-  if (!settings.live_chat_enabled || !token) return null;
+  const chatOn =
+    settings.live_chat_enabled !== false && settings.live_chat_enabled !== 'false';
+  if (!chatOn || !token) return null;
 
   const send = async () => {
     if (!text.trim() || sending) return;
@@ -152,7 +158,10 @@ const LiveChatWidget = () => {
     setSending(false);
   };
 
-  const handleFabClick = () => {
+  const handleFabClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // Ignore only real drag moves; tiny pointer jitter should still open chat
     if (wasDragged()) return;
     setOpen(true);
   };
