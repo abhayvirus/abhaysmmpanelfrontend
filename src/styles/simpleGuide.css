@@ -1,0 +1,94 @@
+/* Simple Help Guide — heading + steps below */
+
+.simple-guide {
+  width: 100%;
+  max-width: 40rem;
+  margin: 0 auto;
+}
+
+.simple-guide__header {
+  margin-bottom: 1.5rem;
+}
+
+.simple-guide__back {
+  display: inline-block;
+  font-size: 0.875rem;
+  color: var(--primary);
+  text-decoration: none;
+  margin-bottom: 0.75rem;
+}
+
+.simple-guide__back:hover {
+  text-decoration: underline;
+}
+
+.simple-guide__header h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.35rem, 4vw, 1.75rem);
+  line-height: 1.25;
+}
+
+.simple-guide__header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+
+.simple-guide__list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.simple-guide__block {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius, 0.75rem);
+  padding: 1.15rem 1.25rem 1.25rem;
+}
+
+.simple-guide__block h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.simple-guide__block ol {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  color: var(--text-muted);
+  font-size: 0.9375rem;
+  line-height: 1.65;
+}
+
+.simple-guide__block li {
+  margin-bottom: 0.4rem;
+}
+
+.simple-guide__block li:last-child {
+  margin-bottom: 0;
+}
+
+.simple-guide__cta {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+@media (max-width: 767px) {
+  .simple-guide {
+    max-width: 100%;
+  }
+
+  .simple-guide__block {
+    padding: 1rem;
+  }
+
+  .simple-guide__cta {
+    width: 100%;
+    justify-content: center;
+    min-height: 2.75rem;
+  }
+}
