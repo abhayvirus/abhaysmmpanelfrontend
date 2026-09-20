@@ -409,7 +409,7 @@ body.mobile-menu-open {
   max-width: 100%;
 }
 .page-main.has-mobile-chrome {
-  padding-top: calc(3.5rem + env(safe-area-inset-top, 0px));
+  padding-top: calc(var(--mobile-header-h, 3.5rem) + env(safe-area-inset-top, 0px) + 0.35rem);
   padding-bottom: var(--user-mobile-content-pad-bottom, 6.5rem);
   min-height: 100dvh;
   overflow-x: hidden;
