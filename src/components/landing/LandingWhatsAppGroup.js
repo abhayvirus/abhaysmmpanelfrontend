@@ -28,9 +28,10 @@ const LandingWhatsAppGroup = () => {
       <div className="landing-section__container">
         <motion.div
           className="landing-whatsapp-group__card"
-          initial={{ opacity: 0, y: 28, scale: 0.98 }}
-          animate={inView ? { opacity: 1, y: 0, scale: 1 } : {}}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ opacity: 1, y: 0, scale: 1 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          data-inview={inView ? '1' : '0'}
         >
           <div className="landing-whatsapp-group__glow" aria-hidden="true" />
 

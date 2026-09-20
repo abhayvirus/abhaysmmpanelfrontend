@@ -7,32 +7,29 @@ const BADGES = [
   { icon: '🔒', title: 'Secure Payments', desc: 'Razorpay & encrypted checkout' },
   { icon: '♻️', title: 'Refill Supported', desc: 'Auto refill on eligible services' },
   { icon: '🔌', title: 'API Access', desc: 'Full reseller API integration' },
-  { icon: '🎧', title: '24/7 Support', desc: 'Telegram & ticket support' },
+  { icon: '🎧', title: '24/7 Support', desc: 'WhatsApp & ticket support' },
 ];
 
 const LandingTrustBadges = () => {
-  const { ref, inView } = useInViewOnce(0.12);
+  const { ref, inView } = useInViewOnce(0.05);
 
   return (
     <section className="landing-section landing-trust" ref={ref} aria-label="Trust badges">
       <div className="landing-section__container">
         <motion.div
           className="landing-trust__grid"
-          initial="hidden"
-          animate={inView ? 'visible' : 'hidden'}
+          initial={false}
+          animate="visible"
           variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.08 } },
+            visible: { transition: { staggerChildren: inView ? 0.06 : 0 } },
           }}
         >
           {BADGES.map((b) => (
             <motion.div
               key={b.title}
               className="landing-trust__card"
-              variants={{
-                hidden: { opacity: 0, y: 20 },
-                visible: { opacity: 1, y: 0, transition: { duration: 0.45 } },
-              }}
+              initial={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 1, y: 0 }}
             >
               <span className="landing-trust__icon" aria-hidden="true">{b.icon}</span>
               <h3 className="landing-trust__title">{b.title}</h3>

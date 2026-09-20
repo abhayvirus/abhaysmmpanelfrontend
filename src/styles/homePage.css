@@ -8,8 +8,12 @@
   max-width: 100vw;
 }
 
-.landing-page > main {
+.landing-page > main,
+.landing-main {
   padding-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 /* ——— Watermark ——— */
@@ -52,7 +56,7 @@
 
 /* ——— Section shell ——— */
 .landing-section {
-  padding: clamp(3rem, 8vw, 5.5rem) clamp(1rem, 4vw, 2rem);
+  padding: clamp(2rem, 4.5vw, 3.25rem) clamp(1rem, 4vw, 2rem);
 }
 
 .landing-section__container {
@@ -150,19 +154,20 @@
 /* Body already has padding-top: var(--public-nav-h); add breathing room below navbar */
 .landing-hero {
   position: relative;
-  min-height: calc(100dvh - var(--public-nav-h, 5rem));
+  min-height: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(2rem, 5vw, 2.5rem) clamp(1rem, 4vw, 2rem) 3rem;
+  padding: clamp(1.5rem, 4vw, 2.25rem) clamp(1rem, 4vw, 2rem) clamp(2rem, 5vw, 2.75rem);
   text-align: center;
   box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
   .landing-hero {
-    padding-top: 2.5rem;
-    min-height: calc(100dvh - var(--public-nav-h, 5rem));
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    min-height: min(88dvh, 52rem);
   }
 }
 
@@ -608,7 +613,76 @@
 }
 
 .landing-services__cta-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
   text-align: center;
+}
+
+/* How it works */
+.landing-how__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+@media (min-width: 900px) {
+  .landing-how__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+.landing-how__card {
+  padding: 1.15rem 1rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.22);
+  background: rgba(7, 18, 38, 0.72);
+}
+
+.landing-how__num {
+  display: inline-block;
+  margin-bottom: 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #38bdf8;
+}
+
+.landing-how__card h3 {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  color: #f8fafc;
+}
+
+.landing-how__card p {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.landing-how__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.landing-btn--ghost {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: #e2e8f0;
+  text-decoration: none;
+}
+
+.landing-btn--ghost:hover {
+  border-color: #38bdf8;
+  color: #fff;
+  text-decoration: none;
 }
 
 /* ——— Telegram ——— */

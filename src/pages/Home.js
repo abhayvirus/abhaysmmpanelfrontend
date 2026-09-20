@@ -8,6 +8,7 @@ import SocialProofSection from '../components/SocialProofSection';
 import LandingHero from '../components/landing/LandingHero';
 import LandingTrustBadges from '../components/landing/LandingTrustBadges';
 import LandingWhyChoose from '../components/landing/LandingWhyChoose';
+import LandingHowItWorks from '../components/landing/LandingHowItWorks';
 import LandingServices from '../components/landing/LandingServices';
 import LandingAppShowcase from '../components/landing/LandingAppShowcase';
 import LandingWhatsAppGroup from '../components/landing/LandingWhatsAppGroup';
@@ -28,8 +29,10 @@ const Home = () => {
   const sym = settings.currency_symbol || '₹';
 
   useEffect(() => {
-    getPublicStats().then((r) => setStats(r.data)).catch(() => {});
-    getServicesPreview().then((r) => setServices(r.data)).catch(() => {});
+    getPublicStats().then((r) => setStats(r.data || {})).catch(() => {});
+    getServicesPreview()
+      .then((r) => setServices(Array.isArray(r.data) ? r.data : []))
+      .catch(() => setServices([]));
   }, []);
 
   useEffect(() => {
@@ -52,7 +55,7 @@ const Home = () => {
       }
     }
     return undefined;
-  }, []);
+  }, [services]);
 
   useEffect(() => {
     const title = settings.site_name || BRAND.name;
@@ -73,24 +76,16 @@ const Home = () => {
       <PublicNav />
       <StickyAnnouncementBar />
 
-      <main>
+      <main className="landing-main">
         <LandingHero settings={settings} stats={stats} />
-
         <LandingTrustBadges />
-
+        <LandingHowItWorks />
+        <LandingServices services={services} sym={sym} />
         <LandingWhyChoose />
-
-        {services.length > 0 && (
-          <LandingServices services={services} sym={sym} />
-        )}
-
-        <SocialProofSection />
-
         <LandingAppShowcase />
-
-        <LandingWhatsAppGroup />
-
         <LandingLiveActivity />
+        <SocialProofSection />
+        <LandingWhatsAppGroup />
       </main>
 
       <LandingFooter settings={settings} />

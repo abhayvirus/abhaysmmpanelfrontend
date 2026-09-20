@@ -8,7 +8,7 @@ import { BRAND } from '../../config/brand';
 const appScreenshotSrc = `${process.env.PUBLIC_URL}${BRAND.appScreenshot}`;
 
 const LandingAppShowcase = () => {
-  const { ref, inView } = useInViewOnce(0.12);
+  const { ref } = useInViewOnce(0.05);
 
   return (
     <section
@@ -20,9 +20,8 @@ const LandingAppShowcase = () => {
         <div className="landing-app-showcase__grid">
           <motion.div
             className="landing-app-showcase__copy"
-            initial={{ opacity: 0, x: -24 }}
-            animate={inView ? { opacity: 1, x: 0 } : {}}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 1, x: 0 }}
+            animate={{ opacity: 1, x: 0 }}
           >
             <p className="landing-section__eyebrow">Mobile App</p>
             <h2 id="landing-app-showcase-title" className="landing-section__title">
@@ -47,9 +46,8 @@ const LandingAppShowcase = () => {
 
           <motion.div
             className="landing-app-showcase__visual"
-            initial={{ opacity: 0, y: 28 }}
-            animate={inView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 1, y: 0 }}
+            animate={{ opacity: 1, y: 0 }}
           >
             <div className="landing-app-showcase__phone" aria-hidden="true">
               <div className="landing-app-showcase__phone-notch" />
