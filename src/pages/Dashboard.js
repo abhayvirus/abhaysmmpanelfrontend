@@ -190,8 +190,8 @@ const Dashboard = () => {
           </div>
           <div className="stat-card">
             <div className="stat-label">Status</div>
-            <div className="stat-value" style={{ fontSize: '1.25rem', color: user.status === 'ACTIVE' ? 'var(--success)' : 'var(--danger)' }}>
-              {user.status || '...'}
+            <div className="stat-value" style={{ fontSize: '1.25rem', color: (user.status || 'ACTIVE') === 'ACTIVE' ? 'var(--success)' : 'var(--danger)' }}>
+              {user.status || 'ACTIVE'}
             </div>
           </div>
         </div>

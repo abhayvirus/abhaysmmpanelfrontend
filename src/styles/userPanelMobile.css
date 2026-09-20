@@ -1,12 +1,21 @@
 /**
  * User panel — global mobile/tablet responsiveness
- * Applies to all pages inside UserLayout (.user-panel-scroll)
+ * Covers: New Order → Services → Orders → Website Dev → Add Funds →
+ * Support → Notifications → Referrals → API Docs → Child Panel → Profile → Help Guide
  */
 
 .user-panel-scroll {
   width: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.user-panel-scroll *,
+.user-panel-scroll *::before,
+.user-panel-scroll *::after {
+  box-sizing: border-box;
 }
 
 .user-panel-scroll .page-header {
@@ -16,6 +25,7 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
+  min-width: 0;
 }
 
 .user-panel-scroll .page-header h1,
@@ -27,9 +37,15 @@
 
 .user-panel-scroll .input,
 .user-panel-scroll .select,
+.user-panel-scroll .textarea,
+.user-panel-scroll .btn {
+  max-width: 100%;
+}
+
+.user-panel-scroll .input,
+.user-panel-scroll .select,
 .user-panel-scroll .textarea {
   width: 100%;
-  max-width: 100%;
 }
 
 .user-panel-scroll pre,
@@ -47,6 +63,8 @@
 
 .user-panel-scroll .table-wrap {
   max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Shared mobile card layout (tables → cards on small screens) */
@@ -150,7 +168,7 @@
   }
 }
 
-/* Notifications — header layout in notificationsPage.css */
+/* Notifications */
 @media (max-width: 768px) {
   .user-panel-scroll .notifications-page {
     max-width: 100%;
@@ -194,9 +212,16 @@
   flex: 1 1 100%;
 }
 
+/* ——— Phone / small tablet ——— */
 @media (max-width: 767px) {
   .user-panel-scroll {
-    padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
+    padding-left: clamp(0.75rem, 3vw, 1rem);
+    padding-right: clamp(0.75rem, 3vw, 1rem);
+    padding-bottom: calc(7.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .main.has-mobile-chrome .user-panel-scroll {
+    padding-top: 0.25rem;
   }
 
   .user-panel-scroll .page-header {
@@ -209,13 +234,30 @@
     width: 100%;
   }
 
-  .user-panel-scroll .card {
+  .user-panel-scroll .card,
+  .user-panel-scroll .stat-card {
     max-width: 100% !important;
+    min-width: 0;
   }
 
-  .user-panel-scroll .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+  .user-panel-scroll .stats-grid,
+  .user-panel-scroll .dashboard-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.625rem;
+  }
+
+  .user-panel-scroll .dashboard-stats .stat-card:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
+  .user-panel-scroll .stat-card .stat-value {
+    font-size: clamp(1rem, 4.5vw, 1.35rem);
+    word-break: break-word;
+  }
+
+  .user-panel-scroll .stat-card .stat-label {
+    font-size: 0.6875rem;
   }
 
   .user-panel-scroll .btn:not(.btn-sm):not(.sidebar-link):not(.mobile-bottom-nav-item) {
@@ -246,20 +288,223 @@
     margin: auto;
   }
 
+  /* New Order */
   .dashboard-page .dashboard-tabs {
+    display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
     padding-bottom: 0.35rem;
+    scrollbar-width: none;
   }
 
+  .dashboard-page .dashboard-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .dashboard-page .dashboard-order-form,
+  .dashboard-page .card {
+    width: 100%;
+  }
+
+  .dashboard-page .form-group {
+    margin-bottom: 0.75rem;
+  }
+
+  /* Services */
+  .services-page,
+  .services-page__header,
+  .services-filter-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .services-page__filters,
+  .services-filter-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .services-page .btn,
+  .services-filter-card .btn {
+    width: 100%;
+  }
+
+  /* Orders */
   .orders-page .orders-page-header .btn {
     width: 100%;
   }
 
-  .tickets-page .ticket-form-card .btn,
-  .tickets-page .ticket-form-card .select {
+  /* Website Development */
+  .website-dev-page {
     width: 100%;
+    overflow-x: hidden;
+  }
+
+  .website-dev-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 0.5rem;
+    scrollbar-width: none;
+  }
+
+  .website-dev-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .website-dev-tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .website-dev-dash-grid,
+  .website-dev-grid,
+  .website-dev-estimator-grid,
+  .website-dev-features-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .website-dev-form-actions .btn {
+    width: 100%;
+  }
+
+  /* Add Funds */
+  .add-funds-page,
+  .add-funds-pay-card,
+  .add-funds-hero-card {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .add-funds-pay-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .add-funds-methods-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 0.5rem;
+  }
+
+  .add-funds-method-chip {
+    min-width: 0;
+    padding: 0.5rem 0.25rem;
+    font-size: 0.6875rem;
+  }
+
+  .add-funds-quick-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .add-funds-quick-btn {
+    width: 100%;
+  }
+
+  .add-funds-pay-btn {
+    width: 100%;
+    min-height: 3rem;
+  }
+
+  .add-funds-balance-card {
+    width: 100%;
+  }
+
+  /* Support / tickets */
+  .tickets-page .ticket-form-card .btn,
+  .tickets-page .ticket-form-card .select,
+  .tickets-page .ticket-form-card .input {
+    width: 100%;
+  }
+
+  /* API Docs */
+  .api-docs-page {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .api-docs-example__pair,
+  .api-docs-examples {
+    grid-template-columns: 1fr !important;
+  }
+
+  .api-docs-confirm__actions {
+    flex-direction: column;
+  }
+
+  .api-docs-confirm__actions .btn {
+    width: 100%;
+  }
+
+  /* Child Panel */
+  .child-panel-page .form-group,
+  .child-panel-page .btn {
+    width: 100%;
+  }
+
+  /* Profile */
+  .profile-page,
+  .profile-page__header {
+    width: 100%;
+  }
+
+  .profile-page__header {
+    flex-direction: column;
+  }
+
+  /* Help Guide */
+  .guide-page {
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  .guide-quick-nav__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .guide-toc {
+    position: relative !important;
+    top: 0 !important;
+    max-height: none;
+  }
+
+  .guide-layout,
+  .guide-body {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .guide-status-flow {
+    flex-wrap: wrap;
+  }
+
+  .guide-workflow {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 420px) {
+  .user-panel-scroll .stats-grid,
+  .user-panel-scroll .dashboard-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .user-panel-scroll .dashboard-stats .stat-card:nth-child(3) {
+    grid-column: auto;
+  }
+
+  .add-funds-methods-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .guide-quick-nav__grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -268,7 +513,12 @@
     padding-bottom: 2rem;
   }
 
-  .user-panel-scroll .stats-grid {
+  .user-panel-scroll .stats-grid,
+  .user-panel-scroll .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .website-dev-dash-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }

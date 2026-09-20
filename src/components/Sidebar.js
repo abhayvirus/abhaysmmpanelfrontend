@@ -67,10 +67,10 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
     },
     { to: '/notifications', label: t('nav.notifications'), icon: '🔔', badge: unread },
     ...(settings.feature_referrals !== false ? [{ to: '/referrals', label: t('nav.referrals'), icon: '🎁' }] : []),
-    { to: '/api-docs', label: 'API Docs', icon: '🔌' },
-    ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: 'Child Panel', icon: '🌐' }] : []),
-    { to: '/profile', label: t('nav.profile') || 'Settings', icon: '⚙️' },
-    { to: '/help', label: t('nav.help'), icon: '📖' },
+    { to: '/api-docs', label: t('nav.apiDocs') || 'API Docs', icon: '🔌' },
+    ...(settings.feature_child_panel !== false ? [{ to: '/child-panel', label: t('nav.childPanel') || 'Child Panel', icon: '🌐' }] : []),
+    { to: '/profile', label: t('nav.profile') || 'Profile', icon: '⚙️' },
+    { to: '/help', label: t('nav.help') || 'Help Guide', icon: '📖' },
   ];
 
   return (

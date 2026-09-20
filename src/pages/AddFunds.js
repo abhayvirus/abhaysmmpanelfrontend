@@ -374,13 +374,13 @@ const AddFunds = () => {
 
         <div className="add-funds-pay-header">
           <h3 className="card-title" style={{ margin: 0 }}>Instant payment</h3>
-          <span className="add-funds-live-badge">Razorpay Live</span>
+          <span className="add-funds-live-badge">Live</span>
         </div>
 
         <div className="add-funds-secure-banner">
           <span className="add-funds-secure-icon" aria-hidden="true">🔒</span>
           <div>
-            <p className="add-funds-secure-title">Secure payment via Razorpay</p>
+            <p className="add-funds-secure-title">Secure payment</p>
             <p className="add-funds-secure-sub">UPI • Cards • Netbanking • Wallets</p>
           </div>
         </div>
@@ -462,8 +462,8 @@ const AddFunds = () => {
             <strong className="add-funds-payment-summary-value">{sym}{payableAmount.toFixed(2)}</strong>
           </div>
           <div className="add-funds-payment-summary-row">
-            <span className="add-funds-payment-summary-label">Gateway</span>
-            <strong className="add-funds-payment-summary-value add-funds-payment-summary-gateway">Razorpay Live</strong>
+            <span className="add-funds-payment-summary-label">Checkout</span>
+            <strong className="add-funds-payment-summary-value add-funds-payment-summary-gateway">Secure</strong>
           </div>
         </div>
 
@@ -495,7 +495,7 @@ const AddFunds = () => {
         </div>
 
         <p className="add-funds-footer-secure">
-          <strong>100% Secure Payments</strong> powered by Razorpay
+          <strong>100% Secure Payments</strong>
         </p>
       </div>
 
@@ -505,7 +505,7 @@ const AddFunds = () => {
         {history.length === 0 ? (
           <div className="add-funds-history-empty card">
             <p>No payment history found</p>
-            <span>Your Razorpay and manual payments will appear here.</span>
+            <span>Your wallet top-ups and manual payments will appear here.</span>
           </div>
         ) : (
           <>

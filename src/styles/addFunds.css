@@ -463,6 +463,17 @@
 }
 
 @media (max-width: 767px) {
+  .add-funds-page .page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .add-funds-page .page-header > div:first-child p {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
   .add-funds-history-section {
     padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px));
   }
