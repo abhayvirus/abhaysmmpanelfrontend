@@ -12,12 +12,12 @@ export function isLandingPage(pathname) {
   return normalizePathname(pathname) === '/';
 }
 
-/** Sticky banner + floating FAB — landing page only, guests only */
+/** Sticky banner + floating FAB — disabled on public landing (WhatsApp popup is primary). */
 export function shouldShowLandingTelegramWidgets(
   pathname,
   isLoggedIn = Boolean(typeof localStorage !== 'undefined' && localStorage.getItem('token'))
 ) {
-  return !isLoggedIn && isLandingPage(pathname);
+  return false;
 }
 
 export function resolveTelegramChannelUrl(settings = {}) {

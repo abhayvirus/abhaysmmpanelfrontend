@@ -121,14 +121,17 @@
   color: #94a3b8;
 }
 
+/* Also shrink popup QR — same tall phone asset */
 #whatsapp-group-join-popup .wa-join-popup__qr {
   display: block;
-  width: min(100%, 11.5rem);
-  height: auto;
+  width: min(100%, 10.5rem);
+  height: 12.5rem;
   margin: 0 auto 0.65rem;
   border-radius: 0.75rem;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: #fff;
+  background: #0b1220;
+  object-fit: cover;
+  object-position: center top;
 }
 
 #whatsapp-group-join-popup .wa-join-popup__hint {

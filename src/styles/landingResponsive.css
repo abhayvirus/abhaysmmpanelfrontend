@@ -210,8 +210,13 @@
     justify-content: center;
   }
 
+  .landing-whatsapp-group__qr-frame {
+    width: min(100%, 11.5rem);
+  }
+
   .landing-whatsapp-group__qr {
-    width: min(100%, 280px);
+    width: 100%;
+    height: 14rem;
   }
 
   /* Social proof (on landing) */
@@ -332,8 +337,12 @@
     gap: 1.5rem;
   }
 
-  .landing-whatsapp-group__qr {
+  .landing-whatsapp-group__qr-frame {
     width: min(240px, 100%);
+  }
+
+  .landing-whatsapp-group__qr {
+    width: 100%;
   }
 }
 
