@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import AdminLayout from '../components/AdminLayout';
 import SettingsLivePreview from '../components/SettingsLivePreview';
 import FileUploadZone from '../components/FileUploadZone';
-import { PAYMENT_METHODS } from '../config/paymentMethods';
+import { PAYMENT_METHODS, normalizeEnabledPaymentIds } from '../config/paymentMethods';
 import {
   adminGetSettings,
   adminUpdateSettings,
@@ -136,9 +136,9 @@ const AdminSettings = () => {
       adminGetProviders(),
       adminGetAnnouncements(),
     ]);
-    const paymentIds = Array.isArray(s.data.payment_methods_enabled) && s.data.payment_methods_enabled.length
-      ? s.data.payment_methods_enabled
-      : DEFAULT_PAYMENT_IDS;
+    const paymentIds = normalizeEnabledPaymentIds(
+      Array.isArray(s.data.payment_methods_enabled) ? s.data.payment_methods_enabled : null
+    );
     setDraft({
       ...s.data,
       app_screenshots: parseScreenshots(s.data.app_screenshots),
@@ -363,7 +363,7 @@ const AdminSettings = () => {
             <Field label="Google Client ID" value={draft.google_client_id} onChange={(v) => updateDraft('google_client_id', v)} />
             <h3 className="admin-settings-section-title">Enabled payment methods</h3>
             <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12 }}>
-              Controls which options users see on Add Funds (Razorpay checkout).
+              Shown on Add Funds. UPI covers Google Pay, PhonePe, Paytm, BHIM and Scan QR inside Razorpay — no need for separate chips.
             </p>
             <div className="admin-settings-payment-grid">
               {PAYMENT_METHODS.map((m) => (

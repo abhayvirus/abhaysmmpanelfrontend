@@ -16,7 +16,28 @@
 .admin-categories-form__grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.625rem;
+  gap: 0.65rem;
+}
+
+.admin-categories-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.admin-categories-form__label {
+  display: block;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted, #8ca0b8);
+  margin-bottom: 0.3rem;
+}
+
+.admin-categories-form__icon-wrap .admin-categories-form__label {
+  margin-bottom: 0.3rem;
 }
 
 .admin-categories-form__actions {
@@ -76,6 +97,7 @@
   font-size: 1.75rem;
   line-height: 1;
   flex-shrink: 0;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }
 
 .admin-cat-card__name {
@@ -203,4 +225,11 @@
     width: auto;
     min-width: 8rem;
   }
+}
+
+.admin-cat-icon-cell {
+  font-size: 1.35rem;
+  line-height: 1;
+  text-align: center;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
 }

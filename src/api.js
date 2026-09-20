@@ -202,7 +202,7 @@ export const adminUpdateOrderStatus = (id, status) => API.put(`/admin/orders/${i
 export const adminDeleteOrder = (id) => API.delete(`/admin/orders/${id}`);
 export const adminGetServices = () => API.get('/services/admin/all');
 export const adminSyncServices = (provider_id) =>
-  API.post('/services/admin/sync', { provider_id }, { timeout: 180000 });
+  API.post('/services/admin/sync', { provider_id }, { timeout: 300000 });
 export const adminApplyServiceMargin = (provider_id, profit_margin) =>
   API.post('/services/admin/apply-margin', { provider_id, profit_margin });
 export const adminProviderStatus = (provider_id) => API.get('/services/admin/provider-status', { params: { provider_id } });

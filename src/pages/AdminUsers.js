@@ -146,7 +146,13 @@ const AdminUsers = () => {
                     <strong className="admin-users-id">#{user.serial ?? '—'}</strong>
                   </td>
                   <td>{user.name || '—'}</td>
-                  <td className="admin-users-email">{user.email}</td>
+                  <td className="admin-users-email" title={user.email || ''}>
+                    {user.email ? (
+                      <a href={`mailto:${String(user.email).trim()}`}>{String(user.email).trim()}</a>
+                    ) : (
+                      '—'
+                    )}
+                  </td>
                   <td>
                     {editing === user.id ? (
                       <input
@@ -205,7 +211,12 @@ const AdminUsers = () => {
                   {isSuspended(user) ? 'SUSPENDED' : (user.status || 'ACTIVE')}
                 </span>
               </div>
-              <div className="admin-mobile-row"><span>Email</span><span>{user.email}</span></div>
+              <div className="admin-mobile-row">
+                <span>Email</span>
+                <span className="admin-users-email-text" title={user.email || ''}>
+                  {user.email ? String(user.email).trim() : '—'}
+                </span>
+              </div>
               <div className="admin-mobile-row">
                 <span>Balance</span>
                 <span>

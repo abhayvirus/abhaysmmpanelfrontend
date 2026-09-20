@@ -1,0 +1,65 @@
+.social-icon-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.social-icon-picker__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.social-icon-picker__select {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: 100%;
+}
+
+.social-icon-picker__preview {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.5rem;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.28);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 9rem;
+  overflow: hidden;
+}
+
+.social-icon-picker__preview-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.social-icon-picker__manual {
+  width: 100%;
+  min-width: 0;
+}
+
+.social-icon-picker__custom-btn {
+  appearance: none;
+  border: 1px dashed var(--border, rgba(255, 255, 255, 0.15));
+  background: transparent;
+  color: var(--text-muted, #8ca0b8);
+  border-radius: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.75rem;
+  text-align: left;
+  cursor: pointer;
+  min-height: 2.25rem;
+  width: 100%;
+}
+
+.social-icon-picker__custom-btn:hover {
+  border-color: var(--primary, #38bdf8);
+  color: var(--text, #e8eef7);
+}

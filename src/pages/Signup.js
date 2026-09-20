@@ -10,6 +10,14 @@ import AuthBrandHeader from '../components/AuthBrandHeader';
 import { getPostLoginPath, isAuthenticated, saveAuthSession } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
 
+function readStoredRef() {
+  try {
+    return String(sessionStorage.getItem('signup_ref') || '').trim().toUpperCase();
+  } catch {
+    return '';
+  }
+}
+
 const Signup = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -22,7 +30,8 @@ const Signup = () => {
   const [resendSec, setResendSec] = useState(0);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const refCode = searchParams.get('ref') || '';
+  const urlRef = String(searchParams.get('ref') || '').trim().toUpperCase();
+  const [referralCode, setReferralCode] = useState(() => urlRef || readStoredRef());
   const { enabled: googleEnabled } = useGoogleAuth();
   const [registrationOpen, setRegistrationOpen] = useState(true);
   const [configLoading, setConfigLoading] = useState(true);
@@ -35,12 +44,21 @@ const Signup = () => {
   }, []);
 
   useEffect(() => {
-    if (refCode) {
+    if (urlRef) {
+      setReferralCode(urlRef);
       try {
-        sessionStorage.setItem('signup_ref', refCode.trim().toUpperCase());
+        sessionStorage.setItem('signup_ref', urlRef);
       } catch (_) { /* ignore */ }
     }
-  }, [refCode]);
+  }, [urlRef]);
+
+  useEffect(() => {
+    const code = String(referralCode || '').trim().toUpperCase();
+    try {
+      if (code) sessionStorage.setItem('signup_ref', code);
+      else sessionStorage.removeItem('signup_ref');
+    } catch (_) { /* ignore */ }
+  }, [referralCode]);
 
   useEffect(() => {
     // Ensure auth pages never inherit fixed body from a previously opened mobile menu
@@ -65,11 +83,12 @@ const Signup = () => {
     setSuccess('');
     try {
       await wakeApi(9000);
+      const ref = String(referralCode || '').trim().toUpperCase();
       await sendSignupOtp({
         name,
         email,
         password,
-        referral_code: refCode || undefined,
+        referral_code: ref || undefined,
       });
       setStep('otp');
       setOtp('');
@@ -86,11 +105,12 @@ const Signup = () => {
     setLoading(true);
     setError('');
     try {
+      const ref = String(referralCode || '').trim().toUpperCase();
       await sendSignupOtp({
         name,
         email,
         password,
-        referral_code: refCode || undefined,
+        referral_code: ref || undefined,
       });
       setSuccess('A new OTP has been sent to your email.');
       setResendSec(60);
@@ -179,6 +199,25 @@ const Signup = () => {
                 inputStyle={styles.input}
                 autoComplete="new-password"
               />
+            </div>
+
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>
+                Referral code <span style={{ fontWeight: 500, opacity: 0.75 }}>(optional)</span>
+              </label>
+              <input
+                placeholder="Enter code if you have one"
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase().replace(/\s+/g, '').slice(0, 32))}
+                style={styles.input}
+                autoComplete="off"
+                spellCheck={false}
+              />
+              {urlRef ? (
+                <p style={{ margin: '6px 0 0', fontSize: 12, color: '#6ee7b7' }}>
+                  Referral applied from your invite link
+                </p>
+              ) : null}
             </div>
 
             {googleEnabled && (

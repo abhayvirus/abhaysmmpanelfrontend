@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import UserLayout from '../components/UserLayout';
 import OrderFormModal from '../components/OrderFormModal';
 import ServiceCard from '../components/ServiceCard';
-import { getServices, getPlatforms, getServiceCategories } from '../api';
+import { getServices, getPlatforms } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
+import { isSellableService } from '../utils/servicePrice';
 import '../styles/servicesPage.css';
 import '../styles/filterControls.css';
 
@@ -12,7 +13,6 @@ const Services = () => {
   const sym = settings.currency_symbol || '₹';
   const [services, setServices] = useState([]);
   const [platforms, setPlatforms] = useState(['All']);
-  const [categories, setCategories] = useState(['All']);
   const [platform, setPlatform] = useState('All');
   const [category, setCategory] = useState('All');
   const [search, setSearch] = useState('');
@@ -21,8 +21,9 @@ const Services = () => {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
-    getPlatforms().then((r) => setPlatforms(['All', ...r.data])).catch(() => {});
-    getServiceCategories().then((r) => setCategories(['All', ...r.data])).catch(() => {});
+    getPlatforms()
+      .then((r) => setPlatforms(['All', ...(Array.isArray(r.data) ? r.data : [])]))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -32,13 +33,39 @@ const Services = () => {
     if (category !== 'All') params.category = category;
     if (search.trim()) params.search = search.trim();
     getServices(params)
-      .then((r) => setServices(r.data))
+      .then((r) => {
+        const list = (Array.isArray(r.data) ? r.data : []).filter(isSellableService);
+        setServices(list);
+        const plats = new Set();
+        list.forEach((s) => {
+          const p = String(s.platform || '').trim();
+          if (p && p !== 'Other') plats.add(p);
+        });
+        if (plats.size) {
+          setPlatforms((prev) => {
+            const merged = new Set(prev.filter((x) => x !== 'All'));
+            plats.forEach((p) => merged.add(p));
+            return ['All', ...Array.from(merged).sort((a, b) => a.localeCompare(b))];
+          });
+        }
+      })
+      .catch(() => setServices([]))
       .finally(() => setLoading(false));
   }, [platform, category, search]);
 
+  // Category chips only from priced services (hide empty General/TikTok stubs)
+  const categories = useMemo(() => {
+    const set = new Set();
+    services.forEach((s) => {
+      const c = String(s.category || '').trim();
+      if (c) set.add(c);
+    });
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [services]);
+
   const grouped = useMemo(() => {
     const entries = services.reduce((acc, s) => {
-      const cat = s.category || 'General';
+      const cat = String(s.category || '').trim() || 'General';
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(s);
       return acc;
@@ -82,7 +109,10 @@ const Services = () => {
                   key={p}
                   type="button"
                   className={`filter-chip${platform === p ? ' filter-chip--active' : ''}`}
-                  onClick={() => setPlatform(p)}
+                  onClick={() => {
+                    setPlatform(p);
+                    setCategory('All');
+                  }}
                   aria-pressed={platform === p}
                 >
                   {p}
@@ -112,7 +142,7 @@ const Services = () => {
           <p className="services-page__loading">Loading services…</p>
         ) : services.length === 0 ? (
           <div className="card services-page__empty">
-            <p>No services found. Ask admin to sync from API provider.</p>
+            <p>No priced services found. Ask admin to Sync from API provider.</p>
           </div>
         ) : (
           <div className="services-sections">

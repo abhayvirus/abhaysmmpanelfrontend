@@ -112,7 +112,7 @@ const OrderFormModal = ({ service, open, onClose, onSuccess }) => {
             }}>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>Total charge</div>
               <div style={{ fontSize: 24, fontWeight: 800, color: 'var(--primary)' }}>{sym}{total}</div>
-              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sym}{unitPrice.toFixed(2)} per 1000</div>
+              <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{sym}{unitPrice < 1 ? Number(unitPrice.toFixed(4)).toString() : unitPrice.toFixed(2)} per 1000</div>
             </div>
           )}
           <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading || Boolean(insufficientBalance)}>

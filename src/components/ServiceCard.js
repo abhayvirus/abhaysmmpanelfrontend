@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { formatServicePrice, getServiceUnitPrice } from '../utils/servicePrice';
+import { cleanServiceTitle } from '../utils/serviceTitle';
 
 const ServiceCard = ({ service, currencySymbol, onOrder }) => {
   const sym = currencySymbol || '₹';
@@ -10,6 +11,7 @@ const ServiceCard = ({ service, currencySymbol, onOrder }) => {
   const minQty = Number(service.min_quantity);
   const maxQty = Number(service.max_quantity);
   const unitPrice = getServiceUnitPrice(service);
+  const title = cleanServiceTitle(service.name);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -35,14 +37,18 @@ const ServiceCard = ({ service, currencySymbol, onOrder }) => {
     <div ref={wrapRef} className="services-card-wrap">
       {visible ? (
         <article className="card services-card">
-          <h3 className="services-card__title">{service.name}</h3>
+          <h3 className="services-card__title" title={service.name}>{title}</h3>
           <div className="services-card__meta">
-            {(platform || category) ? (
-              <div className="services-card__meta-line">
-                {platform ? <span className="services-card__meta-tag">{platform}</span> : null}
-                {category ? <span className="services-card__meta-tag">{category}</span> : null}
-              </div>
-            ) : null}
+            <div className="services-card__meta-line services-card__meta-line--tags">
+              <span className="services-card__meta-tag">
+                <span className="services-card__meta-label">Platform</span>
+                {platform && platform !== 'Other' ? platform : '—'}
+              </span>
+              <span className="services-card__meta-tag">
+                <span className="services-card__meta-label">Category</span>
+                {category && category !== 'General' ? category : (category || '—')}
+              </span>
+            </div>
             <div className="services-card__meta-line">
               <span>Min {Number.isFinite(minQty) ? minQty.toLocaleString() : '—'}</span>
               <span aria-hidden="true">·</span>
@@ -57,7 +63,7 @@ const ServiceCard = ({ service, currencySymbol, onOrder }) => {
             <button
               type="button"
               className="btn btn-primary services-card__order"
-              onClick={() => onOrder({ ...service, price: unitPrice })}
+              onClick={() => onOrder({ ...service, name: title, price: unitPrice })}
             >
               Order
             </button>

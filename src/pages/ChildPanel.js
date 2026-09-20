@@ -12,7 +12,7 @@ const statusBadge = (status) => {
 const ChildPanel = () => {
   const [panels, setPanels] = useState([]);
   const [form, setForm] = useState({ domain: '', panel_name: '', notes: '' });
-  const [msg, setMsg] = useState('');
+  const [msg, setMsg] = useState(null);
 
   useEffect(() => { getMyChildPanels().then((r) => setPanels(r.data)).catch(() => setPanels([])); }, []);
 
@@ -20,11 +20,11 @@ const ChildPanel = () => {
     e.preventDefault();
     try {
       await requestChildPanel(form);
-      setMsg('Request submitted! Admin will review.');
+      setMsg({ type: 'success', text: 'Request submitted! Admin will review.' });
       const r = await getMyChildPanels();
       setPanels(r.data);
     } catch (err) {
-      setMsg(err.response?.data?.message || 'Error');
+      setMsg({ type: 'error', text: err.response?.data?.message || 'Error' });
     }
   };
 
@@ -33,7 +33,11 @@ const ChildPanel = () => {
       <div className="child-panel-page">
         <h1 style={{ marginBottom: 8 }}>Child Panel (Reseller)</h1>
         <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>Get your own branded SMM panel on your domain.</p>
-        {msg && <div className="alert alert-success">{msg}</div>}
+        {msg && (
+          <div className={`alert ${msg.type === 'error' ? 'alert-danger' : 'alert-success'}`}>
+            {msg.text}
+          </div>
+        )}
         <div className="card child-panel-form-card" style={{ marginBottom: 24 }}>
           <form onSubmit={submit}>
             <div className="form-group">

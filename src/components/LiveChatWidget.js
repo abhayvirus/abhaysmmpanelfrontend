@@ -15,11 +15,30 @@ const CRITICAL_PATHS = [
   '/profile',
 ];
 
-const USER_CHAT_LIMIT = 20;
+const SESSION_DURATION_MS = 60 * 60 * 1000;
 const SESSION_EXPIRED_MSG = 'Your session expired';
 
-function countUserMessages(list) {
-  return (Array.isArray(list) ? list : []).filter((m) => m.sender_role === 'user').length;
+function parseChatResponse(data) {
+  if (Array.isArray(data)) {
+    return { messages: data, session: null };
+  }
+  return {
+    messages: Array.isArray(data?.messages) ? data.messages : [],
+    session: data?.session || null,
+  };
+}
+
+function formatRemaining(ms) {
+  const total = Math.max(0, Math.floor(Number(ms) / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    const rm = m % 60;
+    return `${h}h ${rm}m left`;
+  }
+  if (m > 0) return `${m}m ${String(s).padStart(2, '0')}s left`;
+  return `${s}s left`;
 }
 
 const LiveChatWidget = () => {
@@ -32,7 +51,11 @@ const LiveChatWidget = () => {
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [sessionNotice, setSessionNotice] = useState('');
+  const [sessionExpired, setSessionExpired] = useState(false);
+  const [remainingMs, setRemainingMs] = useState(SESSION_DURATION_MS);
   const bottom = useRef(null);
+  const expiredNotified = useRef(false);
+  const hadActiveSession = useRef(false);
   const token = localStorage.getItem('token');
   const user = useMemo(() => {
     try {
@@ -75,26 +98,52 @@ const LiveChatWidget = () => {
       !open,
   });
 
-  const userMsgCount = countUserMessages(msgs);
-  const remaining = Math.max(0, USER_CHAT_LIMIT - userMsgCount);
-  const sessionExpired = userMsgCount >= USER_CHAT_LIMIT;
-
   const expireSession = useCallback((notice = SESSION_EXPIRED_MSG) => {
+    setSessionExpired(true);
+    setRemainingMs(0);
     setSessionNotice(notice);
     setOpen(false);
     setText('');
+    hadActiveSession.current = false;
     window.setTimeout(() => setSessionNotice(''), 4500);
   }, []);
+
+  const applySession = useCallback((session) => {
+    if (!session) return;
+    const expired = Boolean(session.session_expired);
+    const rem = Number(session.remaining_ms);
+    const safeRem = Number.isFinite(rem) ? rem : SESSION_DURATION_MS;
+
+    if (expired) {
+      // Active chat just timed out → toast + close. Otherwise ready for a new 1-hour session.
+      if (hadActiveSession.current && !expiredNotified.current) {
+        expiredNotified.current = true;
+        expireSession(SESSION_EXPIRED_MSG);
+        return;
+      }
+      setSessionExpired(false);
+      setRemainingMs(SESSION_DURATION_MS);
+      return;
+    }
+
+    expiredNotified.current = false;
+    setSessionExpired(false);
+    setRemainingMs(safeRem);
+    if (session.session_started_at) {
+      hadActiveSession.current = true;
+    }
+  }, [expireSession]);
 
   const load = useCallback(() => {
     if (!token) return;
     getChatMessages()
       .then((r) => {
-        const list = Array.isArray(r.data) ? r.data : [];
-        setMsgs(list);
+        const { messages, session } = parseChatResponse(r.data);
+        setMsgs(messages);
+        applySession(session);
       })
       .catch(() => {});
-  }, [token]);
+  }, [token, applySession]);
 
   useEffect(() => {
     if (!open || !token) return undefined;
@@ -103,13 +152,21 @@ const LiveChatWidget = () => {
     return () => clearInterval(id);
   }, [open, token, load]);
 
-  // Auto-close once user hits the 20-message session limit
   useEffect(() => {
-    if (!open) return;
-    if (userMsgCount >= USER_CHAT_LIMIT) {
-      expireSession();
-    }
-  }, [open, userMsgCount, expireSession]);
+    if (!open || sessionExpired) return undefined;
+    const id = setInterval(() => {
+      setRemainingMs((prev) => {
+        const next = Math.max(0, prev - 1000);
+        if (next <= 0 && hadActiveSession.current && !expiredNotified.current) {
+          expiredNotified.current = true;
+          // Defer expire to avoid setState during setState
+          window.setTimeout(() => expireSession(SESSION_EXPIRED_MSG), 0);
+        }
+        return next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [open, sessionExpired, expireSession]);
 
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: 'smooth' });
@@ -161,7 +218,6 @@ const LiveChatWidget = () => {
         borderRadius: 0,
       };
     }
-    // Desktop: always dock bottom-right so header never clips off-screen
     return {
       right: '1.25rem',
       bottom: '5.5rem',
@@ -187,24 +243,26 @@ const LiveChatWidget = () => {
 
   const send = async () => {
     if (!text.trim() || sending || sessionExpired) return;
-    if (userMsgCount >= USER_CHAT_LIMIT) {
-      expireSession();
-      return;
-    }
     setSending(true);
     try {
       const res = await sendChatMessage(text.trim());
       setText('');
       const data = res.data || {};
+      hadActiveSession.current = true;
       await new Promise((resolve) => {
         getChatMessages()
           .then((r) => {
-            setMsgs(Array.isArray(r.data) ? r.data : []);
+            const { messages, session } = parseChatResponse(r.data);
+            setMsgs(messages);
+            applySession(session);
           })
           .finally(resolve);
       });
       if (data.session_expired || data.code === 'SESSION_EXPIRED') {
         expireSession(data.message || SESSION_EXPIRED_MSG);
+      } else if (typeof data.remaining_ms === 'number') {
+        setRemainingMs(data.remaining_ms);
+        setSessionExpired(false);
       }
     } catch (e) {
       const data = e.response?.data || {};
@@ -221,22 +279,16 @@ const LiveChatWidget = () => {
     e.preventDefault();
     e.stopPropagation();
     if (wasDragged()) return;
-    if (sessionExpired || userMsgCount >= USER_CHAT_LIMIT) {
-      // Refresh count then decide
-      getChatMessages()
-        .then((r) => {
-          const list = Array.isArray(r.data) ? r.data : [];
-          setMsgs(list);
-          if (countUserMessages(list) >= USER_CHAT_LIMIT) {
-            expireSession();
-          } else {
-            setOpen(true);
-          }
-        })
-        .catch(() => setOpen(true));
-      return;
-    }
+    expiredNotified.current = false;
+    setSessionExpired(false);
     setOpen(true);
+    getChatMessages()
+      .then((r) => {
+        const { messages, session } = parseChatResponse(r.data);
+        setMsgs(messages);
+        applySession(session);
+      })
+      .catch(() => {});
   };
 
   const onPointerDown = (e) => {
@@ -251,6 +303,11 @@ const LiveChatWidget = () => {
 
   const displayName = user.name || 'You';
   const displayEmail = user.email || '';
+  const statusLabel = sessionExpired
+    ? 'Session limit reached'
+    : hadActiveSession.current || remainingMs < SESSION_DURATION_MS
+      ? formatRemaining(remainingMs)
+      : '1 hour session';
 
   return (
     <>
@@ -291,11 +348,7 @@ const LiveChatWidget = () => {
             <div className="live-chat-wa-avatar" aria-hidden="true">💬</div>
             <div className="live-chat-wa-title">
               <strong>{t('chat.title') || 'Live Support'}</strong>
-              <span>
-                {remaining > 0
-                  ? `${remaining} message${remaining === 1 ? '' : 's'} left`
-                  : 'Session limit reached'}
-              </span>
+              <span>{statusLabel}</span>
             </div>
             <button
               type="button"
@@ -315,7 +368,7 @@ const LiveChatWidget = () => {
           <div className="live-chat-messages live-chat-wa-messages">
             {msgs.length === 0 && (
               <div className="live-chat-wa-empty">
-                Say hello — max {USER_CHAT_LIMIT} messages per session.
+                Say hello — live chat sessions last 1 hour.
               </div>
             )}
             {msgs.map((m) => (

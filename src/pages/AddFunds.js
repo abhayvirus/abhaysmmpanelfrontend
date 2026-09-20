@@ -19,14 +19,11 @@ import {
   openRazorpayModal,
 } from '../utils/razorpayCheckout';
 import PaymentMethodLogo from '../components/PaymentMethodLogo';
-import { PAYMENT_METHODS, CARD_BRANDS, getPaymentMethod } from '../config/paymentMethods';
+import { PAYMENT_METHODS, CARD_BRANDS, getPaymentMethod, normalizeEnabledPaymentIds } from '../config/paymentMethods';
 import { friendlyPaymentError } from '../utils/paymentErrors';
 
-const ALL_PAYMENT_IDS = PAYMENT_METHODS.map((m) => m.id);
-
 function getEnabledPaymentMethods(settings) {
-  const enabled = settings?.payment_methods_enabled;
-  const ids = Array.isArray(enabled) && enabled.length ? enabled : ALL_PAYMENT_IDS;
+  const ids = normalizeEnabledPaymentIds(settings?.payment_methods_enabled);
   return PAYMENT_METHODS.filter((m) => ids.includes(m.id));
 }
 
@@ -166,9 +163,12 @@ const AddFunds = () => {
 
   const razorpayReady = razorpayConfig.razorpayConfigured || razorpayConfig.razorpayEnabled;
 
-  const payableAmount = couponInfo?.final_amount
-    ? parseFloat(couponInfo.final_amount)
-    : parseFloat(amount) || 0;
+  const baseAmount = parseFloat(amount) || 0;
+  // Display: coupon final_amount. Checkout: ALWAYS send original amount + coupon code
+  // (server applies discount once). Never send discounted amt + coupon (double discount).
+  const payableAmount = couponInfo?.final_amount != null
+    ? parseFloat(couponInfo.final_amount) || 0
+    : baseAmount;
 
   useEffect(() => {
     if (!toast) return undefined;
@@ -211,13 +211,22 @@ const AddFunds = () => {
   };
 
   const openRazorpayCheckout = async () => {
-    const amt = payableAmount;
-    if (!amt || amt < 10) {
+    const checkoutAmount = baseAmount;
+    if (!checkoutAmount || checkoutAmount < 10) {
       setSuccessModal({
         open: true,
         type: 'failed',
         title: 'Invalid amount',
         message: 'Minimum recharge is ₹10',
+      });
+      return;
+    }
+    if (payableAmount < 10) {
+      setSuccessModal({
+        open: true,
+        type: 'failed',
+        title: 'Invalid amount',
+        message: 'Amount after coupon must be at least ₹10',
       });
       return;
     }
@@ -237,8 +246,8 @@ const AddFunds = () => {
 
     try {
       const { data: orderData } = await createRazorpayOrder(
-        amt,
-        couponInfo?.code || couponCode || undefined
+        checkoutAmount,
+        couponInfo?.code || (couponCode.trim() || undefined)
       );
       const rawKey = resolveRazorpayKeyId(
         orderData.keyId,
@@ -253,6 +262,8 @@ const AddFunds = () => {
         orderData,
         user,
         settings,
+        gateway: selectedMethodMeta.gateway,
+        methodLabel: selectedMethodMeta.payLabel,
         onDismiss: () => {
           resetPayState();
           showToast('info', 'Payment cancelled');
@@ -299,15 +310,6 @@ const AddFunds = () => {
           }
         },
       });
-      // Open checkout with only the user-selected gateway enabled.
-      options.method = {
-        upi: selectedMethodMeta.gateway === 'upi',
-        card: selectedMethodMeta.gateway === 'card',
-        netbanking: selectedMethodMeta.gateway === 'netbanking',
-        wallet: selectedMethodMeta.gateway === 'wallet',
-        emi: selectedMethodMeta.gateway === 'card',
-      };
-      options.description = `Wallet recharge via ${selectedMethodMeta.label}`;
 
       setPayPhase('idle');
       openRazorpayModal(options, {
@@ -393,12 +395,18 @@ const AddFunds = () => {
               onClick={() => setSelectedMethod(m.id)}
               disabled={paying}
               aria-pressed={selectedMethod === m.id}
+              title={m.hint || m.label}
             >
               <PaymentMethodLogo id={m.logo} size={32} className="add-funds-method-chip-logo" alt={m.label} />
               <span>{m.label}</span>
             </button>
           ))}
         </div>
+        <p className="add-funds-method-hint">
+          {selectedMethodMeta.gateway === 'upi'
+            ? 'UPI → Google Pay, PhonePe, Paytm, BHIM & Scan QR open inside Razorpay (select once there).'
+            : (selectedMethodMeta.hint || '')}
+        </p>
 
         <div className="add-funds-quick-row">
           {QUICK_AMOUNTS.map((q) => (

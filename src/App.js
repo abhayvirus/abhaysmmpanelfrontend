@@ -55,9 +55,24 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem('user');
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    } catch (_) { /* ignore */ }
+    return {};
+  }
+}
+
 const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const user = readStoredUser();
   if (!token) return <Navigate to="/login" replace />;
   if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
   return children;

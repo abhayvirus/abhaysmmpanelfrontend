@@ -397,7 +397,15 @@
     font-size: 0.8125rem !important;
     color: var(--text) !important;
     max-width: none !important;
-    white-space: normal !important;
+    white-space: nowrap !important;
+  }
+
+  .admin-services-table-wrap td.admin-svc-col-name {
+    white-space: nowrap !important;
+  }
+
+  .admin-services-table-wrap .admin-svc-table-title {
+    max-width: 12rem;
   }
 
   .admin-services-table-wrap td::before {

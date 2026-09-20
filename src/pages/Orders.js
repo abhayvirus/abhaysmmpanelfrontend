@@ -3,6 +3,7 @@ import UserLayout from '../components/UserLayout';
 import { getMyOrders, refreshOrderStatus, refillOrder, cancelOrder } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { exportOrdersPdf } from '../utils/exportOrdersPdf';
+import { formatMoney } from '../utils/formatMoney';
 
 const statusClass = {
   pending: 'badge-warning',
@@ -42,15 +43,28 @@ const Orders = () => {
   const sym = settings.currency_symbol || '₹';
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [actionId, setActionId] = useState(null);
   const [msg, setMsg] = useState(null);
+  const [msgType, setMsgType] = useState('success');
   const timersRef = useRef([]);
 
   const load = useCallback((silent = false) => {
     if (!silent) setLoading(true);
     return getMyOrders()
-      .then((r) => setOrders(applyLocalLifecycle(r.data)))
-      .finally(() => { if (!silent) setLoading(false); });
+      .then((r) => {
+        setOrders(applyLocalLifecycle(Array.isArray(r.data) ? r.data : []));
+        setLoadError('');
+      })
+      .catch((e) => {
+        if (!silent) {
+          setOrders([]);
+          setLoadError(e.response?.data?.message || 'Failed to load orders');
+        }
+      })
+      .finally(() => {
+        if (!silent) setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
@@ -62,21 +76,15 @@ const Orders = () => {
   useEffect(() => {
     timersRef.current.forEach(clearTimeout);
     timersRef.current = [];
-
     orders.forEach((o) => {
       if (o.status !== 'pending' || !o.processing_at) return;
       const ms = new Date(o.processing_at).getTime() - Date.now();
       if (ms <= 0) return;
       const t = setTimeout(() => {
-        setOrders((prev) => prev.map((row) => (
-          row.id === o.id && row.status === 'pending'
-            ? { ...row, status: 'processing' }
-            : row
-        )));
+        setOrders((prev) => applyLocalLifecycle(prev));
       }, ms + 50);
       timersRef.current.push(t);
     });
-
     return () => {
       timersRef.current.forEach(clearTimeout);
       timersRef.current = [];
@@ -96,9 +104,11 @@ const Orders = () => {
     setActionId(id);
     try {
       const res = await refillOrder(id);
+      setMsgType('success');
       setMsg(res.data.message || 'Refill requested');
       load(true);
     } catch (e) {
+      setMsgType('error');
       setMsg(e.response?.data?.message || 'Refill failed');
     }
     setActionId(null);
@@ -109,13 +119,17 @@ const Orders = () => {
     setActionId(id);
     try {
       const res = await cancelOrder(id);
+      setMsgType('success');
       setMsg(res.data.message || 'Cancelled');
       setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o)));
       if (res.data.balance != null) {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        localStorage.setItem('user', JSON.stringify({ ...user, balance: res.data.balance }));
+        try {
+          const user = JSON.parse(localStorage.getItem('user') || '{}');
+          localStorage.setItem('user', JSON.stringify({ ...user, balance: res.data.balance }));
+        } catch (_) { /* ignore */ }
       }
     } catch (e) {
+      setMsgType('error');
       setMsg(e.response?.data?.message || 'Cancel failed');
     }
     setActionId(null);
@@ -129,6 +143,8 @@ const Orders = () => {
     }
     return o.status;
   };
+
+  const orderAmount = (o) => formatMoney(o.price ?? o.charge ?? o.amount ?? o.total_price);
 
   return (
     <UserLayout title="Orders">
@@ -146,18 +162,23 @@ const Orders = () => {
             </button>
           )}
         </div>
-        {msg && <div className="alert alert-success orders-page-msg">{msg}</div>}
+        {msg && (
+          <div className={`alert ${msgType === 'error' ? 'alert-danger' : 'alert-success'} orders-page-msg`}>
+            {msg}
+          </div>
+        )}
+        {loadError && <div className="alert alert-danger orders-page-msg">{loadError}</div>}
 
         {loading ? (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 48 }}>Loading...</p>
-        ) : orders.length === 0 ? (
+        ) : loadError ? null : orders.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
             No orders yet. Browse Services to place your first order.
           </div>
         ) : (
           <>
             <div className="table-wrap orders-table-wrap">
-              <table className="orders-table">
+              <table className="table">
                 <thead>
                   <tr>
                     <th>ID</th>
@@ -184,7 +205,7 @@ const Orders = () => {
                           </a>
                         </td>
                         <td>{o.quantity?.toLocaleString()}</td>
-                        <td>{sym}{parseFloat(o.price).toFixed(2)}</td>
+                        <td>{sym}{orderAmount(o)}</td>
                         <td>
                           <span className={`badge ${statusClass[st] || 'badge-info'}`}>{st}</span>
                         </td>
@@ -212,11 +233,12 @@ const Orders = () => {
                 </tbody>
               </table>
             </div>
+
             <div className="orders-mobile-list">
               {orders.map((o) => {
                 const st = displayStatus(o);
                 return (
-                  <div className="card orders-mobile-card" key={`mobile-${o.id}`}>
+                  <div key={`m-${o.id}`} className="orders-mobile-card">
                     <div className="orders-mobile-top">
                       <strong>#{o.id}</strong>
                       <span className={`badge ${statusClass[st] || 'badge-info'}`}>{st}</span>
@@ -224,21 +246,20 @@ const Orders = () => {
                     <div className="orders-mobile-row"><span>Service</span><span>{o.service_name}</span></div>
                     <div className="orders-mobile-row">
                       <span>Link</span>
-                      <a href={o.link} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>
-                        Open
-                      </a>
+                      <a href={o.link} target="_blank" rel="noreferrer">{o.link}</a>
                     </div>
                     <div className="orders-mobile-row"><span>Qty</span><span>{o.quantity?.toLocaleString()}</span></div>
-                    <div className="orders-mobile-row"><span>Price</span><span>{sym}{parseFloat(o.price).toFixed(2)}</span></div>
-                    <div className="orders-mobile-row"><span>Remains</span><span>{o.remains ?? '—'}</span></div>
-                    <div className="orders-mobile-row"><span>Date</span><span>{new Date(o.created_at).toLocaleDateString()}</span></div>
-                    <div className="orders-actions-cell orders-actions-cell--mobile">
-                      <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id} onClick={() => refresh(o.id)}>↻</button>
+                    <div className="orders-mobile-row"><span>Price</span><span>{sym}{orderAmount(o)}</span></div>
+                    <div className="orders-actions-cell" style={{ marginTop: 10 }}>
+                      <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id}
+                        onClick={() => refresh(o.id)}>↻</button>
                       {canRefill(o) && (
-                        <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id} onClick={() => refill(o.id)}>Refill</button>
+                        <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id}
+                          onClick={() => refill(o.id)}>Refill</button>
                       )}
                       {canCancelOrder(o) && (
-                        <button type="button" className="btn btn-danger btn-sm" disabled={actionId === o.id} onClick={() => cancel(o.id)}>Cancel</button>
+                        <button type="button" className="btn btn-danger btn-sm" disabled={actionId === o.id}
+                          onClick={() => cancel(o.id)}>Cancel</button>
                       )}
                     </div>
                   </div>

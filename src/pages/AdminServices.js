@@ -15,6 +15,7 @@ import {
   adminApplyServiceMargin,
 } from '../api';
 import SocialIconPicker from '../components/SocialIconPicker';
+import { displayServiceName, truncateText } from '../utils/serviceTitle';
 import '../styles/adminServices.css';
 import '../styles/filterControls.css';
 
@@ -107,8 +108,8 @@ const AdminServices = () => {
     platform: '',
     category: '',
     custom_price: '',
-    min_quantity: 10,
-    max_quantity: 10000,
+    min_quantity: 100,
+    max_quantity: 1000000,
     is_active: true,
   });
   const [categoryOptions, setCategoryOptions] = useState([]);
@@ -299,13 +300,15 @@ const AdminServices = () => {
       const d = res.data || {};
       const pname = d.providerName || selectedProvider?.name || 'provider';
       const parts = [
-        `${pname}: ${d.message || 'Sync complete'}`,
-        d.total != null ? `API list: ${d.total}` : null,
+        `${pname}: Sync complete`,
+        d.imported != null ? `imported ${d.imported}/${d.total ?? '?'}` : (d.total != null ? `API ${d.total}` : null),
         d.added != null ? `+${d.added} new` : null,
         d.updated != null ? `${d.updated} updated` : null,
-        d.categoriesCreated != null ? `${d.categoriesCreated} categories created` : null,
+        d.restored ? `${d.restored} restored` : null,
+        d.skippedJunk ? `${d.skippedJunk} junk skipped` : null,
+        d.categoriesCreated != null ? `+${d.categoriesCreated} categories` : null,
         d.categoriesTotal != null ? `${d.categoriesTotal} categories total` : null,
-        d.pricesUpdated != null ? `${d.pricesUpdated} prices @ ${d.marginPct}% margin` : null,
+        d.pricesUpdated != null ? `${d.pricesUpdated} prices @ ${d.marginPct}%` : null,
         d.failed ? `${d.failed} failed` : null,
       ].filter(Boolean);
       setSyncMsg({ type: 'success', text: parts.join(' · ') });
@@ -454,24 +457,42 @@ const AdminServices = () => {
   };
 
   const createManualService = async () => {
-    if (!addForm.name.trim() || !addForm.platform.trim() || !addForm.custom_price) {
-      setSyncMsg({ type: 'error', text: 'Name, Platform, Price required' });
+    if (!addForm.name.trim() || addForm.name.trim().length < 3) {
+      setSyncMsg({ type: 'error', text: 'Service name likho — e.g. Facebook Followers — HQ' });
+      return;
+    }
+    if (!addForm.platform.trim()) {
+      setSyncMsg({ type: 'error', text: 'Platform choose karo — e.g. Facebook' });
+      return;
+    }
+    if (!addForm.custom_price || !(parseFloat(addForm.custom_price) >= 0)) {
+      setSyncMsg({ type: 'error', text: 'Selling price /1000 likho — e.g. 170' });
       return;
     }
     setAdding(true);
+    setSyncMsg(null);
     try {
+      const price = parseFloat(addForm.custom_price);
       await adminCreateService({
-        ...addForm,
-        custom_price: parseFloat(addForm.custom_price),
-        original_price: parseFloat(addForm.custom_price),
-        min_quantity: parseInt(addForm.min_quantity, 10),
-        max_quantity: parseInt(addForm.max_quantity, 10),
+        name: addForm.name.trim(),
+        platform: addForm.platform.trim(),
+        category: (addForm.category || '').trim() || `${addForm.platform.trim()} Services`,
+        custom_price: price,
+        original_price: price,
+        min_quantity: parseInt(addForm.min_quantity, 10) || 100,
+        max_quantity: parseInt(addForm.max_quantity, 10) || 1000000,
+        is_active: !!addForm.is_active,
       });
       setSyncMsg({ type: 'success', text: 'Service added successfully' });
       setAddForm({
-        name: '', platform: '', category: '', custom_price: '', min_quantity: 10, max_quantity: 10000, is_active: true,
+        name: '', platform: '', category: '', custom_price: '', min_quantity: 100, max_quantity: 1000000, is_active: true,
       });
       await loadServices();
+      try {
+        const r = await adminGetCategories();
+        const list = Array.isArray(r.data) ? r.data : [];
+        setCategoryOptions(list.map((c) => c.name).filter(Boolean));
+      } catch (_) { /* ok */ }
     } catch (err) {
       setSyncMsg({ type: 'error', text: err.response?.data?.message || 'Failed to add service' });
     }
@@ -562,7 +583,12 @@ const AdminServices = () => {
             aria-label="Service name"
           />
         ) : (
-          <h3 className="admin-svc-card__title">{svc.name}</h3>
+          <h3 className="admin-svc-card__title" title={svc.name || ''}>
+            {displayServiceName(svc, 100)}
+            {svc.needs_price ? (
+              <span className="badge badge-warning" style={{ marginLeft: 8, fontSize: 11 }}>No price — Sync or set rate</span>
+            ) : null}
+          </h3>
         )}
 
         <div className="admin-svc-card__grid">
@@ -577,6 +603,26 @@ const AdminServices = () => {
               />
             ) : (
               <strong>{svc.platform || '—'}</strong>
+            )}
+          </div>
+          <div className="admin-svc-card__cell">
+            <span>Category</span>
+            {editing ? (
+              <>
+                <input
+                  className="input admin-svc-card__field-input"
+                  list={`cat-card-${svc.id}`}
+                  value={draft.category}
+                  onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
+                />
+                <datalist id={`cat-card-${svc.id}`}>
+                  {categoryOptions.map((c) => (
+                    <option key={c} value={c} />
+                  ))}
+                </datalist>
+              </>
+            ) : (
+              <strong>{svc.category || svc.category_name || '—'}</strong>
             )}
           </div>
           <div className="admin-svc-card__cell">
@@ -665,41 +711,18 @@ const AdminServices = () => {
               <strong>{svc.max_quantity != null ? Number(svc.max_quantity).toLocaleString() : '—'}</strong>
             )}
           </div>
-          <div className="admin-svc-card__cell admin-svc-card__cell--full">
-            <span>Category</span>
-            {editing ? (
-              <>
-                <input
-                  className="input admin-svc-card__field-input"
-                  list={`cat-list-${svc.id}`}
-                  value={draft.category}
-                  onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
-                  placeholder="Category"
-                />
-                <datalist id={`cat-list-${svc.id}`}>
-                  {categoryOptions.map((c) => (
-                    <option key={c} value={c} />
-                  ))}
-                </datalist>
-              </>
-            ) : (
-              <strong>{svc.category || svc.category_name || '—'}</strong>
-            )}
-          </div>
-          <div className="admin-svc-card__cell admin-svc-card__cell--full">
-            <span>Description</span>
-            {editing ? (
+          {editing ? (
+            <div className="admin-svc-card__cell admin-svc-card__cell--full">
+              <span>Description</span>
               <textarea
                 className="input admin-svc-card__field-input"
-                rows={2}
+                rows={3}
                 value={draft.description}
                 onChange={(e) => updateDraft(svc.id, 'description', e.target.value)}
                 placeholder="Service description from provider"
               />
-            ) : (
-              <strong className="admin-svc-card__desc">{svc.description || '—'}</strong>
-            )}
-          </div>
+            </div>
+          ) : null}
         </div>
 
         {renderActionButtons(svc)}
@@ -838,7 +861,7 @@ const AdminServices = () => {
                             const d = res.data || {};
                             setSyncMsg({
                               type: 'success',
-                              text: `${p.name}: Added ${d.added ?? 0}, Updated ${d.updated ?? 0}, Categories +${d.categoriesCreated ?? 0} (total ${d.categoriesTotal ?? '—'}), Prices ${d.pricesUpdated ?? '—'} @ ${d.marginPct ?? p.profit_margin}% margin, API ${d.total ?? '—'}`,
+                              text: `${p.name}: imported ${d.imported ?? d.total ?? '—'} (API ${d.total ?? '—'}) · +${d.added ?? 0} new · ${d.updated ?? 0} updated · junk ${d.skippedJunk ?? 0} · fail ${d.failed ?? 0} · categories ${d.categoriesTotal ?? '—'} · prices @ ${d.marginPct ?? p.profit_margin}%`,
                             });
                             await loadServices();
                             await loadProviders();
@@ -896,49 +919,77 @@ const AdminServices = () => {
 
         <div className="card admin-services-add-form">
           <h3 className="card-title">Add service manually</h3>
+          <p className="admin-services-add-note" style={{ marginTop: 0 }}>
+            Provider sync ke alawa yahan se apni service + category add kar sakte ho.
+          </p>
           <div className="admin-services-add-grid">
-            <input
-              className="input"
-              placeholder="Service name"
-              value={addForm.name}
-              onChange={(e) => setAddForm((p) => ({ ...p, name: e.target.value }))}
-            />
-            <div className="admin-services-add-span-2">
+            <label className="admin-services-add-field">
+              <span className="admin-services-add-label">Service name</span>
+              <input
+                className="input"
+                placeholder="e.g. Facebook Followers — HQ"
+                value={addForm.name}
+                onChange={(e) => setAddForm((p) => ({ ...p, name: e.target.value }))}
+              />
+            </label>
+            <label className="admin-services-add-field admin-services-add-span-2">
+              <span className="admin-services-add-label">Platform</span>
               <SocialIconPicker
                 mode="platform"
                 value={addForm.platform}
                 onChange={(v) => setAddForm((p) => ({ ...p, platform: v }))}
-                placeholder="Platform (manual)"
+                placeholder="e.g. Facebook / Instagram / YouTube"
               />
-            </div>
-            <input
-              className="input"
-              placeholder="Category (optional)"
-              value={addForm.category}
-              onChange={(e) => setAddForm((p) => ({ ...p, category: e.target.value }))}
-            />
-            <input
-              className="input"
-              type="number"
-              step="0.01"
-              placeholder="Selling price / 1000 (₹)"
-              value={addForm.custom_price}
-              onChange={(e) => setAddForm((p) => ({ ...p, custom_price: e.target.value }))}
-            />
-            <input
-              className="input"
-              type="number"
-              placeholder="Min qty"
-              value={addForm.min_quantity}
-              onChange={(e) => setAddForm((p) => ({ ...p, min_quantity: e.target.value }))}
-            />
-            <input
-              className="input"
-              type="number"
-              placeholder="Max qty"
-              value={addForm.max_quantity}
-              onChange={(e) => setAddForm((p) => ({ ...p, max_quantity: e.target.value }))}
-            />
+            </label>
+            <label className="admin-services-add-field">
+              <span className="admin-services-add-label">Category</span>
+              <input
+                className="input"
+                list="admin-manual-categories"
+                placeholder="e.g. Facebook Followers"
+                value={addForm.category}
+                onChange={(e) => setAddForm((p) => ({ ...p, category: e.target.value }))}
+              />
+              <datalist id="admin-manual-categories">
+                {categoryOptions.map((c) => (
+                  <option key={c} value={c} />
+                ))}
+              </datalist>
+            </label>
+            <label className="admin-services-add-field">
+              <span className="admin-services-add-label">Selling price / 1000 (₹)</span>
+              <input
+                className="input"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="e.g. 170"
+                value={addForm.custom_price}
+                onChange={(e) => setAddForm((p) => ({ ...p, custom_price: e.target.value }))}
+              />
+            </label>
+            <label className="admin-services-add-field">
+              <span className="admin-services-add-label">Min quantity</span>
+              <input
+                className="input"
+                type="number"
+                min="1"
+                placeholder="e.g. 100"
+                value={addForm.min_quantity}
+                onChange={(e) => setAddForm((p) => ({ ...p, min_quantity: e.target.value }))}
+              />
+            </label>
+            <label className="admin-services-add-field">
+              <span className="admin-services-add-label">Max quantity</span>
+              <input
+                className="input"
+                type="number"
+                min="1"
+                placeholder="e.g. 1000000"
+                value={addForm.max_quantity}
+                onChange={(e) => setAddForm((p) => ({ ...p, max_quantity: e.target.value }))}
+              />
+            </label>
           </div>
           <div className="admin-services-add-actions">
             <label className="admin-services-add-active">
@@ -947,14 +998,14 @@ const AdminServices = () => {
                 checked={!!addForm.is_active}
                 onChange={(e) => setAddForm((p) => ({ ...p, is_active: e.target.checked }))}
               />
-              Active
+              Active (users ko dikhe)
             </label>
             <button type="button" className="btn btn-primary" onClick={createManualService} disabled={adding}>
               {adding ? 'Adding…' : 'Add Service'}
             </button>
           </div>
           <p className="admin-services-add-note">
-            Manual services are non-provider listings. Provider sync uses your API URL.
+            Nayi category name likhne se woh auto create ho jayegi. Provider API sync alag se chalti hai.
           </p>
         </div>
 
@@ -1008,8 +1059,8 @@ const AdminServices = () => {
           )}
         </div>
 
-        <p className="admin-services-hint">
-          Provider price + margin → selling price auto. Edit any field · Sync fetches category, price &amp; description from API
+<p className="admin-services-hint" style={{ marginTop: '0.75rem' }}>
+          Provider price + margin → selling auto. Table shows clean service names only — open Edit for description.
         </p>
 
         {!filtered.length ? (
@@ -1017,7 +1068,7 @@ const AdminServices = () => {
         ) : (
           <>
             <div className="admin-services-desktop admin-services-table-wrap table-wrap">
-              <table className="table">
+              <table className="table admin-svc-table">
                 <thead>
                   <tr>
                     {['Service', 'Platform', 'Category', 'Provider/1000', 'Margin%', 'Selling/1000', 'Min', 'Max', 'Status', 'Actions'].map((h) => (
@@ -1031,27 +1082,33 @@ const AdminServices = () => {
                     const editing = isEditing(svc.id);
                     return (
                       <tr key={svc.id} className={editing ? 'admin-svc-row--editing' : ''}>
-                        <td style={{ maxWidth: 200 }}>
+                        <td className="admin-svc-col-name">
                           {editing ? (
                             <div className="admin-svc-table-name-wrap">
                               <input
                                 className="input admin-svc-table-input"
                                 value={draft.name}
                                 onChange={(e) => updateDraft(svc.id, 'name', e.target.value)}
+                                placeholder="Service name"
                               />
                               <textarea
                                 className="input admin-svc-table-input"
                                 rows={2}
-                                placeholder="Description"
+                                placeholder="Description (optional)"
                                 value={draft.description}
                                 onChange={(e) => updateDraft(svc.id, 'description', e.target.value)}
                               />
                             </div>
                           ) : (
-                            <div>
-                              <div>{svc.name}</div>
-                              {svc.description ? (
-                                <div className="admin-svc-table-desc">{svc.description}</div>
+                            <div
+                              className="admin-svc-table-name-cell"
+                              title={truncateText(svc.description, 200) || svc.name || ''}
+                            >
+                              <span className="admin-svc-table-title">
+                                {displayServiceName(svc, 72)}
+                              </span>
+                              {svc.needs_price ? (
+                                <span className="badge badge-warning admin-svc-price-badge">No price</span>
                               ) : null}
                             </div>
                           )}
@@ -1065,7 +1122,7 @@ const AdminServices = () => {
                               placeholder="Platform"
                             />
                           ) : (
-                            svc.platform || '—'
+                            <span className="admin-svc-platform-pill">{svc.platform || '—'}</span>
                           )}
                         </td>
                         <td>
@@ -1077,7 +1134,7 @@ const AdminServices = () => {
                               onChange={(e) => updateDraft(svc.id, 'category', e.target.value)}
                             />
                           ) : (
-                            svc.category || svc.category_name || '—'
+                            <span className="admin-svc-category-pill">{svc.category || svc.category_name || '—'}</span>
                           )}
                           {editing && (
                             <datalist id={`cat-tbl-${svc.id}`}>
@@ -1124,7 +1181,7 @@ const AdminServices = () => {
                               onChange={(e) => updateDraft(svc.id, 'custom_price', e.target.value)}
                             />
                           ) : (
-                            `₹${money(svc.custom_price, 2)}`
+                            `₹${money(svc.custom_price, Number(svc.custom_price) < 1 ? 4 : 2)}`
                           )}
                         </td>
                         <td>
@@ -1246,7 +1303,7 @@ const AdminServices = () => {
           >
             <h3 id="admin-svc-delete-title" className="admin-svc-delete-modal__title">Delete Service?</h3>
             <p className="admin-svc-delete-modal__text">This action cannot be undone.</p>
-            <p className="admin-svc-delete-modal__name">{deleteTarget.name}</p>
+            <p className="admin-svc-delete-modal__name">{displayServiceName(deleteTarget, 120)}</p>
             {deleteError && (
               <p className="admin-svc-delete-modal__error" role="alert">{deleteError}</p>
             )}

@@ -199,7 +199,7 @@ const AdminFunds = () => {
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 18 }}>
                     {p.user_name} —{' '}
-                    <span style={{ color: 'var(--primary)' }}>₹{parseFloat(p.amount).toFixed(2)}</span>
+                    <span style={{ color: 'var(--primary)' }}>₹{parseFloat(p.amount || 0).toFixed(2)}</span>
                   </div>
                   <div style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 4 }}>{p.user_email}</div>
                   <div style={{ marginTop: 12, display: 'grid', gap: 6, fontSize: 14 }}>

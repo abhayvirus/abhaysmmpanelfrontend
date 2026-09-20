@@ -22,10 +22,25 @@ function finishSession(navigate, data) {
 
 function getSignupReferralCode() {
   try {
-    return sessionStorage.getItem('signup_ref') || '';
+    const fromSession = sessionStorage.getItem('signup_ref') || '';
+    if (fromSession) return fromSession.trim().toUpperCase();
   } catch {
-    return '';
+    /* ignore */
   }
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const fromUrl = q.get('ref') || '';
+    if (fromUrl) {
+      const code = fromUrl.trim().toUpperCase();
+      try {
+        sessionStorage.setItem('signup_ref', code);
+      } catch (_) { /* ignore */ }
+      return code;
+    }
+  } catch {
+    /* ignore */
+  }
+  return '';
 }
 
 const GoogleLoginButton = ({ className = '', style = {} }) => {

@@ -2,11 +2,17 @@ import React, { useMemo, useState, useEffect } from 'react';
 import UserLayout from '../components/UserLayout';
 import InsufficientBalanceAlert from '../components/InsufficientBalanceAlert';
 import PanelLoading from '../components/PanelLoading';
-import { getServices, getPlatforms, placeOrder, getMe } from '../api';
+import { getServices, placeOrder, getMe } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import '../styles/balanceWarning.css';
+import '../styles/dashboardOrder.css';
 import { getLinkPlaceholder } from '../utils/linkPlaceholder';
-import { getServiceUnitPrice } from '../utils/servicePrice';
+import {
+  getServiceUnitPrice,
+  formatServicePrice,
+  isSellableService,
+} from '../utils/servicePrice';
+import { cleanServiceTitle } from '../utils/serviceTitle';
 
 const platformIcons = {
   All: '⚡', Instagram: '📸', TikTok: '🎵', YouTube: '▶️',
@@ -18,8 +24,7 @@ const Dashboard = () => {
   const { settings } = useSettings();
   const sym = settings.currency_symbol || '₹';
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
-  const [services, setServices] = useState([]);
-  const [platforms, setPlatforms] = useState(['All']);
+  const [allServices, setAllServices] = useState([]);
   const [selectedPlatform, setSelectedPlatform] = useState('All');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedServiceId, setSelectedServiceId] = useState('');
@@ -39,101 +44,118 @@ const Dashboard = () => {
     }).catch(() => {});
   };
 
+  // Load priced services once — filter Platform / Category / Service on client
   useEffect(() => {
     let cancelled = false;
     setPageReady(false);
     setLoadError('');
+    setServicesLoading(true);
+
     Promise.allSettled([
       getMe().then((res) => {
         if (!cancelled) {
           setUser(res.data);
           localStorage.setItem('user', JSON.stringify(res.data));
         }
-        return res;
       }),
-      getPlatforms().then((res) => {
-        if (!cancelled) setPlatforms(['All', ...(Array.isArray(res.data) ? res.data : [])]);
-        return res;
+      getServices({}).then((res) => {
+        if (cancelled) return;
+        const list = (Array.isArray(res.data) ? res.data : [])
+          .filter(isSellableService)
+          .map((s) => ({
+            ...s,
+            name: cleanServiceTitle(s.name, 120),
+            platform: String(s.platform || '').trim() || 'Other',
+            category: String(s.category || '').trim() || 'General',
+            price: getServiceUnitPrice(s),
+          }));
+        setAllServices(list);
       }),
     ])
       .then((results) => {
         if (cancelled) return;
-        const meFailed = results[0].status === 'rejected';
-        if (meFailed) setLoadError('Could not load dashboard. Please refresh.');
+        if (results[0].status === 'rejected') {
+          setLoadError('Could not load dashboard. Please refresh.');
+        }
+        if (results[1].status === 'rejected') {
+          setAllServices([]);
+        }
       })
       .finally(() => {
-        if (!cancelled) setPageReady(true);
+        if (!cancelled) {
+          setPageReady(true);
+          setServicesLoading(false);
+        }
       });
+
     return () => { cancelled = true; };
   }, []);
 
-  useEffect(() => {
-    let cancelled = false;
-    setServicesLoading(true);
-    const params = selectedPlatform !== 'All' ? { platform: selectedPlatform } : {};
-    getServices(params)
-      .then((res) => {
-        if (cancelled) return;
-        setServices(res.data);
-        setSelectedCategory('All');
-        setSelectedServiceId('');
-        setLink('');
-        setQuantity('');
-      })
-      .catch(() => {
-        if (!cancelled) setServices([]);
-      })
-      .finally(() => {
-        if (!cancelled) setServicesLoading(false);
-      });
-    return () => { cancelled = true; };
-  }, [selectedPlatform]);
-
-  useEffect(() => {
-    if (selectedServiceId) refreshUser();
-  }, [selectedServiceId, quantity]);
+  const platforms = useMemo(() => {
+    const set = new Set();
+    allServices.forEach((s) => {
+      if (s.platform && s.platform !== 'Other') set.add(s.platform);
+    });
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [allServices]);
 
   const categories = useMemo(() => {
     const set = new Set();
-    services.forEach((s) => {
-      const c = String(s.category || '').trim();
-      if (c) set.add(c);
+    allServices.forEach((s) => {
+      if (selectedPlatform !== 'All' && s.platform !== selectedPlatform) return;
+      if (s.category && s.category !== 'Other') set.add(s.category);
     });
-    return ['All', ...Array.from(set)];
-  }, [services]);
+    return ['All', ...Array.from(set).sort((a, b) => a.localeCompare(b))];
+  }, [allServices, selectedPlatform]);
 
   const visibleServices = useMemo(() => {
-    if (selectedCategory === 'All') return services;
-    return services.filter((s) => String(s.category || '').trim() === selectedCategory);
-  }, [services, selectedCategory]);
+    return allServices.filter((s) => {
+      if (selectedPlatform !== 'All' && s.platform !== selectedPlatform) return false;
+      if (selectedCategory !== 'All' && s.category !== selectedCategory) return false;
+      return true;
+    });
+  }, [allServices, selectedPlatform, selectedCategory]);
 
-  const selectedService = useMemo(
-    () => visibleServices.find((s) => String(s.id) === String(selectedServiceId)) || null,
-    [visibleServices, selectedServiceId]
-  );
+  const selectedService = useMemo(() => {
+    if (!selectedServiceId) return null;
+    return visibleServices.find((s) => String(s.id) === String(selectedServiceId)) || null;
+  }, [visibleServices, selectedServiceId]);
 
-  const linkPlaceholder = useMemo(
-    () => getLinkPlaceholder(selectedService?.platform, selectedService?.name),
-    [selectedService]
-  );
+  // If current service falls out of filter, clear selection
+  useEffect(() => {
+    if (!selectedServiceId) return;
+    const stillVisible = visibleServices.some((s) => String(s.id) === String(selectedServiceId));
+    if (!stillVisible) {
+      setSelectedServiceId('');
+      setLink('');
+      setQuantity('');
+    }
+  }, [visibleServices, selectedServiceId]);
+
+  // Keep category options valid when platform changes
+  useEffect(() => {
+    if (selectedCategory !== 'All' && !categories.includes(selectedCategory)) {
+      setSelectedCategory('All');
+      setSelectedServiceId('');
+    }
+  }, [categories, selectedCategory]);
+
+  const unitPrice = selectedService ? getServiceUnitPrice(selectedService) : 0;
+  const linkPlaceholder = getLinkPlaceholder(selectedService?.platform, selectedService?.name);
 
   const orderCost = useMemo(() => {
     if (!selectedService || !quantity || Number.isNaN(Number(quantity))) return null;
     const qty = parseInt(quantity, 10);
-    if (qty < 1) return null;
-    const unit = getServiceUnitPrice(selectedService);
-    return (unit / 1000) * qty;
-  }, [selectedService, quantity]);
+    if (qty < 1 || !(unitPrice > 0)) return null;
+    return (unitPrice / 1000) * qty;
+  }, [selectedService, quantity, unitPrice]);
 
   const walletBalance = parseFloat(user.balance || 0);
 
   const insufficientBalance = useMemo(() => {
     if (orderCost == null) return null;
     if (walletBalance >= orderCost) return null;
-    return {
-      need: orderCost.toFixed(2),
-      have: walletBalance.toFixed(2),
-    };
+    return { need: orderCost.toFixed(2), have: walletBalance.toFixed(2) };
   }, [orderCost, walletBalance]);
 
   const showBalanceWarning = Boolean(insufficientBalance) && !balanceWarningDismissed;
@@ -142,8 +164,40 @@ const Dashboard = () => {
     setBalanceWarningDismissed(false);
   }, [selectedServiceId, insufficientBalance?.need, insufficientBalance?.have]);
 
+  const onPlatformChange = (value) => {
+    setSelectedPlatform(value);
+    setSelectedCategory('All');
+    setSelectedServiceId('');
+    setLink('');
+    setQuantity('');
+    setOrderMessage(null);
+  };
+
+  const onCategoryChange = (value) => {
+    setSelectedCategory(value);
+    setSelectedServiceId('');
+    setLink('');
+    setQuantity('');
+    setOrderMessage(null);
+  };
+
+  const onServiceChange = (value) => {
+    setSelectedServiceId(value);
+    setLink('');
+    setQuantity('');
+    setOrderMessage(null);
+    if (value) {
+      const svc = visibleServices.find((s) => String(s.id) === String(value));
+      if (svc?.category) setSelectedCategory(svc.category);
+      if (svc?.platform && svc.platform !== 'Other') {
+        // optional: don't force platform tab — keep user filter
+      }
+    }
+  };
+
   const handleOrder = async () => {
     if (!selectedService) return setOrderMessage({ type: 'error', text: 'Please select a service first' });
+    if (!(unitPrice > 0)) return setOrderMessage({ type: 'error', text: 'This service has no price. Ask admin to sync.' });
     if (!link) return setOrderMessage({ type: 'error', text: 'Please enter a valid link' });
     if (!quantity) return setOrderMessage({ type: 'error', text: 'Please enter quantity' });
     if (insufficientBalance) {
@@ -192,18 +246,26 @@ const Dashboard = () => {
           </div>
           <div className="stat-card">
             <div className="stat-label">Status</div>
-            <div className="stat-value" style={{ fontSize: '1.25rem', color: (user.status || 'ACTIVE') === 'ACTIVE' ? 'var(--success)' : 'var(--danger)' }}>
+            <div
+              className="stat-value"
+              style={{
+                fontSize: '1.25rem',
+                color: (user.status || 'ACTIVE') === 'ACTIVE' ? 'var(--success)' : 'var(--danger)',
+              }}
+            >
               {user.status || 'ACTIVE'}
             </div>
           </div>
         </div>
 
-        <div className="dashboard-tabs">
+        <div className="dashboard-tabs" role="tablist" aria-label="Platform filter">
           {platforms.map((p) => (
             <button
               key={p}
               type="button"
-              onClick={() => setSelectedPlatform(p)}
+              role="tab"
+              aria-selected={selectedPlatform === p}
+              onClick={() => onPlatformChange(p)}
               className={`dashboard-tab${selectedPlatform === p ? ' active' : ''}`}
             >
               {platformIcons[p] || '🌐'} {p}
@@ -218,14 +280,17 @@ const Dashboard = () => {
             <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--danger)' }}>
               <p>{loadError}</p>
             </div>
-          ) : services.length === 0 ? (
+          ) : allServices.length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
-              <p>📭 No services found</p>
-              <p style={{ fontSize: 13, marginTop: 8 }}>Ask admin to sync services from provider.</p>
+              <p>📭 No priced services found</p>
+              <p style={{ fontSize: 13, marginTop: 8 }}>Ask admin to Sync / Fetch all services from the provider.</p>
             </div>
           ) : (
             <div className="dashboard-order-form">
-              <h3 style={{ marginBottom: 16, fontSize: 18 }}>📝 Place order</h3>
+              <h3 className="dashboard-order-form__title">📝 Place order</h3>
+              <p className="dashboard-order-form__hint">
+                Choose Platform → Category → Service. Only services with a real price are listed.
+              </p>
 
               {orderMessage && (
                 <div className={`alert alert-${orderMessage.type === 'success' ? 'success' : 'error'}`}>
@@ -235,11 +300,12 @@ const Dashboard = () => {
 
               <div className="dashboard-order-grid">
                 <div className="form-group">
-                  <label className="label">Platform</label>
+                  <label className="label" htmlFor="order-platform">Platform</label>
                   <select
+                    id="order-platform"
                     className="select"
                     value={selectedPlatform}
-                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                    onChange={(e) => onPlatformChange(e.target.value)}
                   >
                     {platforms.map((p) => (
                       <option key={p} value={p}>{p}</option>
@@ -248,61 +314,63 @@ const Dashboard = () => {
                 </div>
 
                 <div className="form-group">
-                  <label className="label">Category</label>
+                  <label className="label" htmlFor="order-category">Category</label>
                   <select
+                    id="order-category"
                     className="select"
-                    value={selectedCategory}
-                    onChange={(e) => {
-                      setSelectedCategory(e.target.value);
-                      setSelectedServiceId('');
-                      setLink('');
-                      setQuantity('');
-                    }}
+                    value={categories.includes(selectedCategory) ? selectedCategory : 'All'}
+                    onChange={(e) => onCategoryChange(e.target.value)}
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>{c}</option>
                     ))}
                   </select>
+                  {categories.length <= 1 && (
+                    <span className="dashboard-field-note">No categories for this platform yet</span>
+                  )}
                 </div>
 
                 <div className="form-group">
-                  <label className="label">Service</label>
+                  <label className="label" htmlFor="order-service">Service</label>
                   <select
+                    id="order-service"
                     className="select"
                     value={selectedServiceId}
-                    onChange={(e) => {
-                      setSelectedServiceId(e.target.value);
-                      setLink('');
-                      setQuantity('');
-                    }}
+                    onChange={(e) => onServiceChange(e.target.value)}
                   >
-                    <option value="">Select service</option>
+                    <option value="">Select service ({visibleServices.length})</option>
                     {visibleServices.map((svc) => (
                       <option key={svc.id} value={svc.id}>
-                        {svc.name} ({sym}{svc.price}/1000)
+                        {svc.name} — {sym}{formatServicePrice(svc)}/1000
                       </option>
                     ))}
                   </select>
+                  {visibleServices.length === 0 && (
+                    <span className="dashboard-field-note">No services match these filters</span>
+                  )}
                 </div>
               </div>
 
-              {selectedService && (
+              {selectedService ? (
                 <div className="dashboard-order-details">
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: 8,
-                      margin: '1.25rem 0 1rem',
-                      fontSize: 13,
-                      color: 'var(--text-muted)',
-                    }}
-                  >
-                    <span>🎯 {selectedService.name}</span>
-                    <span>
-                      Min: {selectedService.min_quantity} | Max: {selectedService.max_quantity?.toLocaleString()}
-                    </span>
+                  <div className="dashboard-service-summary card">
+                    <div className="dashboard-service-summary__name">{selectedService.name}</div>
+                    <div className="dashboard-service-summary__meta">
+                      <span>
+                        <em>Platform</em> {selectedService.platform}
+                      </span>
+                      <span>
+                        <em>Category</em> {selectedService.category}
+                      </span>
+                      <span className="dashboard-service-summary__price">
+                        {sym}{formatServicePrice(selectedService)} / 1000
+                      </span>
+                    </div>
+                    <div className="dashboard-service-summary__qty">
+                      Min {Number(selectedService.min_quantity).toLocaleString()}
+                      {' — '}
+                      Max {Number(selectedService.max_quantity).toLocaleString()}
+                    </div>
                   </div>
 
                   {showBalanceWarning && insufficientBalance && (
@@ -315,8 +383,9 @@ const Dashboard = () => {
                   )}
 
                   <div className="form-group">
-                    <label className="label">🔗 Link</label>
+                    <label className="label" htmlFor="order-link">🔗 Link</label>
                     <input
+                      id="order-link"
                       className="input"
                       placeholder={linkPlaceholder}
                       value={link}
@@ -324,8 +393,9 @@ const Dashboard = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label className="label">🔢 Quantity</label>
+                    <label className="label" htmlFor="order-qty">🔢 Quantity</label>
                     <input
+                      id="order-qty"
                       className="input"
                       type="number"
                       placeholder={`${selectedService.min_quantity} – ${selectedService.max_quantity}`}
@@ -337,19 +407,9 @@ const Dashboard = () => {
                   </div>
 
                   {orderCost != null && (
-                    <div
-                      className="card"
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        marginBottom: 16,
-                        padding: '0.875rem 1rem',
-                      }}
-                    >
-                      <span style={{ color: 'var(--text-muted)' }}>Total Cost</span>
-                      <span style={{ color: 'var(--primary)', fontWeight: 800, fontSize: '1.375rem' }}>
-                        {sym}{orderCost.toFixed(2)}
-                      </span>
+                    <div className="dashboard-total card">
+                      <span>Total Cost</span>
+                      <strong>{sym}{orderCost.toFixed(2)}</strong>
                     </div>
                   )}
 
@@ -357,12 +417,14 @@ const Dashboard = () => {
                     type="button"
                     className="btn btn-primary"
                     style={{ width: '100%' }}
-                    disabled={loading || Boolean(insufficientBalance)}
+                    disabled={loading || Boolean(insufficientBalance) || !(unitPrice > 0)}
                     onClick={handleOrder}
                   >
                     {loading ? '⏳ Placing order…' : '🚀 Place Order'}
                   </button>
                 </div>
+              ) : (
+                <p className="dashboard-order-empty">Select a service above to continue.</p>
               )}
             </div>
           )}

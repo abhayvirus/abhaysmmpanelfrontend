@@ -7,9 +7,12 @@ import {
   adminUpdateCategory,
   adminDeleteCategory,
 } from '../api';
+import { resolveCategoryIcon } from '../utils/categoryIcon';
 import '../styles/adminCategories.css';
 
 const EMPTY_FORM = { name: '', icon: '📱', sort_order: 0, is_active: true };
+
+const displayIcon = (cat) => resolveCategoryIcon(cat?.name, cat?.icon);
 
 const AdminCategories = () => {
   const [cats, setCats] = useState([]);
@@ -18,17 +21,22 @@ const AdminCategories = () => {
   const [editForm, setEditForm] = useState(EMPTY_FORM);
   const [msg, setMsg] = useState(null);
 
-  const load = () => adminGetCategories().then((r) => setCats(r.data)).catch(() => {});
+  const load = () => adminGetCategories()
+    .then((r) => setCats(Array.isArray(r.data) ? r.data : []))
+    .catch((err) => {
+      setCats([]);
+      showMsg(err.response?.data?.message || 'Failed to load categories', 'error');
+    });
 
   useEffect(() => { load(); }, []);
 
   const showMsg = (text, type = 'success') => {
     setMsg({ text, type });
-    setTimeout(() => setMsg(null), 3000);
+    setTimeout(() => setMsg(null), 4000);
   };
 
   const handleAdd = () => {
-    if (!form.name.trim()) return showMsg('Category name required', 'error');
+    if (!form.name.trim()) return showMsg('Category name required — e.g. Instagram Followers', 'error');
     adminCreateCategory({
       name: form.name.trim(),
       icon: form.icon || '📱',
@@ -40,14 +48,14 @@ const AdminCategories = () => {
         setForm(EMPTY_FORM);
         showMsg('Category added');
       })
-      .catch((err) => showMsg(err.response?.data?.message || 'Failed', 'error'));
+      .catch((err) => showMsg(err.response?.data?.message || 'Failed to add category', 'error'));
   };
 
   const startEdit = (cat) => {
     setEditingId(cat.id);
     setEditForm({
       name: cat.name,
-      icon: cat.icon || '📱',
+      icon: resolveCategoryIcon(cat.name, cat.icon) || '📱',
       sort_order: cat.sort_order ?? 0,
       is_active: cat.is_active !== 0 && cat.is_active !== false,
     });
@@ -97,7 +105,7 @@ const AdminCategories = () => {
     return (
       <article key={c.id} className="admin-cat-card">
         <div className="admin-cat-card__head">
-          <span className="admin-cat-card__icon" aria-hidden="true">{c.icon || '📱'}</span>
+          <span className="admin-cat-card__icon" aria-hidden="true">{displayIcon(c)}</span>
           <h3 className="admin-cat-card__name">{c.name || '—'}</h3>
         </div>
         <div className="admin-cat-card__grid">
@@ -134,31 +142,41 @@ const AdminCategories = () => {
       <div className="admin-categories-page">
         <h1 className="admin-page-title">Categories</h1>
         <p style={{ color: 'var(--text-muted)', marginTop: -4, marginBottom: 16, fontSize: 14 }}>
-          Provider sync auto-creates categories from API (e.g. Instagram Views). Services land in matching category.
+          Manual add kar sakte ho, ya provider sync categories auto bana dega (e.g. Instagram Views).
         </p>
 
         <div className="card admin-categories-form">
-          <h3 className="card-title" style={{ marginBottom: 8, fontSize: '1rem' }}>Add category</h3>
+          <h3 className="card-title" style={{ marginBottom: 8, fontSize: '1rem' }}>Add category manually</h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13, margin: '0 0 0.75rem' }}>
+            Jaise: Instagram Followers, YouTube Views, Telegram Members
+          </p>
           <div className="admin-categories-form__grid">
-            <input
-              className="input"
-              placeholder="Category name"
-              value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
-            />
-            <input
-              className="input"
-              type="number"
-              placeholder="Display order"
-              value={form.sort_order}
-              onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
-            />
+            <label className="admin-categories-form__field">
+              <span className="admin-categories-form__label">Category name</span>
+              <input
+                className="input"
+                placeholder="e.g. Instagram Followers"
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+              />
+            </label>
+            <label className="admin-categories-form__field">
+              <span className="admin-categories-form__label">Display order</span>
+              <input
+                className="input"
+                type="number"
+                placeholder="e.g. 1 (chhota pehle)"
+                value={form.sort_order}
+                onChange={(e) => setForm({ ...form, sort_order: e.target.value })}
+              />
+            </label>
             <div className="admin-categories-form__icon-wrap">
+              <span className="admin-categories-form__label">Icon</span>
               <SocialIconPicker
                 mode="icon"
                 value={form.icon}
                 onChange={(icon) => setForm({ ...form, icon })}
-                placeholder="Icon (emoji or text)"
+                placeholder="e.g. 📸 or Instagram"
               />
             </div>
             <label className="admin-categories-form__active">
@@ -185,14 +203,14 @@ const AdminCategories = () => {
             <div className="admin-categories-form__grid">
               <input
                 className="input"
-                placeholder="Category name"
+                placeholder="e.g. Instagram Followers"
                 value={editForm.name}
                 onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
               />
               <input
                 className="input"
                 type="number"
-                placeholder="Display order"
+                placeholder="e.g. 1"
                 value={editForm.sort_order}
                 onChange={(e) => setEditForm({ ...editForm, sort_order: e.target.value })}
               />
@@ -242,7 +260,7 @@ const AdminCategories = () => {
                     const isActive = c.is_active !== 0 && c.is_active !== false;
                     return (
                       <tr key={c.id}>
-                        <td>{c.icon}</td>
+                        <td className="admin-cat-icon-cell" title={displayIcon(c)}>{displayIcon(c)}</td>
                         <td>{c.name}</td>
                         <td><strong>{c.service_count ?? 0}</strong></td>
                         <td>{c.sort_order ?? 0}</td>

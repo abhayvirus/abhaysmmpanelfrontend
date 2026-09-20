@@ -18,6 +18,7 @@ const TicketDetail = () => {
   const [reply, setReply] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const messagesEndRef = useRef(null);
   const wrapRef = useRef(null);
 
@@ -28,12 +29,20 @@ const TicketDetail = () => {
       .then((r) => {
         const { ticket: t, messages: msgs, hasMore: more } = r.data;
         setTicket(t);
+        setLoadError('');
         if (beforeId) {
           setMessages((prev) => [...msgs, ...prev]);
         } else {
           setMessages(msgs);
         }
         setHasMore(Boolean(more));
+      })
+      .catch((e) => {
+        if (!beforeId) {
+          setLoadError(e.response?.data?.message || 'Ticket not found or failed to load');
+          setTicket(null);
+          setMessages([]);
+        }
       })
       .finally(() => {
         if (!silent && !beforeId) setLoading(false);
@@ -86,7 +95,14 @@ const TicketDetail = () => {
       <div className="ticket-detail-page">
         <header className="ticket-detail-header">
           <Link to="/tickets" className="btn btn-ghost btn-sm">← Back to Support</Link>
-          {loading && !ticket ? (
+          {loadError ? (
+            <div className="alert alert-danger" style={{ marginTop: 12 }}>
+              {loadError}
+              <div style={{ marginTop: 8 }}>
+                <Link to="/tickets" className="btn btn-ghost btn-sm">Back to tickets</Link>
+              </div>
+            </div>
+          ) : loading && !ticket ? (
             <p style={{ color: 'var(--text-muted)' }}>Loading…</p>
           ) : (
             <>

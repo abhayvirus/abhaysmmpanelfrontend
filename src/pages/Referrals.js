@@ -19,7 +19,7 @@ const Referrals = () => {
     stats: {},
     referral_code: '',
     referral_link: '',
-    rules: { min_first_deposit: 100, commission_percent: 3 },
+    rules: { min_first_deposit: 100, commission_percent: 5 },
   });
   const [cashback, setCashback] = useState({ history: [], total_cashback: 0 });
   const [copied, setCopied] = useState(false);
@@ -101,7 +101,7 @@ const Referrals = () => {
   };
 
   const referrals = data.referrals || [];
-  const pct = data.rules?.commission_percent ?? 3;
+  const pct = data.rules?.commission_percent ?? 5;
   const minDep = data.rules?.min_first_deposit ?? 100;
   const formatMoney = (v) => `₹${parseFloat(v || 0).toFixed(2)}`;
 

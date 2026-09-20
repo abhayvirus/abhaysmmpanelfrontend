@@ -28,8 +28,43 @@
 }
 
 .admin-users-email {
-  max-width: 14rem;
-  word-break: break-all;
+  max-width: 22rem;
+  min-width: 12rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: normal;
+  font-variant-ligatures: none;
+}
+
+.admin-users-email a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.admin-users-email a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
+.admin-users-email--full {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.admin-mobile-row .admin-users-email,
+.admin-mobile-row .admin-users-email-text {
+  max-width: none;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .admin-users-joined {

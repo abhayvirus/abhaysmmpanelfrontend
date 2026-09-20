@@ -34,7 +34,7 @@ export const GUIDE_TOPICS = [
     body: [
       'After login, open Add Funds from the sidebar (or mobile menu).',
       'Enter the amount you want to add (minimum usually ₹10), or tap a quick amount like ₹100, ₹250, or ₹500.',
-      'Choose a payment method: UPI, Google Pay, PhonePe, Paytm, Cards, Netbanking, or Wallets.',
+      'Choose a payment method: UPI (Google Pay / PhonePe / Paytm / QR), Cards, Netbanking, or Wallets.',
       'Tap Pay — Razorpay secure checkout opens.',
       'Complete the payment. When it succeeds, your wallet balance updates on the dashboard.',
     ],
