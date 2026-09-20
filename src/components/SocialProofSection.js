@@ -9,12 +9,12 @@ import '../styles/socialProofSection.css';
 const DEFAULT_PROFILE_IMAGE = `${process.env.PUBLIC_URL || ''}/abhay_d95.jpeg`;
 
 const PROFILE_TAGS = [
-  'AI Powered Full Stack Developer',
+  'AI-Full Stack Engineer',
   'VFX Editor',
 ];
 
 const PROFILE_BIO =
-  'AI Powered Full Stack Developer & VFX Editor specializing in modern web applications, automation systems, AI integrations, visual effects, and premium digital experiences.';
+  'AI-Full Stack Engineer & VFX Editor specializing in modern web applications, automation systems, AI integrations, visual effects, and premium digital experiences.';
 
 function resolveImageUrl(url) {
   const s = String(url || '').trim();
@@ -27,7 +27,7 @@ function resolveImageUrl(url) {
 
 const SocialProofSection = () => {
   const { settings } = useSettings();
-  const { ref, inView } = useInViewOnce(0.12);
+  const { ref, inView } = useInViewOnce(0.05);
   const [imgError, setImgError] = useState(false);
 
   const instagramFollowers = settings.social_instagram_followers || '13200';
@@ -36,89 +36,83 @@ const SocialProofSection = () => {
   const showPhoto = Boolean(profileImg) && !imgError;
 
   return (
-    <section className="social-proof-section home-section" ref={ref} aria-labelledby="social-proof-title">
-      <div className="social-proof-section__bg" aria-hidden="true" />
+    <section
+      className="landing-section social-proof-section"
+      ref={ref}
+      aria-labelledby="social-proof-title"
+    >
+      <div className="landing-section__container social-proof-section__inner">
+        <div className="social-proof-section__bg" aria-hidden="true" />
 
-      <header className="social-proof-section__header">
-        <h2 id="social-proof-title" className="social-proof-section__title">
-          🚀 Connect With ABHAY D95
-        </h2>
-        <p className="social-proof-section__subtitle">
-          Follow us on social media and stay updated with the latest offers, development updates,
-          services and tutorials.
-        </p>
-      </header>
-
-      <article className="social-proof-featured">
-        <div className="social-proof-featured__glow" aria-hidden="true" />
-        <div className="social-proof-featured__avatar-wrap">
-          {showPhoto ? (
-            <img
-              src={profileImg}
-              alt="Abhay D95"
-              className="social-proof-featured__avatar"
-              loading="eager"
-              decoding="async"
-              onError={() => setImgError(true)}
-            />
-          ) : (
-            <div className="social-proof-featured__avatar social-proof-featured__avatar--fallback" aria-hidden="true">
-              AD
-            </div>
-          )}
-          <span className="social-proof-featured__badge">📸 Creator</span>
-        </div>
-        <div className="social-proof-featured__body">
-          <p className="social-proof-featured__eyebrow">📸 Instagram Creator</p>
-          <h3 className="social-proof-featured__username">
-            {settings.instagram_username || '@abhay_d95'}
-          </h3>
-          <p className="social-proof-featured__count">
-            <span className="social-proof-featured__count-num">{instagramCount}</span>
-            <span className="social-proof-featured__count-label">Followers</span>
+        <header className="social-proof-section__header">
+          <p className="landing-section__eyebrow">Creator</p>
+          <h2 id="social-proof-title" className="social-proof-section__title">
+            Connect with ABHAY D95
+          </h2>
+          <p className="social-proof-section__subtitle">
+            Follow for offers, product updates, tutorials, and behind-the-scenes from the ABHAYSMM team.
           </p>
-          <p className="social-proof-featured__bio">{PROFILE_BIO}</p>
-          <ul className="social-proof-featured__tags" aria-label="Professional highlights">
-            {PROFILE_TAGS.map((tag) => (
-              <li key={tag} className="social-proof-featured__tag">
-                {tag}
-              </li>
-            ))}
-          </ul>
-          <div className="social-proof-featured__actions">
-            <a
-              href={settings.instagram_link || 'https://instagram.com/abhay_d95'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary social-proof-featured__cta"
-            >
-              Follow Now
-            </a>
-            <a
-              href={settings.instagram_link || 'https://instagram.com/abhay_d95'}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-ghost social-proof-featured__cta-secondary"
-            >
-              View Profile
-            </a>
-          </div>
-        </div>
-      </article>
+        </header>
 
-      <div className="social-proof-trust">
-        <div className="social-proof-trust__item">
-          <strong>{instagramCount}</strong>
-          <span>Instagram Followers</span>
-        </div>
-        <div className="social-proof-trust__item">
-          <strong>Growing</strong>
-          <span>Community</span>
-        </div>
-        <div className="social-proof-trust__item">
-          <strong>Trusted</strong>
-          <span>Brand</span>
-        </div>
+        <article className="social-proof-featured">
+          <div className="social-proof-featured__glow" aria-hidden="true" />
+          <div className="social-proof-featured__avatar-wrap">
+            {showPhoto ? (
+              <img
+                src={profileImg}
+                alt="Abhay D95"
+                className="social-proof-featured__avatar"
+                loading="lazy"
+                decoding="async"
+                onError={() => setImgError(true)}
+              />
+            ) : (
+              <div
+                className="social-proof-featured__avatar social-proof-featured__avatar--fallback"
+                aria-hidden="true"
+              >
+                AD
+              </div>
+            )}
+            <span className="social-proof-featured__badge">Creator</span>
+          </div>
+          <div className="social-proof-featured__body">
+            <p className="social-proof-featured__eyebrow">Instagram</p>
+            <h3 className="social-proof-featured__username">
+              {settings.instagram_username || '@abhay_d95'}
+            </h3>
+            <p className="social-proof-featured__count">
+              <span className="social-proof-featured__count-num">{instagramCount}</span>
+              <span className="social-proof-featured__count-label">Followers</span>
+            </p>
+            <p className="social-proof-featured__bio">{PROFILE_BIO}</p>
+            <ul className="social-proof-featured__tags" aria-label="Professional highlights">
+              {PROFILE_TAGS.map((tag) => (
+                <li key={tag} className="social-proof-featured__tag">
+                  {tag}
+                </li>
+              ))}
+            </ul>
+            <div className="social-proof-featured__actions">
+              <a
+                href={settings.instagram_link || 'https://instagram.com/abhay_d95'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="landing-btn landing-btn--primary social-proof-featured__cta"
+              >
+                Follow Now
+              </a>
+              <a
+                href={settings.instagram_link || 'https://instagram.com/abhay_d95'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="landing-btn landing-btn--ghost social-proof-featured__cta-secondary"
+              >
+                View Profile
+              </a>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
   );

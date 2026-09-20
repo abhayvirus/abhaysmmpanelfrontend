@@ -84,8 +84,8 @@ const Home = () => {
         <LandingWhyChoose />
         <LandingAppShowcase />
         <LandingLiveActivity />
-        <SocialProofSection />
         <LandingWhatsAppGroup />
+        <SocialProofSection />
       </main>
 
       <LandingFooter settings={settings} />

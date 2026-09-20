@@ -34,7 +34,7 @@
   font-size: clamp(4.5rem, 14vw, 9rem);
   font-weight: 900;
   letter-spacing: 0.18em;
-  color: rgba(56, 189, 248, 0.055);
+  color: rgba(56, 189, 248, 0.035);
   white-space: nowrap;
   user-select: none;
   line-height: 1;
