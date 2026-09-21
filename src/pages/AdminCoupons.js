@@ -3,6 +3,7 @@ import AdminLayout from '../components/AdminLayout';
 import AdminResponsiveTable from '../components/AdminResponsiveTable';
 import { adminGetCoupons, adminCreateCoupon, adminDeleteCoupon } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
+import { wakeApi } from '../utils/apiWake';
 
 const EMPTY = {
   code: '',
@@ -25,6 +26,7 @@ const AdminCoupons = () => {
     setLoading(true);
     setError('');
     try {
+      await wakeApi(8000);
       const { data } = await adminGetCoupons();
       setList(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -54,6 +56,7 @@ const AdminCoupons = () => {
     setError('');
     setSuccess('');
     try {
+      await wakeApi(8000);
       await adminCreateCoupon({
         code,
         discount_type: form.discount_type,
@@ -130,7 +133,14 @@ const AdminCoupons = () => {
         Create discount codes for Add Funds. Users enter the code at checkout.
       </p>
 
-      {error ? <div className="alert alert-error" style={{ marginBottom: 16 }}>{error}</div> : null}
+      {error ? (
+        <div className="alert alert-error" style={{ marginBottom: 16, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ flex: 1 }}>{error}</span>
+          <button type="button" className="btn btn-ghost btn-sm" onClick={load} disabled={loading}>
+            Retry
+          </button>
+        </div>
+      ) : null}
       {success ? <div className="alert alert-success" style={{ marginBottom: 16 }}>{success}</div> : null}
 
       <div className="card" style={{ padding: 20, marginBottom: 24 }}>
