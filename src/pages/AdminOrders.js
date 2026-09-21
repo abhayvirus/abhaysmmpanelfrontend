@@ -59,8 +59,22 @@ const AdminOrders = () => {
   const load = useCallback(() => {
     setLoading(true);
     adminGetAllOrders()
-      .then((r) => setOrders(r.data))
-      .catch(() => showToast('Failed to load orders', 'error'))
+      .then((r) => {
+        const rows = Array.isArray(r.data) ? r.data : [];
+        setOrders(rows);
+        if (!rows.length) {
+          // empty is OK — only toast on real failures
+        }
+      })
+      .catch((err) => {
+        setOrders([]);
+        const msg =
+          err.response?.data?.message
+          || (err.code === 'ECONNABORTED' ? 'Orders request timed out — try again' : null)
+          || (!err.response ? 'Cannot reach API — wait a few seconds and retry' : null)
+          || 'Failed to load orders';
+        showToast(msg, 'error');
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -302,7 +316,12 @@ const AdminOrders = () => {
         {loading ? (
           <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>Loading orders...</p>
         ) : !filtered.length ? (
-          <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '2rem' }}>No orders found</p>
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 12 }}>No orders found</p>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={load}>
+              Retry load
+            </button>
+          </div>
         ) : (
           <>
             {/* Desktop table */}
