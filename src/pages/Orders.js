@@ -177,7 +177,7 @@ const Orders = () => {
   };
 
   const orderAmount = (o) => formatMoney(o.charge ?? o.price ?? o.amount ?? o.total_price);
-  const orderId = (o) => o.id ?? o.order_id ?? o.orderId ?? '—';
+  const orderId = (o) => o.id ?? o.order_id ?? o.orderId ?? o.api_order_id ?? '—';
   const serviceLabel = (o) => {
     const name = o.service_name || 'Service';
     if (o.service_id != null) return `${o.service_id} — ${name}`;
