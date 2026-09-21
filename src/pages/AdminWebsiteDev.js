@@ -171,9 +171,6 @@ const AdminWebsiteDev = () => {
     <AdminLayout>
       <div className="admin-website-dev-page">
         <h1 className="admin-page-title">🌐 Website Requests Management</h1>
-        <p className="admin-website-consult-note">
-          Consultation fee ₹{CONSULTATION_FEE} is non-refundable and auto-adjusted in final quotation (payable = final price − ₹{CONSULTATION_FEE}).
-        </p>
         {toast && <div className="alert alert-success">{toast}</div>}
 
         <div className="stats-grid admin-website-stats">
