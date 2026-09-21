@@ -64,11 +64,11 @@ API.interceptors.response.use(
 );
 
 // Auth
-export const getAuthConfig = () => API.get('/auth/config');
+export const getAuthConfig = (config) => API.get('/auth/config', config);
 export const login = (data) => API.post('/auth/login', data);
 export const signup = (data) => API.post('/auth/signup', data);
-export const sendSignupOtp = (data) => API.post('/auth/signup/send-otp', data);
-export const verifySignupOtp = (data) => API.post('/auth/signup/verify-otp', data);
+export const sendSignupOtp = (data) => API.post('/auth/signup/send-otp', data, { timeout: 25000 });
+export const verifySignupOtp = (data) => API.post('/auth/signup/verify-otp', data, { timeout: 25000 });
 /** Google Sign-In: send ID token from @react-oauth/google */
 export const googleLogin = (idToken, referralCode) =>
   API.post('/auth/google', { idToken, referral_code: referralCode || undefined });

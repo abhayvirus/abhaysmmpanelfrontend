@@ -31,13 +31,24 @@ const Signup = () => {
   const urlRef = String(searchParams.get('ref') || '').trim().toUpperCase();
   const [referralCode, setReferralCode] = useState(() => urlRef || readStoredRef());
   const [registrationOpen, setRegistrationOpen] = useState(true);
-  const [configLoading, setConfigLoading] = useState(true);
 
   useEffect(() => {
-    getAuthConfig()
-      .then(({ data }) => setRegistrationOpen(data?.registrationEnabled !== false))
-      .catch(() => setRegistrationOpen(true))
-      .finally(() => setConfigLoading(false));
+    let cancelled = false;
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = setTimeout(() => ctrl?.abort(), 8000);
+    getAuthConfig({ signal: ctrl?.signal, timeout: 8000 })
+      .then(({ data }) => {
+        if (!cancelled) setRegistrationOpen(data?.registrationEnabled !== false);
+      })
+      .catch(() => {
+        if (!cancelled) setRegistrationOpen(true);
+      })
+      .finally(() => clearTimeout(timer));
+    return () => {
+      cancelled = true;
+      ctrl?.abort();
+      clearTimeout(timer);
+    };
   }, []);
 
   useEffect(() => {
@@ -84,11 +95,11 @@ const Signup = () => {
     setError('');
     setSuccess('');
     try {
-      await wakeApi(9000);
+      await wakeApi(12000);
       const ref = String(referralCode || '').trim().toUpperCase();
       await sendSignupOtp({
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         password,
         referral_code: ref || undefined,
       });
@@ -98,8 +109,9 @@ const Signup = () => {
       setResendSec(60);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Could not send OTP'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleResendOtp = async () => {
@@ -107,10 +119,11 @@ const Signup = () => {
     setLoading(true);
     setError('');
     try {
+      await wakeApi(12000);
       const ref = String(referralCode || '').trim().toUpperCase();
       await sendSignupOtp({
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         password,
         referral_code: ref || undefined,
       });
@@ -118,8 +131,9 @@ const Signup = () => {
       setResendSec(60);
     } catch (err) {
       setError(getApiErrorMessage(err, 'Could not resend OTP'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleVerifyOtp = async () => {
@@ -159,7 +173,7 @@ const Signup = () => {
         {error && <div style={styles.error}>{error}</div>}
         {success && <div style={styles.success}>{success}</div>}
 
-        {!configLoading && !registrationOpen && (
+        {!registrationOpen && (
           <div style={styles.error}>
             New registrations are currently closed.{' '}
             <Link to="/login">Sign in</Link> if you already have an account.
@@ -226,7 +240,7 @@ const Signup = () => {
               type="button"
               className="btn btn-primary"
               onClick={handleSendOtp}
-              disabled={loading || configLoading}
+              disabled={loading}
               style={{ width: '100%', opacity: loading ? 0.7 : 1, marginTop: 8 }}
             >
               {loading ? 'Sending OTP...' : 'Send OTP to email'}
