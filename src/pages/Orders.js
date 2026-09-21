@@ -144,19 +144,23 @@ const Orders = () => {
   };
 
   const cancel = async (id) => {
-    if (!window.confirm('Cancel this order?')) return;
+    if (!window.confirm('Cancel this order? Amount will be refunded to your wallet.')) return;
     setActionId(id);
     try {
       const res = await cancelOrder(id);
       setMsgType('success');
       setMsg(res.data.message || 'Cancelled');
-      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: 'cancelled' } : o)));
+      setOrders((prev) => prev.map((o) => (String(o.id) === String(id) || String(o.api_order_id) === String(id)
+        ? { ...o, status: 'cancelled' }
+        : o)));
       if (res.data.balance != null) {
         try {
           const user = JSON.parse(localStorage.getItem('user') || '{}');
           localStorage.setItem('user', JSON.stringify({ ...user, balance: res.data.balance }));
+          window.dispatchEvent(new Event('auth-user-updated'));
         } catch (_) { /* ignore */ }
       }
+      load(true);
     } catch (e) {
       setMsgType('error');
       setMsg(e.response?.data?.message || 'Cancel failed');
