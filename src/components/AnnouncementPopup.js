@@ -59,6 +59,11 @@ function resolveBadge(ann) {
 const AnnouncementPopup = () => {
   const [ann, setAnn] = useState(null);
 
+  const dismiss = useCallback((id) => {
+    if (id != null) sessionStorage.setItem(dismissKey(id), '1');
+    setAnn(null);
+  }, []);
+
   const load = useCallback(() => {
     getAnnouncements()
       .then((res) => {
@@ -87,6 +92,15 @@ const AnnouncementPopup = () => {
     };
   }, [load]);
 
+  useEffect(() => {
+    if (!ann) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') dismiss(ann.id);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [ann, dismiss]);
+
   if (!ann) return null;
 
   const style = resolveStyle(ann);
@@ -95,7 +109,11 @@ const AnnouncementPopup = () => {
   const badge = resolveBadge(ann);
 
   return (
-    <div className="modal-overlay" role="presentation">
+    <div
+      className="modal-overlay"
+      role="presentation"
+      onClick={() => dismiss(ann.id)}
+    >
       <div
         className={`card modal-panel fade-in announcement-popup announcement-popup--${style}`}
         onClick={(e) => e.stopPropagation()}
@@ -103,6 +121,15 @@ const AnnouncementPopup = () => {
         aria-modal="true"
         aria-labelledby="announcement-popup-title"
       >
+        <button
+          type="button"
+          className="announcement-popup__close"
+          aria-label="Close"
+          title="Close"
+          onClick={() => dismiss(ann.id)}
+        >
+          ×
+        </button>
         <div className="announcement-popup__hero">
           <span className="announcement-popup__emoji" aria-hidden="true">{emoji}</span>
           <div>
@@ -115,10 +142,7 @@ const AnnouncementPopup = () => {
           <button
             type="button"
             className="btn btn-primary"
-            onClick={() => {
-              sessionStorage.setItem(dismissKey(ann.id), '1');
-              setAnn(null);
-            }}
+            onClick={() => dismiss(ann.id)}
           >
             {cta}
           </button>
