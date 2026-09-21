@@ -10,6 +10,7 @@ import './styles/adminOrders.css';
 import './styles/adminChat.css';
 import './styles/adminSettings.css';
 import './styles/addFunds.css';
+import './styles/ordersPage.css';
 import './styles/profilePage.css';
 import './styles/websiteDevPage.css';
 import './styles/adminWebsiteDev.css';

@@ -44,12 +44,20 @@ function formatStatusLabel(st) {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function formatOrderDate(raw) {
+function cleanServiceName(name) {
+  if (!name) return 'Service';
+  return String(name)
+    .replace(/^[\s✦✧✨💎⭐️⭐•·─—\-]+/u, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function formatOrderDateShort(raw) {
   if (!raw) return '—';
   const d = new Date(raw);
   if (Number.isNaN(d.getTime())) return '—';
   const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
 function quantityBreakdown(o) {
@@ -182,21 +190,27 @@ const Orders = () => {
 
   const orderAmount = (o) => formatMoney(o.charge ?? o.price ?? o.amount ?? o.total_price);
   const orderId = (o) => o.id ?? o.order_id ?? o.orderId ?? o.api_order_id ?? '—';
-  const serviceLabel = (o) => {
-    const name = o.service_name || 'Service';
-    if (o.service_id != null) return `${o.service_id} — ${name}`;
-    return name;
+
+  const renderServiceCell = (o) => {
+    const name = cleanServiceName(o.service_name);
+    const sid = o.service_id;
+    return (
+      <div className="orders-service" title={o.service_name || name}>
+        {sid != null && <span className="orders-service-id">#{sid}</span>}
+        <span className="orders-service-name">{name}</span>
+      </div>
+    );
   };
 
   const renderQtyCell = (o) => {
     const { qty, start, remains, end } = quantityBreakdown(o);
     const fmt = (n) => (n == null || Number.isNaN(n) ? '—' : Number(n).toLocaleString());
     return (
-      <div className="orders-qty-cell">
-        <div><span>Qty:</span> {fmt(qty)}</div>
-        <div><span>Remains:</span> {fmt(remains)}</div>
-        <div><span>Start:</span> {fmt(start)}</div>
-        <div><span>End:</span> {fmt(end)}</div>
+      <div className="orders-qty-grid">
+        <div className="orders-qty-item"><em>Qty</em><strong>{fmt(qty)}</strong></div>
+        <div className="orders-qty-item"><em>Remains</em><strong>{fmt(remains)}</strong></div>
+        <div className="orders-qty-item"><em>Start</em><strong>{fmt(start)}</strong></div>
+        <div className="orders-qty-item"><em>End</em><strong>{fmt(end)}</strong></div>
       </div>
     );
   };
@@ -266,18 +280,16 @@ const Orders = () => {
                     const oid = orderId(o);
                     return (
                       <tr key={oid}>
-                        <td>#{oid}</td>
-                        <td style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
-                          {formatOrderDate(o.created_at ?? o.createdAt ?? o.date)}
-                        </td>
-                        <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          <a href={o.link} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', fontSize: 12 }}>
+                        <td><span className="orders-id">#{oid}</span></td>
+                        <td className="orders-date">{formatOrderDateShort(o.created_at ?? o.createdAt ?? o.date)}</td>
+                        <td>
+                          <a className="orders-link" href={o.link} target="_blank" rel="noreferrer" title={o.link}>
                             {o.link}
                           </a>
                         </td>
-                        <td>{sym}{orderAmount(o)}</td>
+                        <td className="orders-charge">{sym}{orderAmount(o)}</td>
                         <td>{renderQtyCell(o)}</td>
-                        <td style={{ maxWidth: 220 }}>{serviceLabel(o)}</td>
+                        <td>{renderServiceCell(o)}</td>
                         <td>
                           <div className="orders-status-cell">
                             <span className={`badge ${statusClass[st] || 'badge-info'}`}>
@@ -300,19 +312,31 @@ const Orders = () => {
                 return (
                   <div key={`m-${oid}`} className="orders-mobile-card">
                     <div className="orders-mobile-top">
-                      <strong>#{oid}</strong>
+                      <strong className="orders-id">#{oid}</strong>
                       <span className={`badge ${statusClass[st] || 'badge-info'}`}>
                         {formatStatusLabel(st)}
                       </span>
                     </div>
-                    <div className="orders-mobile-row"><span>Date</span><span>{formatOrderDate(o.created_at ?? o.createdAt ?? o.date)}</span></div>
+                    <div className="orders-mobile-row">
+                      <span>Date</span>
+                      <span className="orders-date">{formatOrderDateShort(o.created_at ?? o.createdAt ?? o.date)}</span>
+                    </div>
                     <div className="orders-mobile-row">
                       <span>Link</span>
-                      <a href={o.link} target="_blank" rel="noreferrer">{o.link}</a>
+                      <a className="orders-link" href={o.link} target="_blank" rel="noreferrer">{o.link}</a>
                     </div>
-                    <div className="orders-mobile-row"><span>Charge</span><span>{sym}{orderAmount(o)}</span></div>
-                    <div className="orders-mobile-row"><span>Quantity</span><span>{renderQtyCell(o)}</span></div>
-                    <div className="orders-mobile-row"><span>Service</span><span>{serviceLabel(o)}</span></div>
+                    <div className="orders-mobile-row">
+                      <span>Charge</span>
+                      <span className="orders-charge">{sym}{orderAmount(o)}</span>
+                    </div>
+                    <div className="orders-mobile-row orders-mobile-row--block">
+                      <span>Quantity</span>
+                      {renderQtyCell(o)}
+                    </div>
+                    <div className="orders-mobile-row">
+                      <span>Service</span>
+                      {renderServiceCell(o)}
+                    </div>
                     <div style={{ marginTop: 10 }}>{renderActions(o, oid)}</div>
                   </div>
                 );

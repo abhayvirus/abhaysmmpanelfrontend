@@ -1,0 +1,155 @@
+/* My Orders — clean table cells */
+
+.orders-page .orders-table-wrap .table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.orders-page .orders-table-wrap .table th,
+.orders-page .orders-table-wrap .table td {
+  vertical-align: middle;
+  padding: 14px 12px;
+}
+
+.orders-page .orders-table-wrap .table th:nth-child(1),
+.orders-page .orders-table-wrap .table td:nth-child(1) { width: 64px; }
+.orders-page .orders-table-wrap .table th:nth-child(2),
+.orders-page .orders-table-wrap .table td:nth-child(2) { width: 148px; }
+.orders-page .orders-table-wrap .table th:nth-child(3),
+.orders-page .orders-table-wrap .table td:nth-child(3) { width: 160px; }
+.orders-page .orders-table-wrap .table th:nth-child(4),
+.orders-page .orders-table-wrap .table td:nth-child(4) { width: 88px; }
+.orders-page .orders-table-wrap .table th:nth-child(5),
+.orders-page .orders-table-wrap .table td:nth-child(5) { width: 168px; }
+.orders-page .orders-table-wrap .table th:nth-child(6),
+.orders-page .orders-table-wrap .table td:nth-child(6) { width: auto; }
+.orders-page .orders-table-wrap .table th:nth-child(7),
+.orders-page .orders-table-wrap .table td:nth-child(7) { width: 120px; }
+
+.orders-id {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--text);
+}
+
+.orders-date {
+  font-size: 12px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.orders-link {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--primary);
+  font-size: 12px;
+  text-decoration: none;
+}
+.orders-link:hover {
+  text-decoration: underline;
+}
+
+.orders-charge {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Compact 2×2 quantity grid — no “Qty: 1,000” wall of text */
+.orders-qty-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 10px;
+  min-width: 140px;
+}
+
+.orders-qty-item {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.2;
+}
+
+.orders-qty-item em {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.orders-qty-item strong {
+  font-size: 13px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+/* Service: id chip + clamped name */
+.orders-service {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+}
+
+.orders-service-id {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--primary);
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+}
+
+.orders-service-name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--text);
+  word-break: break-word;
+}
+
+.orders-status-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.orders-actions-cell {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* Mobile card polish */
+.orders-mobile-card .orders-qty-grid {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.orders-mobile-card .orders-service {
+  align-items: flex-end;
+  text-align: right;
+  max-width: 65%;
+}
+
+.orders-mobile-card .orders-service-name {
+  -webkit-line-clamp: 3;
+}

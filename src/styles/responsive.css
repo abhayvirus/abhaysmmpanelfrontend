@@ -866,30 +866,16 @@ body.public-nav-open .whatsapp-float {
 .orders-mobile-row span:first-child {
   color: var(--text-muted);
 }
+.orders-mobile-row--block {
+  flex-direction: column;
+  align-items: stretch;
+}
 
 .orders-actions-cell {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
   align-items: center;
-}
-
-.orders-status-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.orders-qty-cell {
-  font-size: 12px;
-  line-height: 1.45;
-  color: var(--text);
-  white-space: nowrap;
-}
-.orders-qty-cell span {
-  color: var(--text-muted);
-  margin-right: 4px;
 }
 
 .orders-actions-cell--mobile {
