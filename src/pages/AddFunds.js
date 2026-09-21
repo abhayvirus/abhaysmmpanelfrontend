@@ -247,7 +247,8 @@ const AddFunds = () => {
     try {
       const { data: orderData } = await createRazorpayOrder(
         checkoutAmount,
-        couponInfo?.code || (couponCode.trim() || undefined)
+        // Only send coupon after Apply succeeded — raw typed text can break pricing
+        couponInfo?.code || undefined
       );
       const rawKey = resolveRazorpayKeyId(
         orderData.keyId,
