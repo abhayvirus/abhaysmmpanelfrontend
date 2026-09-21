@@ -19,10 +19,10 @@ export function exportOrdersPdf(orders, siteName = 'SMM Panel') {
     </tr>`;
   }).join('');
 
-  const html = `<!DOCTYPE html><html><head><title>Orders Export</title>
+  const html = `<!DOCTYPE html><html><head><title>Order History Export</title>
     <style>body{font-family:Inter,sans-serif;padding:24px}table{width:100%;border-collapse:collapse;font-size:12px}
     th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#f0f0f0}</style></head>
-    <body><h1>${escapeHtml(siteName)} — Orders</h1><p>Exported ${new Date().toLocaleString()}</p>
+    <body><h1>${escapeHtml(siteName)} — Order History</h1><p>Exported ${new Date().toLocaleString()}</p>
     <table><thead><tr><th>ID</th><th>Date</th><th>Link</th><th>Charge</th><th>Quantity</th><th>Service</th><th>Status</th></tr></thead>
     <tbody>${rows}</tbody></table></body></html>`;
 

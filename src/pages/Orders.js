@@ -231,11 +231,11 @@ const Orders = () => {
   );
 
   return (
-    <UserLayout title="Orders">
+    <UserLayout title="Order History">
       <div className="orders-page">
         <div className="page-header orders-page-header">
           <div>
-            <h1 style={{ marginBottom: 8 }}>My Orders</h1>
+            <h1 style={{ marginBottom: 8 }}>Order History</h1>
             <p style={{ color: 'var(--text-muted)', margin: 0 }}>
               Status updates every 30 seconds · Cancel available for 60s after placing
             </p>
