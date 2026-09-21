@@ -54,13 +54,27 @@ API.interceptors.response.use(
     if (err.response.status === 401 && !isAuthPublicRequest(err.config)) {
       // Payment/validation false positives must not wipe the session
       const code = err.response?.data?.code;
-      if (code === 'INVALID_USER' || code === 'INVALID_USER_ID') {
+      if (
+        code === 'INVALID_USER'
+        || code === 'INVALID_USER_ID'
+        || code === 'USER_ID_MISSING'
+        || code === 'ACCOUNT_PENDING'
+      ) {
+        return Promise.reject(err);
+      }
+      // Soften: 401 on secondary widgets should not nuke a brand-new login
+      const url = String(err.config?.url || '');
+      if (
+        url.includes('/notifications/')
+        || url.includes('/chat/')
+        || url.includes('/tickets/unread')
+      ) {
         return Promise.reject(err);
       }
       clearAuthSession();
       const path = window.location.pathname;
       const loginPath = getLoginPath();
-      if (!path.includes('/login') && !path.includes('/signup')) {
+      if (!path.includes('/login') && !path.includes('/signup') && !path.includes('/auth/google')) {
         window.location.replace(loginPath);
       }
     }
