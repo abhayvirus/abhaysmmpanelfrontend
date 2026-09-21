@@ -22,6 +22,24 @@ const UserLayout = ({ children, title }) => {
   }, []);
 
   useEffect(() => {
+    const syncUser = () => {
+      try {
+        setUser(JSON.parse(localStorage.getItem('user') || '{}'));
+      } catch (_) { /* ignore */ }
+      getMe().then((res) => {
+        localStorage.setItem('user', JSON.stringify(res.data));
+        setUser(res.data);
+      }).catch(() => {});
+    };
+    window.addEventListener('auth-user-updated', syncUser);
+    window.addEventListener('focus', syncUser);
+    return () => {
+      window.removeEventListener('auth-user-updated', syncUser);
+      window.removeEventListener('focus', syncUser);
+    };
+  }, []);
+
+  useEffect(() => {
     document.body.classList.toggle('mobile-menu-open', menuOpen && isMobile);
     return () => document.body.classList.remove('mobile-menu-open');
   }, [menuOpen, isMobile]);
