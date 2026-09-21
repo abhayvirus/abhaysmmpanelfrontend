@@ -52,6 +52,11 @@ API.interceptors.response.use(
     }
 
     if (err.response.status === 401 && !isAuthPublicRequest(err.config)) {
+      // Payment/validation false positives must not wipe the session
+      const code = err.response?.data?.code;
+      if (code === 'INVALID_USER' || code === 'INVALID_USER_ID') {
+        return Promise.reject(err);
+      }
       clearAuthSession();
       const path = window.location.pathname;
       const loginPath = getLoginPath();
