@@ -270,13 +270,39 @@ const AddFunds = () => {
         },
         onSuccess: async (response) => {
           setPayPhase('verifying');
+          const payload = {
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            payment_method: selectedMethodMeta.payLabel,
+          };
           try {
-            const v = await verifyRazorpayPayment({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-              payment_method: selectedMethodMeta.payLabel,
-            });
+            let v;
+            let lastErr;
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+              try {
+                // eslint-disable-next-line no-await-in-loop
+                v = await verifyRazorpayPayment(payload);
+                lastErr = null;
+                break;
+              } catch (err) {
+                lastErr = err;
+                const code = err.response?.data?.code;
+                const retryable =
+                  !err.response
+                  || err.response.status === 503
+                  || err.response.status === 502
+                  || err.response.status === 409
+                  || code === 'PAYMENT_NOT_CAPTURED'
+                  || code === 'DB_UNAVAILABLE'
+                  || code === 'RAZORPAY_FETCH_FAILED';
+                if (!retryable || attempt === 2) break;
+                // eslint-disable-next-line no-await-in-loop
+                await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
+              }
+            }
+            if (lastErr) throw lastErr;
+
             const newBal = parseFloat(v.data.balance);
             const added = parseFloat(v.data.balance_added);
             setBalance(newBal);
@@ -303,7 +329,7 @@ const AddFunds = () => {
               open: true,
               type: 'failed',
               title: code === 'INVALID_SIGNATURE' ? 'Invalid signature' : 'Verification failed',
-              message: msg,
+              message: `${msg}${response?.razorpay_payment_id ? ` (Payment ID: ${response.razorpay_payment_id})` : ''}`,
             });
           } finally {
             resetPayState();

@@ -142,7 +142,8 @@ export const getPaymentConfig = () => API.get('/payments/config');
 export const getWalletBalance = () => API.get('/wallet/balance');
 export const createRazorpayOrder = (amount, coupon_code) =>
   API.post('/payments/create-order', { amount, coupon_code });
-export const verifyRazorpayPayment = (data) => API.post('/payments/verify', data);
+export const verifyRazorpayPayment = (data) =>
+  API.post('/payments/verify', data, { timeout: 45000 });
 export const verifyRazorpay = verifyRazorpayPayment;
 export const submitUpiUtr = (data) => API.post('/payments/utr', data);
 export const getFundRequests = () => API.get('/payments/history');
