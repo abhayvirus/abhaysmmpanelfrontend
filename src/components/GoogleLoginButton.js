@@ -1,10 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
-import { googleLogin } from '../api';
+import React, { useState } from 'react';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
-import { getPostLoginPath, saveAuthSession } from '../utils/authRedirect';
-import { getApiErrorMessage } from '../utils/apiError';
+import { API_BASE } from '../api';
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -15,119 +11,35 @@ const GoogleIcon = () => (
   </svg>
 );
 
-function finishSession(navigate, data) {
-  saveAuthSession(data.token, data.user);
-  navigate(getPostLoginPath(data.user), { replace: true });
-}
-
-function getSignupReferralCode() {
-  try {
-    const fromSession = sessionStorage.getItem('signup_ref') || '';
-    if (fromSession) return fromSession.trim().toUpperCase();
-  } catch {
-    /* ignore */
-  }
-  try {
-    const q = new URLSearchParams(window.location.search);
-    const fromUrl = q.get('ref') || '';
-    if (fromUrl) {
-      const code = fromUrl.trim().toUpperCase();
-      try {
-        sessionStorage.setItem('signup_ref', code);
-      } catch (_) { /* ignore */ }
-      return code;
-    }
-  } catch {
-    /* ignore */
-  }
-  return '';
-}
-
+/**
+ * Login page only — always-visible "Continue with Google" (server OAuth redirect).
+ */
 const GoogleLoginButton = ({ className = '', style = {} }) => {
-  const navigate = useNavigate();
-  const { enabled, loading: configLoading } = useGoogleAuth();
-  const [error, setError] = useState('');
+  const { oauthStartUrl } = useGoogleAuth();
   const [loading, setLoading] = useState(false);
-  const wrapRef = useRef(null);
-  const [btnWidth, setBtnWidth] = useState(320);
 
-  useEffect(() => {
-    const el = wrapRef.current;
-    if (!el) return undefined;
-    const ro = new ResizeObserver(() => {
-      setBtnWidth(Math.floor(el.offsetWidth) || 320);
-    });
-    ro.observe(el);
-    setBtnWidth(Math.floor(el.offsetWidth) || 320);
-    return () => ro.disconnect();
-  }, []);
-
-  if (configLoading || !enabled) return null;
-
-  const handleSuccess = async (credentialResponse) => {
-    const idToken = credentialResponse?.credential;
-    if (!idToken) {
-      setError('No token received from Google');
-      return;
-    }
+  const startRedirect = () => {
+    const fallback = `${String(API_BASE || 'https://api.abhaysmmpanel.in').replace(/\/api\/?$/, '')}/api/auth/google`;
+    const target = (oauthStartUrl && String(oauthStartUrl).includes('/auth/google'))
+      ? oauthStartUrl
+      : fallback;
     setLoading(true);
-    setError('');
-    try {
-      const ref = getSignupReferralCode();
-      const { data } = await googleLogin(idToken, ref || undefined);
-      finishSession(navigate, data);
-    } catch (err) {
-      const code = err.response?.data?.code;
-      if (code === 'GOOGLE_NOT_CONFIGURED') {
-        setError('Google login is not configured on the server. Please try email login or contact support.');
-      } else {
-        setError(getApiErrorMessage(err, 'Google sign-in failed'));
-      }
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = target;
   };
 
   return (
-    <div ref={wrapRef} className={`google-signin-root ${className}`} style={style}>
-      {error && (
-        <div className="alert alert-error" style={{ marginBottom: 12 }}>
-          {error}
-        </div>
-      )}
-
-      <div className="google-signin-custom" aria-busy={loading}>
-        <button
-          type="button"
-          className="btn-google"
-          disabled={loading}
-          tabIndex={-1}
-          aria-hidden="true"
-        >
-          <span className="btn-google-icon">
-            <GoogleIcon />
-          </span>
-          <span>{loading ? 'Signing in with Google...' : 'Continue with Google'}</span>
-        </button>
-
-        {/* Keep GoogleLogin mounted — unmounting re-calls google.accounts.id.initialize() */}
-        <div
-          className="google-signin-overlay"
-          aria-label="Continue with Google"
-          style={loading ? { pointerEvents: 'none', opacity: 0.01 } : undefined}
-        >
-          <GoogleLogin
-            onSuccess={handleSuccess}
-            onError={() => setError('Google sign-in was cancelled or failed')}
-            theme="outline"
-            size="large"
-            text="continue_with"
-            shape="rectangular"
-            width={btnWidth}
-            useOneTap={false}
-          />
-        </div>
-      </div>
+    <div className={`google-signin-root ${className}`} style={style}>
+      <button
+        type="button"
+        className="btn-google btn-google--real"
+        disabled={loading}
+        onClick={startRedirect}
+      >
+        <span className="btn-google-icon">
+          <GoogleIcon />
+        </span>
+        <span>{loading ? 'Redirecting to Google…' : 'Continue with Google'}</span>
+      </button>
     </div>
   );
 };

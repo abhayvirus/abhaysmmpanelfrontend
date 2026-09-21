@@ -5,7 +5,6 @@ import { getApiErrorMessage } from '../utils/apiError';
 import { wakeApi, startApiKeepAlive } from '../utils/apiWake';
 import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
-import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
 import { getPostLoginPath, isAuthenticated, saveAuthSession } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
@@ -18,20 +17,17 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { enabled: googleEnabled } = useGoogleAuth();
 
   useEffect(() => {
     const googleError = new URLSearchParams(window.location.search).get('google_error');
-    if (googleError) setError(googleError);
+    if (googleError) setError(decodeURIComponent(googleError));
   }, []);
 
   useEffect(() => {
-    // Ensure auth pages never inherit fixed body from a previously opened mobile menu
     document.body.classList.remove('mobile-menu-open');
   }, []);
 
   useEffect(() => {
-    // Keep API awake while user fills the form (Hostinger idle sleep)
     return startApiKeepAlive(45000);
   }, []);
 
@@ -70,12 +66,8 @@ const Login = () => {
         <p className="auth-subheading">Sign in to {BRAND.name}</p>
         {error && <div className="alert alert-error">{error}</div>}
 
-        {googleEnabled && (
-          <>
-            <GoogleLoginButton />
-            <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>OR</div>
-          </>
-        )}
+        <GoogleLoginButton />
+        <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>OR</div>
 
         <div className="form-group">
           <label className="label">Email</label>

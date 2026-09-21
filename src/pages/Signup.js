@@ -3,9 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { sendSignupOtp, verifySignupOtp, getAuthConfig } from '../api';
 import { getApiErrorMessage } from '../utils/apiError';
 import { wakeApi, startApiKeepAlive } from '../utils/apiWake';
-import GoogleLoginButton from '../components/GoogleLoginButton';
 import PasswordInput from '../components/PasswordInput';
-import { useGoogleAuth } from '../contexts/GoogleAuthContext';
 import AuthBrandHeader from '../components/AuthBrandHeader';
 import { getPostLoginPath, isAuthenticated, saveAuthSession } from '../utils/authRedirect';
 import { BRAND } from '../config/brand';
@@ -32,7 +30,6 @@ const Signup = () => {
   const [searchParams] = useSearchParams();
   const urlRef = String(searchParams.get('ref') || '').trim().toUpperCase();
   const [referralCode, setReferralCode] = useState(() => urlRef || readStoredRef());
-  const { enabled: googleEnabled } = useGoogleAuth();
   const [registrationOpen, setRegistrationOpen] = useState(true);
   const [configLoading, setConfigLoading] = useState(true);
 
@@ -61,13 +58,18 @@ const Signup = () => {
   }, [referralCode]);
 
   useEffect(() => {
-    // Ensure auth pages never inherit fixed body from a previously opened mobile menu
     document.body.classList.remove('mobile-menu-open');
   }, []);
 
   useEffect(() => {
     return startApiKeepAlive(45000);
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate(getPostLoginPath(), { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     if (resendSec <= 0) return undefined;
@@ -220,18 +222,12 @@ const Signup = () => {
               ) : null}
             </div>
 
-            {googleEnabled && (
-              <>
-                <GoogleLoginButton style={{ marginBottom: 16 }} />
-                <div style={{ textAlign: 'center', margin: '8px 0 16px', color: '#8ca0b8' }}>OR</div>
-              </>
-            )}
-
             <button
               type="button"
+              className="btn btn-primary"
               onClick={handleSendOtp}
-              disabled={loading}
-              style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }}
+              disabled={loading || configLoading}
+              style={{ width: '100%', opacity: loading ? 0.7 : 1, marginTop: 8 }}
             >
               {loading ? 'Sending OTP...' : 'Send OTP to email'}
             </button>
@@ -260,9 +256,10 @@ const Signup = () => {
 
             <button
               type="button"
+              className="btn btn-primary"
               onClick={handleVerifyOtp}
               disabled={loading}
-              style={{ ...styles.btn, opacity: loading ? 0.7 : 1 }}
+              style={{ width: '100%', opacity: loading ? 0.7 : 1, marginTop: 8 }}
             >
               {loading ? 'Verifying...' : 'Verify OTP & Create account'}
             </button>
@@ -346,22 +343,8 @@ const styles = {
   inputGroup: { marginBottom: 18 },
   label: { display: 'block', color: '#8ca0b8', fontSize: 13, fontWeight: 600, marginBottom: 8 },
   input: { width: '100%', padding: '12px 14px', borderRadius: 10, background: '#0d1520', border: '1px solid #2d3a50', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' },
-  btn: {
-    width: '100%',
-    minHeight: 44,
-    padding: '12px 14px',
-    borderRadius: 10,
-    border: 'none',
-    background: 'linear-gradient(135deg, #6c63ff, #9b59b6)',
-    color: '#fff',
-    fontSize: 'clamp(14px, 3.5vw, 16px)',
-    fontWeight: 700,
-    cursor: 'pointer',
-    marginTop: 8,
-    marginBottom: 8,
-  },
   bottomText: { textAlign: 'center', color: '#8ca0b8', fontSize: 14, marginTop: 24 },
-  link: { color: '#6c63ff', textDecoration: 'none', fontWeight: 700 },
+  link: { color: 'var(--primary, #3b82f6)', textDecoration: 'none', fontWeight: 700 },
 };
 
 export default Signup;

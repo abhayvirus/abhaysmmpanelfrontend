@@ -14,19 +14,29 @@ export function useGoogleAuth() {
   return useContext(GoogleAuthContext);
 }
 
+function pickClientId(...candidates) {
+  for (const c of candidates) {
+    const id = String(c || '').trim();
+    if (id.includes('.apps.googleusercontent.com') && !id.toLowerCase().startsWith('your_')) {
+      return id;
+    }
+  }
+  return '';
+}
+
 /**
  * Loads Google OAuth config from build env or API (/auth/config).
  * Keeps a stable clientId so GSI initialize() is not called repeatedly.
  */
 export function GoogleAuthProvider({ children }) {
-  const stableClientIdRef = useRef(
-    isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID : ''
-  );
+  const buildId = isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID.trim() : '';
+  const stableClientIdRef = useRef(buildId);
   const [state, setState] = useState(() => ({
-    enabled: false,
-    clientId: stableClientIdRef.current,
+    // Show Google ASAP when build env has client id (don't wait for API)
+    enabled: Boolean(buildId),
+    clientId: buildId,
     oauthStartUrl: `${API_BASE}/api/auth/google`,
-    loading: !stableClientIdRef.current,
+    loading: true,
   }));
 
   useEffect(() => {
@@ -34,42 +44,39 @@ export function GoogleAuthProvider({ children }) {
     getAuthConfig()
       .then(({ data }) => {
         if (cancelled) return;
-        const fromApi = data?.googleClientId || '';
-        const nextId =
-          (fromApi.includes('.apps.googleusercontent.com') && fromApi) ||
-          stableClientIdRef.current ||
-          GOOGLE_CLIENT_ID ||
-          '';
+        const fromApi = pickClientId(data?.googleClientId);
+        const nextId = pickClientId(fromApi, stableClientIdRef.current, GOOGLE_CLIENT_ID);
         if (nextId && !stableClientIdRef.current) {
           stableClientIdRef.current = nextId;
         }
         const clientId = stableClientIdRef.current || nextId;
-        const enabled = Boolean(
-          data?.googleEnabled !== false && clientId?.includes('.apps.googleusercontent.com')
-        );
+        // Admin can disable via googleEnabled:false only when no usable client id is available
+        const adminOff = data?.googleEnabled === false && !fromApi && !buildId;
+        const enabled = Boolean(clientId) && !adminOff;
         setState({
-          enabled: enabled && Boolean(clientId),
+          enabled,
           clientId: enabled ? clientId : '',
-          oauthStartUrl: data?.googleAuthUrl || `${API_BASE}/api/auth/google`,
+          oauthStartUrl:
+            data?.googleAuthUrl
+            || `${API_BASE}/api/auth/google`,
           loading: false,
         });
       })
       .catch(() => {
         if (!cancelled) {
-          const clientId =
-            stableClientIdRef.current || (isBuildGoogleConfigured() ? GOOGLE_CLIENT_ID : '');
-          setState((prev) => ({
-            ...prev,
+          const clientId = pickClientId(stableClientIdRef.current, GOOGLE_CLIENT_ID);
+          setState({
             enabled: Boolean(clientId),
             clientId,
+            oauthStartUrl: `${API_BASE}/api/auth/google`,
             loading: false,
-          }));
+          });
         }
       });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [buildId]);
 
   const value = useMemo(
     () => ({
@@ -85,8 +92,7 @@ export function GoogleAuthProvider({ children }) {
     <GoogleAuthContext.Provider value={value}>{children}</GoogleAuthContext.Provider>
   );
 
-  // Freeze provider clientId after first valid id so GSI initialize() runs once
-  const providerId = stableClientIdRef.current;
+  const providerId = stableClientIdRef.current || state.clientId;
   if (!providerId || !providerId.includes('.apps.googleusercontent.com')) {
     return inner;
   }
