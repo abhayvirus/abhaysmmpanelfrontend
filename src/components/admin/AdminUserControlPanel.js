@@ -7,6 +7,7 @@ import {
   adminSendPersonalPopup,
   adminBroadcastMessage,
 } from '../../api';
+import { isAdminRole } from '../../utils/roles';
 
 const CHANNELS = [
   { value: 'inbox', label: 'Support inbox only' },
@@ -50,7 +51,7 @@ const AdminUserControlPanel = ({ onToast }) => {
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    const list = users.filter((u) => u.role !== 'admin');
+    const list = users.filter((u) => !isAdminRole(u));
     if (!q) return list;
     return list.filter(
       (u) =>

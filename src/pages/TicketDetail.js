@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import UserLayout from '../components/UserLayout';
+import AdminLayout from '../components/AdminLayout';
 import TicketMessageBubble from '../components/TicketMessageBubble';
 import TicketReplyBar from '../components/TicketReplyBar';
 import { getTicket, replyTicket } from '../api';
 import { ticketStatusClass } from '../utils/ticketStatus';
+import { getStoredUser } from '../utils/authRedirect';
+import { isAdminRole } from '../utils/roles';
 import '../styles/ticketsPage.css';
 
 const POLL_MS = 15000;
 
 const TicketDetail = () => {
   const { id } = useParams();
+  const adminView = isAdminRole(getStoredUser());
+  const backTo = adminView ? '/admin/tickets' : '/tickets';
+  const backLabel = adminView ? '← Back to Admin Tickets' : '← Back to Support';
+
   const [ticket, setTicket] = useState(null);
   const [messages, setMessages] = useState([]);
   const [hasMore, setHasMore] = useState(false);
@@ -90,65 +97,74 @@ const TicketDetail = () => {
 
   const closed = ticket?.status === 'closed';
 
-  return (
-    <UserLayout title="Ticket">
-      <div className="ticket-detail-page">
-        <header className="ticket-detail-header">
-          <Link to="/tickets" className="btn btn-ghost btn-sm">← Back to Support</Link>
-          {loadError ? (
-            <div className="alert alert-danger" style={{ marginTop: 12 }}>
-              {loadError}
-              <div style={{ marginTop: 8 }}>
-                <Link to="/tickets" className="btn btn-ghost btn-sm">Back to tickets</Link>
-              </div>
+  const body = (
+    <div className="ticket-detail-page">
+      <header className="ticket-detail-header">
+        <Link to={backTo} className="btn btn-ghost btn-sm">{backLabel}</Link>
+        {loadError ? (
+          <div className="alert alert-danger" style={{ marginTop: 12 }}>
+            {loadError}
+            <div style={{ marginTop: 8 }}>
+              <Link to={backTo} className="btn btn-ghost btn-sm">Back</Link>
             </div>
-          ) : loading && !ticket ? (
-            <p style={{ color: 'var(--text-muted)' }}>Loading…</p>
-          ) : (
-            <>
-              <h1>{ticket?.subject}</h1>
-              {ticket && (
-                <span className={`ticket-badge ${ticketStatusClass(ticket.status)}`}>
-                  {ticket.status}
-                </span>
-              )}
-            </>
-          )}
-        </header>
-
-        <div className="ticket-messages-wrap" ref={wrapRef}>
-          {hasMore && (
-            <button
-              type="button"
-              className="btn btn-ghost btn-sm ticket-load-more"
-              onClick={loadOlder}
-              disabled={loadingMore}
-            >
-              {loadingMore ? 'Loading…' : 'Load older messages'}
-            </button>
-          )}
-          {messages.map((m) => (
-            <TicketMessageBubble key={m.id} message={m} />
-          ))}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {!closed && ticket && (
-          <TicketReplyBar
-            value={reply}
-            onChange={setReply}
-            onSend={send}
-            sending={sending}
-          />
+          </div>
+        ) : loading && !ticket ? (
+          <p style={{ color: 'var(--text-muted)' }}>Loading…</p>
+        ) : (
+          <>
+            <h1>{ticket?.subject}</h1>
+            {ticket && (
+              <span className={`ticket-badge ${ticketStatusClass(ticket.status)}`}>
+                {ticket.status}
+              </span>
+            )}
+          </>
         )}
-        {closed && (
-          <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1rem' }}>
-            This ticket is closed. Open a new ticket if you need more help.
-          </p>
+      </header>
+
+      <div className="ticket-messages-wrap" ref={wrapRef}>
+        {hasMore && (
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm ticket-load-more"
+            onClick={loadOlder}
+            disabled={loadingMore}
+          >
+            {loadingMore ? 'Loading…' : 'Load older messages'}
+          </button>
         )}
+        {messages.map((m) => (
+          <TicketMessageBubble key={m.id} message={m} />
+        ))}
+        <div ref={messagesEndRef} />
       </div>
-    </UserLayout>
+
+      {!closed && ticket && (
+        <TicketReplyBar
+          value={reply}
+          onChange={setReply}
+          onSend={send}
+          sending={sending}
+        />
+      )}
+      {closed && (
+        <p style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '1rem' }}>
+          This ticket is closed. Open a new ticket if you need more help.
+        </p>
+      )}
+    </div>
   );
+
+  if (adminView) {
+    return (
+      <AdminLayout>
+        <h1 className="admin-page-title" style={{ marginBottom: 12 }}>Ticket #{id}</h1>
+        {body}
+      </AdminLayout>
+    );
+  }
+
+  return <UserLayout title="Ticket">{body}</UserLayout>;
 };
 
 export default TicketDetail;

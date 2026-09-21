@@ -1,6 +1,7 @@
 /** Post-login routing and auth path helpers */
 
 import { notifyAuthSessionChanged } from './authEvents';
+import { isAdminRole, normalizeUser } from './roles';
 
 export function getStoredUser() {
   try {
@@ -11,7 +12,7 @@ export function getStoredUser() {
 }
 
 export function getPostLoginPath(user = getStoredUser()) {
-  return user?.role === 'admin' ? '/admin' : '/dashboard';
+  return isAdminRole(user) ? '/admin' : '/dashboard';
 }
 
 export function getLoginPath() {
@@ -31,6 +32,6 @@ export function clearAuthSession() {
 
 export function saveAuthSession(token, user) {
   localStorage.setItem('token', token);
-  localStorage.setItem('user', JSON.stringify(user));
+  localStorage.setItem('user', JSON.stringify(normalizeUser(user)));
   notifyAuthSessionChanged();
 }

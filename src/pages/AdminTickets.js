@@ -67,7 +67,7 @@ const AdminTickets = () => {
               {s}
             </button>
           ))}
-          <Link to={`/tickets/${t.id}`} className="btn btn-primary btn-sm">Reply</Link>
+          <Link to={`/admin/tickets/${t.id}`} className="btn btn-primary btn-sm">Reply</Link>
         </div>
       ),
     },

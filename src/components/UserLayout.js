@@ -6,6 +6,7 @@ import AnnouncementPopup from './AnnouncementPopup';
 import { getMe } from '../api';
 import { useMedia } from '../hooks/useMedia';
 import { useSettings } from '../contexts/SettingsContext';
+import { normalizeUser } from '../utils/roles';
 
 const UserLayout = ({ children, title }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
@@ -16,19 +17,21 @@ const UserLayout = ({ children, title }) => {
 
   useEffect(() => {
     getMe().then((res) => {
-      localStorage.setItem('user', JSON.stringify(res.data));
-      setUser(res.data);
+      const next = normalizeUser(res.data);
+      localStorage.setItem('user', JSON.stringify(next));
+      setUser(next);
     }).catch(() => {});
   }, []);
 
   useEffect(() => {
     const syncUser = () => {
       try {
-        setUser(JSON.parse(localStorage.getItem('user') || '{}'));
+        setUser(normalizeUser(JSON.parse(localStorage.getItem('user') || '{}')));
       } catch (_) { /* ignore */ }
       getMe().then((res) => {
-        localStorage.setItem('user', JSON.stringify(res.data));
-        setUser(res.data);
+        const next = normalizeUser(res.data);
+        localStorage.setItem('user', JSON.stringify(next));
+        setUser(next);
       }).catch(() => {});
     };
     window.addEventListener('auth-user-updated', syncUser);

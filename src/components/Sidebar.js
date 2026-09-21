@@ -6,6 +6,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import BrandLogo from './BrandLogo';
 import { clearAuthSession } from '../utils/authRedirect';
 import { isNavActive } from '../utils/navActive';
+import { isAdminRole } from '../utils/roles';
 
 const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
   const location = useLocation();
@@ -112,7 +113,7 @@ const Sidebar = ({ user: propUser, mobileOpen = false, onClose }) => {
               </div>
             )}
 
-            {user.role === 'admin' && (
+            {isAdminRole(user) && (
               <Link to="/admin" className="sidebar-link sidebar-admin-link" onClick={onClose}>
                 👑 Admin
               </Link>

@@ -49,6 +49,8 @@ import AdminCoupons from './pages/AdminCoupons';
 import AdminChat from './pages/AdminChat';
 import AdminActivityLogs from './pages/AdminActivityLogs';
 
+import { isAdminRole } from './utils/roles';
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) return <Navigate to="/login" replace />;
@@ -74,7 +76,7 @@ const AdminRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   const user = readStoredUser();
   if (!token) return <Navigate to="/login" replace />;
-  if (user.role !== 'admin') return <Navigate to="/dashboard" replace />;
+  if (!isAdminRole(user)) return <Navigate to="/dashboard" replace />;
   return children;
 };
 
@@ -127,6 +129,7 @@ function AppRoutes() {
             <Route path="/admin/orders" element={<AdminRoute><AdminOrders /></AdminRoute>} />
             <Route path="/admin/funds" element={<AdminRoute><AdminFunds /></AdminRoute>} />
             <Route path="/admin/tickets" element={<AdminRoute><AdminTickets /></AdminRoute>} />
+            <Route path="/admin/tickets/:id" element={<AdminRoute><TicketDetail /></AdminRoute>} />
             <Route path="/admin/announcements" element={<AdminRoute><AdminAnnouncements /></AdminRoute>} />
             <Route path="/admin/child-panels" element={<AdminRoute><AdminChildPanels /></AdminRoute>} />
             <Route path="/admin/website-dev" element={<AdminRoute><AdminWebsiteDev /></AdminRoute>} />

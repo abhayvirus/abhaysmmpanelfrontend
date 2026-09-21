@@ -151,7 +151,7 @@ const Signup = () => {
       }
       if (res.data?.token && res.data?.user) {
         saveAuthSession(res.data.token, res.data.user);
-        navigate(res.data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+        navigate(getPostLoginPath(res.data.user), { replace: true });
         return;
       }
       setSuccess('Account created! Redirecting to login...');

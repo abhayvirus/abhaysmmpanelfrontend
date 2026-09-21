@@ -1,13 +1,17 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSettings } from '../contexts/SettingsContext';
+import { isAdminRole } from '../utils/roles';
 
 const MaintenanceGate = ({ children }) => {
   const { settings } = useSettings();
   const location = useLocation();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  let user = {};
+  try {
+    user = JSON.parse(localStorage.getItem('user') || '{}');
+  } catch (_) { /* ignore */ }
   const isAdminRoute = location.pathname.startsWith('/admin');
-  const isAdmin = user.role === 'admin';
+  const isAdmin = isAdminRole(user);
 
   const allowAdminDuringMaintenance = settings.maintenance_allow_admin !== false;
   const blocked = settings.maintenance_mode

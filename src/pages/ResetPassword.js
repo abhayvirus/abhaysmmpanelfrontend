@@ -5,7 +5,7 @@ import { getApiErrorMessage } from '../utils/apiError';
 import { getPasswordStrength, validateResetPassword } from '../utils/passwordStrength';
 import PasswordInput from '../components/PasswordInput';
 import AuthBrandHeader from '../components/AuthBrandHeader';
-import { saveAuthSession } from '../utils/authRedirect';
+import { saveAuthSession, getPostLoginPath } from '../utils/authRedirect';
 
 const ResetPassword = () => {
   const [params] = useSearchParams();
@@ -37,7 +37,7 @@ const ResetPassword = () => {
         saveAuthSession(data.token, data.user);
         setMsg({ type: 'success', text: data.message || 'Password updated. Redirecting...' });
         setTimeout(() => {
-          navigate(data.user.role === 'admin' ? '/admin' : '/dashboard', { replace: true });
+          navigate(getPostLoginPath(data.user), { replace: true });
         }, 1200);
         return;
       }
