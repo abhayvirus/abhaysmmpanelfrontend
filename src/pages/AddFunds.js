@@ -339,7 +339,7 @@ const AddFunds = () => {
       });
 
       setPayPhase('idle');
-      openRazorpayModal(options, {
+      await openRazorpayModal(options, {
         onFailed: (resp) => {
           resetPayState();
           const msg = friendlyPaymentError(

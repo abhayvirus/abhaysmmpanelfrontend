@@ -1,7 +1,10 @@
 /**
  * Production Razorpay Checkout — live keys only.
- * Opens only the gateway the user picked on Add Funds (no duplicate method picker).
+ * Script loads on demand (Add Funds pay click) — never on login/home.
  */
+
+const RAZORPAY_SCRIPT_SRC = 'https://checkout.razorpay.com/v1/checkout.js';
+let razorpayScriptPromise = null;
 
 export function assertLiveRazorpayKey(key) {
   if (!key || typeof key !== 'string') {
@@ -17,6 +20,49 @@ export function assertLiveRazorpayKey(key) {
   return k;
 }
 
+/** Load checkout.js once — only when user starts payment. */
+export function loadRazorpayScript() {
+  if (typeof window === 'undefined') {
+    return Promise.reject(new Error('Payment is only available in the browser.'));
+  }
+  if (window.Razorpay) return Promise.resolve(window.Razorpay);
+
+  if (!razorpayScriptPromise) {
+    razorpayScriptPromise = new Promise((resolve, reject) => {
+      const existing = document.querySelector(`script[src="${RAZORPAY_SCRIPT_SRC}"]`);
+      if (existing) {
+        existing.addEventListener('load', () => {
+          if (window.Razorpay) resolve(window.Razorpay);
+          else reject(new Error('Payment script failed to load. Refresh and try again.'));
+        });
+        existing.addEventListener('error', () => {
+          razorpayScriptPromise = null;
+          reject(new Error('Payment script failed to load. Check your connection.'));
+        });
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = RAZORPAY_SCRIPT_SRC;
+      script.async = true;
+      script.onload = () => {
+        if (window.Razorpay) resolve(window.Razorpay);
+        else {
+          razorpayScriptPromise = null;
+          reject(new Error('Payment script failed to load. Refresh and try again.'));
+        }
+      };
+      script.onerror = () => {
+        razorpayScriptPromise = null;
+        reject(new Error('Payment script failed to load. Check your connection.'));
+      };
+      document.body.appendChild(script);
+    });
+  }
+  return razorpayScriptPromise;
+}
+
+/** @deprecated use loadRazorpayScript — kept for sync callers that already awaited load */
 export function ensureRazorpayScript() {
   if (typeof window === 'undefined' || !window.Razorpay) {
     throw new Error('Payment script failed to load. Refresh the page and try again.');
@@ -112,9 +158,10 @@ export function buildRazorpayCheckoutOptions({
 
 /**
  * Open Razorpay modal and wire failure / dismiss handlers.
+ * Loads checkout.js on demand (not on login page).
  */
-export function openRazorpayModal(options, { onFailed, onDismiss } = {}) {
-  ensureRazorpayScript();
+export async function openRazorpayModal(options, { onFailed, onDismiss } = {}) {
+  await loadRazorpayScript();
   const rzp = new window.Razorpay(options);
   if (onFailed) {
     rzp.on('payment.failed', onFailed);
