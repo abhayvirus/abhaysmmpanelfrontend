@@ -14,19 +14,18 @@ const statusClass = {
   completed: 'badge-success',
   partial: 'badge-warning',
   cancelled: 'badge-danger',
+  canceled: 'badge-danger',
   failed: 'badge-danger',
 };
 
 const POLL_MS = 30000;
 
-/** Cancel only during pending window (before processing_at). */
 function canCancelOrder(order) {
   if (!order || order.status !== 'pending') return false;
   if (order.processing_at && new Date(order.processing_at) <= new Date()) return false;
   return true;
 }
 
-/** Apply local pending → processing when 60s window ends (before server poll). */
 function applyLocalLifecycle(orders) {
   const now = Date.now();
   return orders.map((o) => {
@@ -36,6 +35,36 @@ function applyLocalLifecycle(orders) {
     }
     return o;
   });
+}
+
+function formatStatusLabel(st) {
+  if (!st) return 'Pending';
+  return String(st)
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function formatOrderDate(raw) {
+  if (!raw) return '—';
+  const d = new Date(raw);
+  if (Number.isNaN(d.getTime())) return '—';
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function quantityBreakdown(o) {
+  const qty = Number(o.quantity);
+  const start = o.start_count != null ? Number(o.start_count) : null;
+  const remains = o.remains != null ? Number(o.remains) : null;
+  const delivered =
+    Number.isFinite(qty) && Number.isFinite(remains) ? Math.max(0, qty - remains) : null;
+  const end =
+    start != null && delivered != null
+      ? start + delivered
+      : start != null && Number.isFinite(qty)
+        ? start + qty
+        : null;
+  return { qty, start, remains, end };
 }
 
 const Orders = () => {
@@ -147,14 +176,41 @@ const Orders = () => {
     return st;
   };
 
-  const orderAmount = (o) => formatMoney(o.price ?? o.charge ?? o.amount ?? o.total_price);
+  const orderAmount = (o) => formatMoney(o.charge ?? o.price ?? o.amount ?? o.total_price);
   const orderId = (o) => o.id ?? o.order_id ?? o.orderId ?? '—';
-  const orderDate = (o) => {
-    const raw = o.created_at ?? o.createdAt ?? o.date;
-    if (!raw) return '—';
-    const d = new Date(raw);
-    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+  const serviceLabel = (o) => {
+    const name = o.service_name || 'Service';
+    if (o.service_id != null) return `${o.service_id} — ${name}`;
+    return name;
   };
+
+  const renderQtyCell = (o) => {
+    const { qty, start, remains, end } = quantityBreakdown(o);
+    const fmt = (n) => (n == null || Number.isNaN(n) ? '—' : Number(n).toLocaleString());
+    return (
+      <div className="orders-qty-cell">
+        <div><span>Qty:</span> {fmt(qty)}</div>
+        <div><span>Remains:</span> {fmt(remains)}</div>
+        <div><span>Start:</span> {fmt(start)}</div>
+        <div><span>End:</span> {fmt(end)}</div>
+      </div>
+    );
+  };
+
+  const renderActions = (o, oid) => (
+    <div className="orders-actions-cell">
+      <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
+        onClick={() => refresh(oid)} title="Refresh status">↻</button>
+      {canRefill(o) && (
+        <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
+          onClick={() => refill(oid)}>Refill</button>
+      )}
+      {canCancelOrder(o) && (
+        <button type="button" className="btn btn-danger btn-sm" disabled={actionId === oid}
+          onClick={() => cancel(oid)}>Cancel</button>
+      )}
+    </div>
+  );
 
   return (
     <UserLayout title="Orders">
@@ -192,14 +248,12 @@ const Orders = () => {
                 <thead>
                   <tr>
                     <th>ID</th>
-                    <th>Service</th>
-                    <th>Link</th>
-                    <th>Qty</th>
-                    <th>Price</th>
-                    <th>Status</th>
-                    <th>Remains</th>
                     <th>Date</th>
-                    <th>Actions</th>
+                    <th>Link</th>
+                    <th>Charge</th>
+                    <th>Quantity</th>
+                    <th>Service</th>
+                    <th>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -209,33 +263,23 @@ const Orders = () => {
                     return (
                       <tr key={oid}>
                         <td>#{oid}</td>
-                        <td style={{ maxWidth: 160 }}>{o.service_name}</td>
-                        <td style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <td style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                          {formatOrderDate(o.created_at ?? o.createdAt ?? o.date)}
+                        </td>
+                        <td style={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           <a href={o.link} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', fontSize: 12 }}>
                             {o.link}
                           </a>
                         </td>
-                        <td>{o.quantity?.toLocaleString()}</td>
                         <td>{sym}{orderAmount(o)}</td>
+                        <td>{renderQtyCell(o)}</td>
+                        <td style={{ maxWidth: 220 }}>{serviceLabel(o)}</td>
                         <td>
-                          <span className={`badge ${statusClass[st] || 'badge-info'}`}>{st}</span>
-                        </td>
-                        <td>{o.remains ?? '—'}</td>
-                        <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                          {orderDate(o)}
-                        </td>
-                        <td>
-                          <div className="orders-actions-cell">
-                            <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
-                              onClick={() => refresh(oid)} title="Refresh status">↻</button>
-                            {canRefill(o) && (
-                              <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
-                                onClick={() => refill(oid)}>Refill</button>
-                            )}
-                            {canCancelOrder(o) && (
-                              <button type="button" className="btn btn-danger btn-sm" disabled={actionId === oid}
-                                onClick={() => cancel(oid)}>Cancel</button>
-                            )}
+                          <div className="orders-status-cell">
+                            <span className={`badge ${statusClass[st] || 'badge-info'}`}>
+                              {formatStatusLabel(st)}
+                            </span>
+                            {renderActions(o, oid)}
                           </div>
                         </td>
                       </tr>
@@ -253,28 +297,19 @@ const Orders = () => {
                   <div key={`m-${oid}`} className="orders-mobile-card">
                     <div className="orders-mobile-top">
                       <strong>#{oid}</strong>
-                      <span className={`badge ${statusClass[st] || 'badge-info'}`}>{st}</span>
+                      <span className={`badge ${statusClass[st] || 'badge-info'}`}>
+                        {formatStatusLabel(st)}
+                      </span>
                     </div>
-                    <div className="orders-mobile-row"><span>Service</span><span>{o.service_name}</span></div>
+                    <div className="orders-mobile-row"><span>Date</span><span>{formatOrderDate(o.created_at ?? o.createdAt ?? o.date)}</span></div>
                     <div className="orders-mobile-row">
                       <span>Link</span>
                       <a href={o.link} target="_blank" rel="noreferrer">{o.link}</a>
                     </div>
-                    <div className="orders-mobile-row"><span>Qty</span><span>{o.quantity?.toLocaleString()}</span></div>
-                    <div className="orders-mobile-row"><span>Price</span><span>{sym}{orderAmount(o)}</span></div>
-                    <div className="orders-mobile-row"><span>Date</span><span>{orderDate(o)}</span></div>
-                    <div className="orders-actions-cell" style={{ marginTop: 10 }}>
-                      <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
-                        onClick={() => refresh(oid)}>↻</button>
-                      {canRefill(o) && (
-                        <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
-                          onClick={() => refill(oid)}>Refill</button>
-                      )}
-                      {canCancelOrder(o) && (
-                        <button type="button" className="btn btn-danger btn-sm" disabled={actionId === oid}
-                          onClick={() => cancel(oid)}>Cancel</button>
-                      )}
-                    </div>
+                    <div className="orders-mobile-row"><span>Charge</span><span>{sym}{orderAmount(o)}</span></div>
+                    <div className="orders-mobile-row"><span>Quantity</span><span>{renderQtyCell(o)}</span></div>
+                    <div className="orders-mobile-row"><span>Service</span><span>{serviceLabel(o)}</span></div>
+                    <div style={{ marginTop: 10 }}>{renderActions(o, oid)}</div>
                   </div>
                 );
               })}
