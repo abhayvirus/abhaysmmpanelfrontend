@@ -65,7 +65,7 @@ API.interceptors.response.use(
 
 // Auth
 export const getAuthConfig = (config) => API.get('/auth/config', config);
-export const login = (data) => API.post('/auth/login', data);
+export const login = (data) => API.post('/auth/login', data, { timeout: 25000 });
 export const signup = (data) => API.post('/auth/signup', data);
 export const sendSignupOtp = (data) => API.post('/auth/signup/send-otp', data, { timeout: 25000 });
 export const verifySignupOtp = (data) => API.post('/auth/signup/verify-otp', data, { timeout: 25000 });

@@ -38,24 +38,26 @@ const Login = () => {
   }, [navigate]);
 
   const handleLogin = async () => {
-    if (!email || !password) return setError('Email and password required');
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const cleanPassword = String(password || '');
+    if (!cleanEmail || !cleanPassword) return setError('Email and password required');
     setLoading(true);
     setError('');
     try {
-      await wakeApi(9000);
-      const res = await login({ email, password, otp: otp || undefined });
+      await wakeApi(12000);
+      const res = await login({ email: cleanEmail, password: cleanPassword, otp: otp || undefined });
       if (res.data.otp_required) {
         setOtpRequired(true);
         setError('');
-        setLoading(false);
         return;
       }
       saveAuthSession(res.data.token, res.data.user);
       navigate(getPostLoginPath(res.data.user), { replace: true });
     } catch (err) {
       setError(getApiErrorMessage(err, 'Login failed'));
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
