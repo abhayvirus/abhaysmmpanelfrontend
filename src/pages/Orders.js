@@ -138,13 +138,23 @@ const Orders = () => {
   const canRefill = (o) => ['completed', 'partial'].includes(o.status);
 
   const displayStatus = (o) => {
-    if (o.status === 'pending' && o.processing_at && new Date(o.processing_at) <= new Date()) {
+    const raw = o.status ?? o.order_status ?? o.state;
+    if (!raw || String(raw).trim() === '') return 'pending';
+    const st = String(raw).trim().toLowerCase();
+    if (st === 'pending' && o.processing_at && new Date(o.processing_at) <= new Date()) {
       return 'processing';
     }
-    return o.status;
+    return st;
   };
 
   const orderAmount = (o) => formatMoney(o.price ?? o.charge ?? o.amount ?? o.total_price);
+  const orderId = (o) => o.id ?? o.order_id ?? o.orderId ?? '—';
+  const orderDate = (o) => {
+    const raw = o.created_at ?? o.createdAt ?? o.date;
+    if (!raw) return '—';
+    const d = new Date(raw);
+    return Number.isNaN(d.getTime()) ? '—' : d.toLocaleDateString();
+  };
 
   return (
     <UserLayout title="Orders">
@@ -195,9 +205,10 @@ const Orders = () => {
                 <tbody>
                   {orders.map((o) => {
                     const st = displayStatus(o);
+                    const oid = orderId(o);
                     return (
-                      <tr key={o.id}>
-                        <td>#{o.id}</td>
+                      <tr key={oid}>
+                        <td>#{oid}</td>
                         <td style={{ maxWidth: 160 }}>{o.service_name}</td>
                         <td style={{ maxWidth: 120, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           <a href={o.link} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', fontSize: 12 }}>
@@ -211,19 +222,19 @@ const Orders = () => {
                         </td>
                         <td>{o.remains ?? '—'}</td>
                         <td style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                          {new Date(o.created_at).toLocaleDateString()}
+                          {orderDate(o)}
                         </td>
                         <td>
                           <div className="orders-actions-cell">
-                            <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id}
-                              onClick={() => refresh(o.id)} title="Refresh status">↻</button>
+                            <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
+                              onClick={() => refresh(oid)} title="Refresh status">↻</button>
                             {canRefill(o) && (
-                              <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id}
-                                onClick={() => refill(o.id)}>Refill</button>
+                              <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
+                                onClick={() => refill(oid)}>Refill</button>
                             )}
                             {canCancelOrder(o) && (
-                              <button type="button" className="btn btn-danger btn-sm" disabled={actionId === o.id}
-                                onClick={() => cancel(o.id)}>Cancel</button>
+                              <button type="button" className="btn btn-danger btn-sm" disabled={actionId === oid}
+                                onClick={() => cancel(oid)}>Cancel</button>
                             )}
                           </div>
                         </td>
@@ -237,10 +248,11 @@ const Orders = () => {
             <div className="orders-mobile-list">
               {orders.map((o) => {
                 const st = displayStatus(o);
+                const oid = orderId(o);
                 return (
-                  <div key={`m-${o.id}`} className="orders-mobile-card">
+                  <div key={`m-${oid}`} className="orders-mobile-card">
                     <div className="orders-mobile-top">
-                      <strong>#{o.id}</strong>
+                      <strong>#{oid}</strong>
                       <span className={`badge ${statusClass[st] || 'badge-info'}`}>{st}</span>
                     </div>
                     <div className="orders-mobile-row"><span>Service</span><span>{o.service_name}</span></div>
@@ -250,16 +262,17 @@ const Orders = () => {
                     </div>
                     <div className="orders-mobile-row"><span>Qty</span><span>{o.quantity?.toLocaleString()}</span></div>
                     <div className="orders-mobile-row"><span>Price</span><span>{sym}{orderAmount(o)}</span></div>
+                    <div className="orders-mobile-row"><span>Date</span><span>{orderDate(o)}</span></div>
                     <div className="orders-actions-cell" style={{ marginTop: 10 }}>
-                      <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id}
-                        onClick={() => refresh(o.id)}>↻</button>
+                      <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
+                        onClick={() => refresh(oid)}>↻</button>
                       {canRefill(o) && (
-                        <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === o.id}
-                          onClick={() => refill(o.id)}>Refill</button>
+                        <button type="button" className="btn btn-ghost btn-sm" disabled={actionId === oid}
+                          onClick={() => refill(oid)}>Refill</button>
                       )}
                       {canCancelOrder(o) && (
-                        <button type="button" className="btn btn-danger btn-sm" disabled={actionId === o.id}
-                          onClick={() => cancel(o.id)}>Cancel</button>
+                        <button type="button" className="btn btn-danger btn-sm" disabled={actionId === oid}
+                          onClick={() => cancel(oid)}>Cancel</button>
                       )}
                     </div>
                   </div>
