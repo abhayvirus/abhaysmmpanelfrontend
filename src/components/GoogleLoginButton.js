@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGoogleAuth } from '../contexts/GoogleAuthContext';
-import { API_BASE } from '../api';
+import { API_BASE, getAuthConfig } from '../api';
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
@@ -12,13 +12,32 @@ const GoogleIcon = () => (
 );
 
 /**
- * Login page only — always-visible "Continue with Google" (server OAuth redirect).
+ * Login page — "Continue with Google" (server OAuth redirect).
+ * Disabled when server reports Google not ready.
  */
-const GoogleLoginButton = ({ className = '', style = {} }) => {
+const GoogleLoginButton = ({ className = '', style = {}, hint = true }) => {
   const { oauthStartUrl } = useGoogleAuth();
   const [loading, setLoading] = useState(false);
+  const [ready, setReady] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getAuthConfig({ timeout: 8000 })
+      .then(({ data }) => {
+        if (cancelled) return;
+        const ok =
+          data?.googleRedirectEnabled !== false
+          && (data?.googleEnabled !== false || Boolean(data?.googleAuthUrl));
+        setReady(ok);
+      })
+      .catch(() => {
+        if (!cancelled) setReady(true); // optimistic — still try redirect
+      });
+    return () => { cancelled = true; };
+  }, []);
 
   const startRedirect = () => {
+    if (!ready) return;
     const fallback = `${String(API_BASE || 'https://api.abhaysmmpanel.in').replace(/\/api\/?$/, '')}/api/auth/google`;
     const target = (oauthStartUrl && String(oauthStartUrl).includes('/auth/google'))
       ? oauthStartUrl
@@ -26,6 +45,14 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
     setLoading(true);
     window.location.href = target;
   };
+
+  if (!ready) {
+    return hint ? (
+      <p style={{ textAlign: 'center', fontSize: 13, color: 'var(--text-muted)', margin: '0 0 8px' }}>
+        Google login is temporarily unavailable. Use email &amp; password.
+      </p>
+    ) : null;
+  }
 
   return (
     <div className={`google-signin-root ${className}`} style={style}>
@@ -40,6 +67,11 @@ const GoogleLoginButton = ({ className = '', style = {} }) => {
         </span>
         <span>{loading ? 'Redirecting to Google…' : 'Continue with Google'}</span>
       </button>
+      {hint ? (
+        <p style={{ textAlign: 'center', fontSize: 12, color: 'var(--text-muted)', margin: '10px 0 0', lineHeight: 1.4 }}>
+          New here? Create an account first, then you can sign in with Google.
+        </p>
+      ) : null}
     </div>
   );
 };

@@ -143,6 +143,7 @@ const Signup = () => {
     setError('');
     setSuccess('');
     try {
+      await wakeApi(12000);
       const res = await verifySignupOtp({ email: email.trim().toLowerCase(), otp: code });
       if (res.data?.pending_approval) {
         setSuccess(res.data.message || 'Account pending admin approval.');
@@ -309,6 +310,9 @@ const Signup = () => {
         <p style={styles.bottomText}>
           Already have an account?{' '}
           <Link to="/login" style={styles.link}>Sign In</Link>
+        </p>
+        <p style={{ ...styles.bottomText, marginTop: 10, fontSize: 12 }}>
+          After signup you can also use Google login with the same email.
         </p>
       </div>
     </div>

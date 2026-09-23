@@ -15,12 +15,21 @@ const Login = () => {
   const [otp, setOtp] = useState('');
   const [otpRequired, setOtpRequired] = useState(false);
   const [error, setError] = useState('');
+  const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const googleError = new URLSearchParams(window.location.search).get('google_error');
-    if (googleError) setError(decodeURIComponent(googleError));
+    const params = new URLSearchParams(window.location.search);
+    const googleError = params.get('google_error');
+    const googleCode = params.get('google_code');
+    if (googleError) {
+      let msg = decodeURIComponent(googleError);
+      if (googleCode === 'ACCOUNT_NOT_FOUND' || /sign up first|no account/i.test(msg)) {
+        msg = 'No account found for this Google email. Create an account first, then use Google login.';
+      }
+      setError(msg);
+    }
   }, []);
 
   useEffect(() => {
@@ -43,18 +52,31 @@ const Login = () => {
     if (!cleanEmail || !cleanPassword) return setError('Email and password required');
     setLoading(true);
     setError('');
+    setInfo('');
     try {
       await wakeApi(12000);
       const res = await login({ email: cleanEmail, password: cleanPassword, otp: otp || undefined });
       if (res.data.otp_required) {
         setOtpRequired(true);
+        setInfo(res.data.message || 'OTP sent to your email. Enter it below.');
         setError('');
+        return;
+      }
+      if (!res.data?.token || !res.data?.user) {
+        setError('Login succeeded but session was incomplete. Please try again.');
         return;
       }
       saveAuthSession(res.data.token, res.data.user);
       navigate(getPostLoginPath(res.data.user), { replace: true });
     } catch (err) {
-      setError(getApiErrorMessage(err, 'Login failed'));
+      const code = err.response?.data?.code;
+      if (code === 'ACCOUNT_NOT_FOUND') {
+        setError('No account found. Please create an account first.');
+      } else if (code === 'GOOGLE_ONLY_ACCOUNT') {
+        setError(getApiErrorMessage(err, 'Use Google login for this account'));
+      } else {
+        setError(getApiErrorMessage(err, 'Login failed'));
+      }
     } finally {
       setLoading(false);
     }
@@ -67,6 +89,11 @@ const Login = () => {
         <h2 className="auth-heading">Welcome Back</h2>
         <p className="auth-subheading">Sign in to {BRAND.name}</p>
         {error && <div className="alert alert-error">{error}</div>}
+        {info && !error && (
+          <div className="alert" style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.35)' }}>
+            {info}
+          </div>
+        )}
 
         <GoogleLoginButton />
         <div style={{ textAlign: 'center', margin: '20px 0', color: 'var(--text-muted)' }}>OR</div>
@@ -98,16 +125,18 @@ const Login = () => {
             <input
               className="input"
               value={otp}
-              onChange={(e) => setOtp(e.target.value)}
+              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
               placeholder="6-digit code"
+              maxLength={6}
               inputMode="numeric"
               autoComplete="one-time-code"
+              style={{ letterSpacing: '0.35em', textAlign: 'center', fontWeight: 700 }}
             />
           </div>
         )}
         <Link to="/forgot-password" style={{ fontSize: 13, display: 'block', marginBottom: 16 }}>Forgot password?</Link>
         <button className="btn btn-primary" style={{ width: '100%' }} disabled={loading} onClick={handleLogin}>
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? 'Signing in...' : otpRequired ? 'Verify OTP & Sign In' : 'Sign In'}
         </button>
         <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)' }}>
           No account? <Link to="/signup">Create one</Link>

@@ -59,15 +59,19 @@ API.interceptors.response.use(
         || code === 'INVALID_USER_ID'
         || code === 'USER_ID_MISSING'
         || code === 'ACCOUNT_PENDING'
+        || code === 'DB_SCHEMA'
       ) {
         return Promise.reject(err);
       }
-      // Soften: 401 on secondary widgets should not nuke a brand-new login
+      // Soften: secondary widgets + /auth/me must never force logout
+      // (Hostinger id coercion lag right after signup/login)
       const url = String(err.config?.url || '');
       if (
-        url.includes('/notifications/')
+        url.includes('/auth/me')
+        || url.includes('/notifications/')
         || url.includes('/chat/')
         || url.includes('/tickets/unread')
+        || url.includes('/referrals/')
       ) {
         return Promise.reject(err);
       }

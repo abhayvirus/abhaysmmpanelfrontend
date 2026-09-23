@@ -13,8 +13,19 @@ const MaintenanceGate = ({ children }) => {
   const isAdminRoute = location.pathname.startsWith('/admin');
   const isAdmin = isAdminRole(user);
 
+  const path = location.pathname || '';
+  const isAuthPage =
+    path.startsWith('/login')
+    || path.startsWith('/signup')
+    || path.startsWith('/forgot-password')
+    || path.startsWith('/reset-password')
+    || path.startsWith('/verify-email')
+    || path.startsWith('/auth/google');
+
+  // Always allow login/signup during maintenance so users (and admin) can recover
   const allowAdminDuringMaintenance = settings.maintenance_allow_admin !== false;
   const blocked = settings.maintenance_mode
+    && !isAuthPage
     && !(allowAdminDuringMaintenance && (isAdminRoute || isAdmin));
 
   if (blocked) {
