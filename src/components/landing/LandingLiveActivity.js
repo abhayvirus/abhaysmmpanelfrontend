@@ -72,10 +72,13 @@ function buildUniqueActivity(lastMessage) {
 }
 
 const LandingLiveActivity = () => {
-  const [activity, setActivity] = useState(null);
+  const [activity, setActivity] = useState(() => {
+    const first = buildActivity();
+    return first;
+  });
   const [timeLabel, setTimeLabel] = useState('Just now');
-  const [visible, setVisible] = useState(false);
-  const lastMessageRef = useRef('');
+  const [visible, setVisible] = useState(true);
+  const lastMessageRef = useRef(activity?.message || '');
 
   useEffect(() => {
     let cancelled = false;
@@ -102,7 +105,11 @@ const LandingLiveActivity = () => {
       }, VISIBLE_MS);
     };
 
-    schedule(runCycle, randomBetween(2000, 4000));
+    // First rotate after the seeded card has been visible
+    schedule(() => {
+      setVisible(false);
+      schedule(runCycle, randomBetween(1200, 2500));
+    }, VISIBLE_MS);
 
     return () => {
       cancelled = true;

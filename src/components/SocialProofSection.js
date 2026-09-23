@@ -30,7 +30,9 @@ const SocialProofSection = () => {
   const { ref, inView } = useInViewOnce(0.05);
   const [imgError, setImgError] = useState(false);
 
-  const instagramFollowers = settings.social_instagram_followers || '13200';
+  const rawFollowers = String(settings.social_instagram_followers || '').trim();
+  const instagramFollowers =
+    !rawFollowers || rawFollowers === '0' ? '13200' : rawFollowers;
   const instagramCount = useAnimatedCounter(instagramFollowers, inView);
   const profileImg = resolveImageUrl(settings.instagram_profile_image) || DEFAULT_PROFILE_IMAGE;
   const showPhoto = Boolean(profileImg) && !imgError;
