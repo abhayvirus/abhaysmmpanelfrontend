@@ -146,16 +146,22 @@ const Signup = () => {
       const res = await verifySignupOtp({ email: email.trim().toLowerCase(), otp: code });
       if (res.data?.pending_approval) {
         setSuccess(res.data.message || 'Account pending admin approval.');
-        setTimeout(() => navigate('/login', { replace: true }), 3500);
+        setTimeout(() => navigate('/login', { replace: true }), 2500);
         return;
       }
+      // Auto-login → go straight to user panel (dashboard)
       if (res.data?.token && res.data?.user) {
+        try {
+          sessionStorage.removeItem('signup_ref');
+        } catch (_) { /* ignore */ }
         saveAuthSession(res.data.token, res.data.user);
+        setSuccess('Account created! Opening your panel...');
         navigate(getPostLoginPath(res.data.user), { replace: true });
         return;
       }
-      setSuccess('Account created! Redirecting to login...');
-      setTimeout(() => navigate('/login', { replace: true }), 2000);
+      // Backend should always return token; fallback login only if session missing
+      setSuccess('Account created! Please sign in.');
+      setTimeout(() => navigate('/login', { replace: true }), 1500);
     } catch (err) {
       setError(getApiErrorMessage(err, 'OTP is invalid or expired'));
     } finally {
