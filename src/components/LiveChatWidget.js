@@ -4,6 +4,7 @@ import { getChatMessages, sendChatMessage } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDraggableFloat } from '../hooks/useDraggableFloat';
+import { AUTH_SESSION_EVENT } from '../utils/authEvents';
 
 const CRITICAL_PATHS = [
   '/dashboard',
@@ -18,13 +19,22 @@ const CRITICAL_PATHS = [
 const SESSION_DURATION_MS = 60 * 60 * 1000;
 const SESSION_EXPIRED_MSG = 'Your session expired';
 
+function readStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user') || '{}') || {};
+  } catch {
+    return {};
+  }
+}
+
 function parseChatResponse(data) {
   if (Array.isArray(data)) {
-    return { messages: data, session: null };
+    return { messages: data, session: null, identity: null };
   }
   return {
     messages: Array.isArray(data?.messages) ? data.messages : [],
     session: data?.session || null,
+    identity: data?.identity || null,
   };
 }
 
@@ -53,17 +63,41 @@ const LiveChatWidget = () => {
   const [sessionNotice, setSessionNotice] = useState('');
   const [sessionExpired, setSessionExpired] = useState(false);
   const [remainingMs, setRemainingMs] = useState(SESSION_DURATION_MS);
+  const [authTick, setAuthTick] = useState(0);
+  const [serverIdentity, setServerIdentity] = useState(null);
   const bottom = useRef(null);
   const expiredNotified = useRef(false);
   const hadActiveSession = useRef(false);
+  const boundUserId = useRef(null);
+
   const token = localStorage.getItem('token');
-  const user = useMemo(() => {
-    try {
-      return JSON.parse(localStorage.getItem('user') || '{}');
-    } catch {
-      return {};
-    }
-  }, [token]);
+  const user = useMemo(() => readStoredUser(), [token, authTick]);
+  const userId = user?.id != null ? String(user.id) : '';
+
+  useEffect(() => {
+    const sync = () => setAuthTick((n) => n + 1);
+    window.addEventListener(AUTH_SESSION_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(AUTH_SESSION_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  // Hard reset when account switches — never show another user's bubbles
+  useEffect(() => {
+    if (boundUserId.current === userId) return;
+    boundUserId.current = userId;
+    setMsgs([]);
+    setText('');
+    setServerIdentity(null);
+    setSessionExpired(false);
+    setRemainingMs(SESSION_DURATION_MS);
+    setSessionNotice('');
+    expiredNotified.current = false;
+    hadActiveSession.current = false;
+    setOpen(false);
+  }, [userId, token]);
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
   const isServicesPage = location.pathname.startsWith('/services');
@@ -102,7 +136,6 @@ const LiveChatWidget = () => {
     setSessionExpired(true);
     setRemainingMs(0);
     setSessionNotice(notice);
-    setOpen(false);
     setText('');
     hadActiveSession.current = false;
     window.setTimeout(() => setSessionNotice(''), 4500);
@@ -115,7 +148,7 @@ const LiveChatWidget = () => {
     const safeRem = Number.isFinite(rem) ? rem : SESSION_DURATION_MS;
 
     if (expired) {
-      // Active chat just timed out → toast + close. Otherwise ready for a new 1-hour session.
+      // Timed-out window — user can still send to open a fresh 1-hour session
       if (hadActiveSession.current && !expiredNotified.current) {
         expiredNotified.current = true;
         expireSession(SESSION_EXPIRED_MSG);
@@ -135,22 +168,31 @@ const LiveChatWidget = () => {
   }, [expireSession]);
 
   const load = useCallback(() => {
-    if (!token) return;
+    if (!token || !userId) return;
     getChatMessages()
       .then((r) => {
-        const { messages, session } = parseChatResponse(r.data);
+        const { messages, session, identity } = parseChatResponse(r.data);
+        // Ignore late responses after logout / account switch
+        if (boundUserId.current !== userId) return;
+        if (identity?.id != null && String(identity.id) !== String(userId)) {
+          setMsgs([]);
+          return;
+        }
+        setServerIdentity(identity);
         setMsgs(messages);
         applySession(session);
       })
-      .catch(() => {});
-  }, [token, applySession]);
+      .catch(() => {
+        if (boundUserId.current === userId) setMsgs([]);
+      });
+  }, [token, userId, applySession]);
 
   useEffect(() => {
-    if (!open || !token) return undefined;
+    if (!open || !token || !userId) return undefined;
     load();
     const id = setInterval(load, 4000);
     return () => clearInterval(id);
-  }, [open, token, load]);
+  }, [open, token, userId, load]);
 
   useEffect(() => {
     if (!open || sessionExpired) return undefined;
@@ -159,7 +201,6 @@ const LiveChatWidget = () => {
         const next = Math.max(0, prev - 1000);
         if (next <= 0 && hadActiveSession.current && !expiredNotified.current) {
           expiredNotified.current = true;
-          // Defer expire to avoid setState during setState
           window.setTimeout(() => expireSession(SESSION_EXPIRED_MSG), 0);
         }
         return next;
@@ -242,17 +283,22 @@ const LiveChatWidget = () => {
   if (!chatOn || !token) return null;
 
   const send = async () => {
-    if (!text.trim() || sending || sessionExpired) return;
+    // Allow send after expiry — backend starts a fresh 1-hour session
+    if (!text.trim() || sending || !userId) return;
     setSending(true);
+    setSessionExpired(false);
     try {
       const res = await sendChatMessage(text.trim());
       setText('');
       const data = res.data || {};
       hadActiveSession.current = true;
+      expiredNotified.current = false;
       await new Promise((resolve) => {
         getChatMessages()
           .then((r) => {
-            const { messages, session } = parseChatResponse(r.data);
+            const { messages, session, identity } = parseChatResponse(r.data);
+            if (boundUserId.current !== userId) return;
+            setServerIdentity(identity);
             setMsgs(messages);
             applySession(session);
           })
@@ -282,13 +328,7 @@ const LiveChatWidget = () => {
     expiredNotified.current = false;
     setSessionExpired(false);
     setOpen(true);
-    getChatMessages()
-      .then((r) => {
-        const { messages, session } = parseChatResponse(r.data);
-        setMsgs(messages);
-        applySession(session);
-      })
-      .catch(() => {});
+    load();
   };
 
   const onPointerDown = (e) => {
@@ -301,10 +341,10 @@ const LiveChatWidget = () => {
     setTimeout(() => setDragging(false), 0);
   };
 
-  const displayName = user.name || 'You';
-  const displayEmail = user.email || '';
+  const displayName = serverIdentity?.name || user.name || 'You';
+  const displayEmail = serverIdentity?.email || user.email || '';
   const statusLabel = sessionExpired
-    ? 'Session limit reached'
+    ? 'Session ended — send to start again'
     : hadActiveSession.current || remainingMs < SESSION_DURATION_MS
       ? formatRemaining(remainingMs)
       : '1 hour session';
@@ -368,7 +408,7 @@ const LiveChatWidget = () => {
           <div className="live-chat-messages live-chat-wa-messages">
             {msgs.length === 0 && (
               <div className="live-chat-wa-empty">
-                Say hello — live chat sessions last 1 hour.
+                Say hello — live chat sessions last 1 hour. Messages go to admin support.
               </div>
             )}
             {msgs.map((m) => (
@@ -392,20 +432,20 @@ const LiveChatWidget = () => {
               className="input"
               placeholder={
                 sessionExpired
-                  ? SESSION_EXPIRED_MSG
+                  ? 'Send a message to start a new session…'
                   : (t('chat.placeholder') || 'Type a message…')
               }
               value={text}
               onChange={(e) => setText(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && !sessionExpired && send()}
-              disabled={sending || sessionExpired}
-              autoFocus={!sessionExpired}
+              onKeyDown={(e) => e.key === 'Enter' && send()}
+              disabled={sending}
+              autoFocus
             />
             <button
               type="button"
               className="btn btn-primary btn-sm live-chat-wa-send"
               onClick={send}
-              disabled={sending || sessionExpired || !text.trim()}
+              disabled={sending || !text.trim()}
             >
               {sending ? '…' : (t('chat.send') || 'Send')}
             </button>

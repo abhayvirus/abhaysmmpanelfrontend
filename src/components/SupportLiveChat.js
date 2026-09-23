@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { getChatMessages, getChatUnreadCount, sendChatMessage } from '../api';
 import { useSettings } from '../contexts/SettingsContext';
+import { AUTH_SESSION_EVENT } from '../utils/authEvents';
 import '../styles/supportLiveChat.css';
 
 const POLL_MS = 3000;
@@ -10,13 +11,23 @@ const SESSION_EXPIRED_MSG = 'Your session expired — live chat is limited to 1 
 const formatTime = (iso) =>
   new Date(iso).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' });
 
+function readStoredUserId() {
+  try {
+    const u = JSON.parse(localStorage.getItem('user') || '{}');
+    return u?.id != null ? String(u.id) : '';
+  } catch {
+    return '';
+  }
+}
+
 function parseChatResponse(data) {
   if (Array.isArray(data)) {
-    return { messages: data, session: null };
+    return { messages: data, session: null, identity: null };
   }
   return {
     messages: Array.isArray(data?.messages) ? data.messages : [],
     session: data?.session || null,
+    identity: data?.identity || null,
   };
 }
 
@@ -44,16 +55,52 @@ const SupportLiveChat = () => {
   const [sessionExpired, setSessionExpired] = useState(false);
   const [remainingMs, setRemainingMs] = useState(SESSION_DURATION_MS);
   const [hasActiveSession, setHasActiveSession] = useState(false);
+  const [authTick, setAuthTick] = useState(0);
   const endRef = useRef(null);
   const expiredNotified = useRef(false);
+  const boundUserId = useRef(null);
 
   const enabled = settings.live_chat_enabled !== false && settings.live_chat_enabled !== 'false';
+  const userId = useMemo(() => readStoredUserId(), [authTick]);
+
+  useEffect(() => {
+    const sync = () => setAuthTick((n) => n + 1);
+    window.addEventListener(AUTH_SESSION_EVENT, sync);
+    window.addEventListener('storage', sync);
+    return () => {
+      window.removeEventListener(AUTH_SESSION_EVENT, sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (boundUserId.current === userId) return;
+    boundUserId.current = userId;
+    setMsgs([]);
+    setUnread(0);
+    setText('');
+    setError('');
+    setSessionExpired(false);
+    setRemainingMs(SESSION_DURATION_MS);
+    setHasActiveSession(false);
+    expiredNotified.current = false;
+  }, [userId]);
 
   const load = useCallback((silent = false) => {
+    if (!userId) {
+      setMsgs([]);
+      setLoading(false);
+      return Promise.resolve();
+    }
     if (!silent) setLoading(true);
     return getChatMessages()
       .then((r) => {
-        const { messages, session } = parseChatResponse(r.data);
+        const { messages, session, identity } = parseChatResponse(r.data);
+        if (boundUserId.current !== userId) return null;
+        if (identity?.id != null && String(identity.id) !== String(userId)) {
+          setMsgs([]);
+          return null;
+        }
         setMsgs(messages);
         if (session) {
           const expired = Boolean(session.session_expired);
@@ -66,7 +113,6 @@ const SupportLiveChat = () => {
               setError(SESSION_EXPIRED_MSG);
               setHasActiveSession(false);
             } else {
-              // Ready for a fresh 1-hour session
               setSessionExpired(false);
               setRemainingMs(SESSION_DURATION_MS);
               setError('');
@@ -80,10 +126,14 @@ const SupportLiveChat = () => {
         }
         return getChatUnreadCount();
       })
-      .then((r) => setUnread(r.data?.count || 0))
-      .catch(() => setMsgs([]))
+      .then((r) => {
+        if (r && boundUserId.current === userId) setUnread(r.data?.count || 0);
+      })
+      .catch(() => {
+        if (boundUserId.current === userId) setMsgs([]);
+      })
       .finally(() => { if (!silent) setLoading(false); });
-  }, [hasActiveSession]);
+  }, [hasActiveSession, userId]);
 
   useEffect(() => {
     if (!enabled) {
@@ -122,8 +172,7 @@ const SupportLiveChat = () => {
   }, [msgs]);
 
   const send = async () => {
-    if (!text.trim() || sending) return;
-    // Allow send even after expiry — backend opens a fresh 1-hour session
+    if (!text.trim() || sending || !userId) return;
     setSending(true);
     setError('');
     const body = text.trim();
